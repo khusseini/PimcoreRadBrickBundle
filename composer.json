@@ -1,0 +1,21 @@
+{
+    "name": "khusseini/pimcore-radbrick",
+    "description": "A RAD way to create areabricks in Pimcore",
+    "type": "library",
+    "require": {
+        "pimcore/pimcore": "^6"
+    },
+    "license": "BSD 2-Clause License",
+    "authors": [
+        {
+            "name": "Khair-ed-Din Husseini",
+            "email": "kmhusseini@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+          "": ["src/"]
+        }
+    },
+    "minimum-stability": "dev"
+}
