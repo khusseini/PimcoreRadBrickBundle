@@ -5,7 +5,7 @@
     "require": {
         "pimcore/pimcore": "^6"
     },
-    "license": "BSD 2-Clause License",
+    "license": "BSD-2-Clause",
     "authors": [
         {
             "name": "Khair-ed-Din Husseini",
