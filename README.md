@@ -64,14 +64,68 @@ pimcore_rad_brick:
 
 This simplifies templates to look like this:
 
-edit.html.twig
+`edit.html.twig`
 ```twig
 Items: {{ num_items|raw }}
 ```
 
-view.html.twig
+`view.html.twig`
 ```twig
 {% for i in range(1, num_items) %}
 {{ teaser_area_block[i]|raw }}
 {% endfor %}
+```
+A more practical example is an integration into the bootstrap grid.
+Two areabricks can be easily created in order to support the bootstrap grid.
+
+```yaml
+pimcore_rad_brick:
+  areabricks:
+    container:
+      label: Container
+      use_edit: true
+      editables:
+        container_css_class:
+          type: input
+        container_area_block:
+          type: areablock
+          options:
+            allowed:
+            - columns
+            - hero_slider
+            params:
+              forceEditInView: true
+    columns:
+      label: Columns
+      use_edit: true
+      editables:
+        num_columns:
+          type: select
+          options:
+            store: [1, 2, 3, 4, 5, 6]
+            defaultValue: 1
+        column_area_block:
+          type: areablock
+          source: num_columns
+          options:
+            params:
+              forceEditInView: true
+```
+
+`container/view.html.twig`:
+```twig
+<div class="container">
+  {{ container_area_block|raw }}
+</div>
+```
+`columns/view.html.twig`:
+```twig
+{% set col_width = 12 / num_columns.getData() %}
+<div class="row">
+  {% for i in range(1, num_columns.getData()) %}
+  <div class="col-{{ col_width }}">
+      {{ column_area_block[i]|raw }}
+  </div>
+  {% endfor %}
+</div>
 ```
