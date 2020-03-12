@@ -31,7 +31,7 @@ class PimcoreRadBrickExtension extends Extension
                 $target = new Definition(SimpleBrick::class, [new Reference('pimcore.templating.tag_renderer')]);
             }
 
-            $target->addMethodCall('setConfig', [$config]);
+            $target->addMethodCall('setConfig', [$config['editables']]);
 
             if (!$target->hasTag('pimcore.area.brick')) {
                 $target->addTag('pimcore.area.brick', ['id' => $id]);

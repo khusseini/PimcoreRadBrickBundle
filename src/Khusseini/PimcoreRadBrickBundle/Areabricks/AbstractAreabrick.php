@@ -68,9 +68,8 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     protected function getElements(Info $info, array $config)
     {
         foreach ($config as $name => $elementConfig) {
-            reset($elementConfig);
-            $type = key($elementConfig);
-            $options = $elementConfig[$type];
+            $type = $elementConfig['type'];
+            $options = $elementConfig['options'];
             $element = $this->getTagRenderer()->render($info->getDocument(), $type, $name, $options);
             yield $name => $element;
         };
