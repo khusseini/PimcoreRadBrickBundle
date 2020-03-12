@@ -67,64 +67,50 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     public function action(Info $info)
     {
         if (!$this->getConfig()) return null;
-        $view = $info->getView();
-        $elements = iterator_to_array($this->getElements($info, $this->getConfig()['editables'] ?: []));
-        foreach ($elements as $name => $element) {
-            $view[$name] = $element;
-        }
-
-        $generators = iterator_to_array($this->getGenerators($info, $this->getConfig()['generators'] ?: []));
-        foreach ($generators as $name => $generator) {
-            $view[$name] = $generator;
-        }
-
-        return $this->doAction($view);
+        $this->processElements($info);
+        return $this->doAction($info);
     }
 
-    public function doAction(ViewModelInterface $view)
+    public function doAction(Info $info)
     {
         return null;
     }
-    
-    protected function getGenerators(Info $info)
-    {
-        $config = $this->getConfig()['generators'] ? : [];
-        $tr = $this->getTagRenderer();
-        $doc = $info->getDocument();
-        $view = $info->getView();
-        
-        foreach ($config as $name => $elementConfig) {
-            $type = $elementConfig['type'];
-            $options = $elementConfig['options'] ?: [];
-            $source = $elementConfig['source'];
-            $sourceElement = $view[$source];
-            
-            if (!$sourceElement) {
-                continue;
-            }
-            
-            $count = $sourceElement->getData();
 
-            $elements = [];
-            for($i = 1; $i <= $count; ++$i) {
-                $ename = $name.'_'.$i;
-                $element = $tr->render($doc, $type, $ename, $options);
-                $elements[$i] = $element;
-            }
-
-
-            yield $name => $elements;
-        }
-    }
-
-    protected function getElements(Info $info)
+    protected function processElements(Info $info)
     {
         $config = $this->getConfig()['editables'] ? : [];
+        $view = $info->getView();
+        $tagRenderer = $this->getTagRenderer();
+        $doc = $info->getDocument();
+
         foreach ($config as $name => $elementConfig) {
+            $source = $elementConfig['source'];
             $type = $elementConfig['type'];
             $options = $elementConfig['options'] ?: [];
-            $element = $this->getTagRenderer()->render($info->getDocument(), $type, $name, $options);
-            yield $name => $element;
+            $element = null;
+
+            if (!is_null($source)) {
+                if (!$view->has($source)) {
+                    continue;
+                }
+
+                $sourceElement = $view->get($source);
+
+                //TODO: Refactor to data provider
+                $count = (int)$sourceElement->getData() ?: 1;
+                $element = [];
+                for($i = 1; $i <= $count; ++$i) {
+                    $ename = $name.'_'.$i;
+                    $e = $tagRenderer->render($doc, $type, $ename, $options);
+                    $element[$i] = $e;
+                }
+            }
+
+            if (is_null($element)) {
+                $element = $this->getTagRenderer()->render($doc, $type, $name, $options);
+            }
+
+            $view[$name] = $element;
         };
     }
 

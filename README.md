@@ -36,3 +36,42 @@ Now create a template as usual in `views/Areas/my_wysiwyg/view.html.twig`:
   {% endpimcoreglossary %}
 </div>
 ```
+
+### Using sources
+
+Sometimes areabricks need to be configurable to have more than one instance. For example a teaser could display 1, 2 or 3 items.
+A configuration for this could look like:
+
+```yaml
+pimcore_rad_brick:
+  areabricks:
+    teaser:
+      label: Teaser
+      use_edit: true
+      editables:
+        num_items:
+          type: select
+          options:
+            store: [1, 2, 3]
+            defaultValue: 1
+        teaser_area_block:
+          type: areablock
+          source: num_columns
+          options:
+            params:
+              forceEditInView: true
+```
+
+This simplifies templates to look like this:
+
+edit.html.twig
+```twig
+Items: {{ num_items|raw }}
+```
+
+view.html.twig
+```twig
+{% for i in range(1, num_items) %}
+{{ teaser_area_block[i]|raw }}
+{% endfor %}
+```
