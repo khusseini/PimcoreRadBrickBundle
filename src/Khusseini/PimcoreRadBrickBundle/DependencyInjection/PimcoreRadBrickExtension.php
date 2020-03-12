@@ -28,10 +28,16 @@ class PimcoreRadBrickExtension extends Extension
             }
 
             if (!$target) {
-                $target = new Definition(SimpleBrick::class, [new Reference('pimcore.templating.tag_renderer')]);
+                $target = new Definition(SimpleBrick::class, [
+                    new Reference('pimcore.templating.tag_renderer'),
+                    $config['label'],
+                    $config['use_edit'],
+                    $config['open'],
+                    $config['close']
+                ]);
             }
 
-            $target->addMethodCall('setConfig', [$config['editables']]);
+            $target->addMethodCall('setConfig', [$config]);
 
             if (!$target->hasTag('pimcore.area.brick')) {
                 $target->addTag('pimcore.area.brick', ['id' => $id]);
