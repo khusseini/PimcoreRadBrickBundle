@@ -77,7 +77,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     public function action(Info $info)
     {
         if (!$this->getConfig()) return null;
-        $this->processElements($info);
+        $this->processEditables($info);
         return $this->doAction($info);
     }
 
@@ -86,14 +86,14 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
         return null;
     }
 
-    protected function processElements(Info $info)
+    protected function processEditables(Info $info)
     {
-        $config = $this->getConfig()['editables'] ? : [];
+        $editables = $this->getConfig()['editables'] ? : [];
         $view = $info->getView();
         $tagRenderer = $this->getTagRenderer();
         $doc = $info->getDocument();
 
-        foreach ($config as $name => $elementConfig) {
+        foreach ($editables as $name => $elementConfig) {
 
             $elementConfig = $this->applyMap($elementConfig, $view);
 
@@ -127,27 +127,31 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
         };
     }
 
-    protected function applyMap(array $config, ViewModelInterface $view)
+    public function applyMap(array $editableConfig, ViewModelInterface $view)
     {
         $propertyAccessor = PropertyAccess::createPropertyAccessor();
-        foreach ($config['editables'] as $name => $editableConfig) {
-            if (
-                !isset($editableConfig['map'])
-                || !$propertyAccessor->isReadable($view, $editableConfig['map']['source'])
-            ) {
+        if (
+            !isset($editableConfig['map'])
+        ) {
+            return $editableConfig;
+        }
+
+        foreach ($editableConfig['map'] as $map) {
+            if (!$propertyAccessor->isReadable($view, $map['source'])) {
                 continue;
             }
-            
+
             $propertyAccessor
                 ->setValue(
                     $editableConfig, 
-                    $editableConfig['map']['target'], 
-                    $propertyAccessor->getValue($view, $editableConfig['map'])
+                    $map['target'], 
+                    $propertyAccessor->getValue($view, $map['source'])
                 )
             ;    
         }
+        
 
-        return $config;
+        return $editableConfig;
     }
 
     public function getConfig()
@@ -155,9 +159,9 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
         return $this->config;
     }
 
-    public function setConfig(array $config)
+    public function setConfig(array $editableConfig)
     {
-        $this->config = $config;
+        $this->config = $editableConfig;
     }
 
     /**
