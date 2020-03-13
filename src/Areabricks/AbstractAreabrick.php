@@ -40,6 +40,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
     public function getIcon()
     {
+        return $this->icon ?: parent::getIcon();
 
     }
 
