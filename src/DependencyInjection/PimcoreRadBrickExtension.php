@@ -19,6 +19,7 @@ class PimcoreRadBrickExtension extends Extension
         $config = $this->processConfiguration($configuration, $configs);
 
         $areabricks = $config['areabricks'];
+
         foreach ($areabricks as $id => $config) {
             $target = null;
             $definitionId = 'radbrick.'.$id;
@@ -33,7 +34,8 @@ class PimcoreRadBrickExtension extends Extension
                     $config['label'],
                     $config['use_edit'],
                     $config['open'],
-                    $config['close']
+                    $config['close'],
+                    $config['icon'],
                 ]);
             }
 

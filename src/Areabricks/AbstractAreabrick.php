@@ -6,6 +6,8 @@ use Pimcore\Extension\Document\Areabrick\AbstractTemplateAreabrick;
 use Pimcore\Model\Document\Tag\Area\Info;
 use Pimcore\Templating\Model\ViewModelInterface;
 use Pimcore\Templating\Renderer\TagRenderer;
+use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
 
 abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 {
@@ -18,19 +20,27 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
     private $label;
     private $useEdit;
+    private $icon;
 
     public function __construct(
         TagRenderer $tagRenderer, 
         $label = null,
         $useEdit = false,
         string $open = '', 
-        string $close = ''
+        string $close = '',
+        string $icon = null
     ) {
         $this->tagRenderer = $tagRenderer;
-        $this->openTag = $this->open;
-        $this->closeTag = $this->close;
+        $this->openTag = $open;
+        $this->closeTag = $close;
         $this->label = $label;
         $this->useEdit = $useEdit;
+        $this->icon = $icon;
+    }
+
+    public function getIcon()
+    {
+
     }
 
     public function getName()
@@ -84,6 +94,9 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
         $doc = $info->getDocument();
 
         foreach ($config as $name => $elementConfig) {
+
+            $elementConfig = $this->applyMap($elementConfig, $view);
+
             $source = $elementConfig['source'];
             $type = $elementConfig['type'];
             $options = $elementConfig['options'] ?: [];
@@ -112,6 +125,29 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
             $view[$name] = $element;
         };
+    }
+
+    protected function applyMap(array $config, ViewModelInterface $view)
+    {
+        $propertyAccessor = PropertyAccess::createPropertyAccessor();
+        foreach ($config['editables'] as $name => $editableConfig) {
+            if (
+                !isset($editableConfig['map'])
+                || !$propertyAccessor->isReadable($view, $editableConfig['map']['source'])
+            ) {
+                continue;
+            }
+            
+            $propertyAccessor
+                ->setValue(
+                    $editableConfig, 
+                    $editableConfig['map']['target'], 
+                    $propertyAccessor->getValue($view, $editableConfig['map'])
+                )
+            ;    
+        }
+
+        return $config;
     }
 
     public function getConfig()

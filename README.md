@@ -75,6 +75,7 @@ Items: {{ num_items|raw }}
 {{ teaser_area_block[i]|raw }}
 {% endfor %}
 ```
+---
 A more practical example is an integration into the bootstrap grid.
 Two areabricks can be easily created in order to support the bootstrap grid.
 
@@ -118,6 +119,7 @@ pimcore_rad_brick:
   {{ container_area_block|raw }}
 </div>
 ```
+
 `columns/view.html.twig`:
 ```twig
 {% set col_width = 12 / num_columns.getData() %}
@@ -129,3 +131,42 @@ pimcore_rad_brick:
   {% endfor %}
 </div>
 ```
+
+### Using maps
+
+At times an editable in your areabrick depends on some configuration value.
+The `map` configuration node may be used to map data between editables.
+
+For example an image areabrick may be configured to use a specific thumbnail:
+
+`edit.html.twig`
+```twig
+Thumbnail: {{ image_thumbnail|raw }}
+```
+
+`view.html.twig`
+```twig
+<div class="image-container">
+{{ image_content|raw }}
+</div>
+```
+
+`config.yml`
+```yml
+pimcore_rad_brick:
+  areabricks:
+    image:
+      label: Image
+      editables:
+        image_thumbnail:
+          type: input
+        image_content:
+          type: image
+          map: 
+          - source: '[image_thumbnail].data'
+            target: '[options][thumbnail]'
+```
+
+The `source` and `target` properties uses the [Symfony Property Access Component](https://symfony.com/doc/current/components/property_access.html) to fetch and insert data.
+
+The above mapping example would fetch the `data` property's value from `image_thumbnail` editable (resides in ViewModel, hence the array notation) and insert right into the config tree in `[pimcore_rad_brick][areabricks][image][editables][image_content][options][thumbnail]`
