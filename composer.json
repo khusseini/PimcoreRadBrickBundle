@@ -14,12 +14,12 @@
     ],
     "autoload": {
         "psr-4": {
-          "\\Khusseini\\PimcoreRadBrickBundle\\": ["src/"]
+          "Khusseini\\PimcoreRadBrickBundle\\": ["src/"]
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "\\Tests\\Khusseini\\PimcoreRadBrickBundle\\": ["tests/"]
+            "Tests\\Khusseini\\PimcoreRadBrickBundle\\": ["tests/"]
         }
     },
     "minimum-stability": "dev",

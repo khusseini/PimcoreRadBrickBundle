@@ -7,7 +7,6 @@ use Pimcore\Model\Document\Tag\Area\Info;
 use Pimcore\Templating\Model\ViewModelInterface;
 use Pimcore\Templating\Renderer\TagRenderer;
 use Symfony\Component\PropertyAccess\PropertyAccess;
-use Symfony\Component\PropertyAccess\PropertyAccessor;
 
 abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 {
