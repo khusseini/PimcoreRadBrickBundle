@@ -2,7 +2,7 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\Areabricks;
 
-use Areabricks\DatasourceRegistry;
+use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
 use Pimcore\Extension\Document\Areabrick\AbstractTemplateAreabrick;
 use Pimcore\Model\Document\Tag\Area\Info;
 use Pimcore\Templating\Model\ViewModelInterface;
@@ -111,13 +111,17 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
             $arguments = $options['args'];
             foreach ($arguments as $key => $value) {
                 if (
-                    !preg_match('/!g:.*/', $value)
-                    && !$propertyAccessor->isReadable($data, substr($value, 3))
+                    !is_string($value)
+                    || !(
+                        preg_match('/!q:.*/', $value)
+                        && $propertyAccessor->isReadable($data, substr($value, 3))
+                    )
                 ) {
-                    $arguments[$name] = $propertyAccessor->getValue($data, substr($value, 3));
+                    continue;
                 }
+                $arguments[$key] = $propertyAccessor->getValue($data, substr($value, 3));
             }
-            $view[$name] = $this->datasourceRegistry->execute($name, $arguments);
+            $view[$name] = $this->datasourceRegistry->execute($name, $arguments) ?: [];
         }
     }
 

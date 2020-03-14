@@ -2,8 +2,8 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\DependencyInjection;
 
-use Areabricks\DatasourceRegistry;
 use Khusseini\PimcoreRadBrickBundle\Areabricks\SimpleBrick;
+use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;

@@ -39,7 +39,7 @@ Now create a template as usual in `views/Areas/my_wysiwyg/view.html.twig`:
 
 ### Using sources
 
-Sometimes areabricks need to be configurable to have more than one instance. For example a teaser could display 1, 2 or 3 items.
+Sometimes editables need to be configurable to have more than one instance. For example a teaser could display 1, 2 or 3 items.
 A configuration for this could look like:
 
 ```yaml
@@ -216,4 +216,40 @@ Category: {{ category|raw }}
   {% for product in products_by_category_id %}
   <div class="item">{% include 'product-tile.tml.twig' with {product: product} only %}</div>
 </div>
+```
+
+#### Connecting Editables and datasources
+
+When using datasources, it is also possible to connect editables to items in datasources.
+For example product teasers could have a tagline which needs to be added manually,
+but all other fields are filled by the product. The following configuration can solve this issue:
+
+```yml
+pimcore_rad_brick:
+  datasources:
+    products_by_category:
+      service_id: 'coreshop.repository.category'
+      method: 'findOneById'
+      args: 
+      - '!q:[category].id' ## Specify which data to pass. The input array is passed by areabricks. the `!q` is required to use `[category].id` as a property path, otherwise the input is seen as a string
+
+  areabricks:
+    category_slider:
+      label: Category Slider
+      use_edit: true
+      editables:
+        category:
+          type: relation
+          options:
+            types: ['object']
+            subtypes:
+              object: ['object']
+            classes: ['CoreShopCategory']
+        tagline:
+          type: input
+          datasource:
+            products_by_category: id # Provide the property with which the editable can be identified. in this case the editable id will be `tagline` appended to it `_` with the value of the id property of each item coming from the datasource  
+      datasources:
+        products_by_category:
+          category: '!q:[view][category].element'
 ```

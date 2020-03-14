@@ -1,6 +1,6 @@
 <?php
 
-namespace Khusseini\PimcoreRadBrickBundle\Areabricks;
+namespace Khusseini\PimcoreRadBrickBundle;
 
 use stdClass;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -34,10 +34,14 @@ class DatasourceRegistry
     ) {
         $this->datasources->{$name} = function(array $input) use ($service, $method, $args) {
             foreach ($args as $index => $content) {
-                if (!preg_match('/!q:.*/', $content)) {
+                if (
+                    !is_string($content) 
+                    || !preg_match('/!q:.*/', $content)
+                ) {
                     continue;
                 }
-                $content = substr(3, $content);
+
+                $content = substr($content, 3);
                 if (!$this->propertyAccessor->isReadable($input, $content)) {
                     continue;
                 }
