@@ -2,6 +2,7 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\DependencyInjection;
 
+use Areabricks\DatasourceRegistry;
 use Khusseini\PimcoreRadBrickBundle\Areabricks\SimpleBrick;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -19,6 +20,23 @@ class PimcoreRadBrickExtension extends Extension
         $config = $this->processConfiguration($configuration, $configs);
 
         $areabricks = $config['areabricks'];
+        $datasources = $config['datasources'];
+        
+        $datasourceRegistry =  new Definition(DatasourceRegistry::class);
+
+        foreach ($datasources as $name => $datasource) {
+            $datasourceRegistry->addMethodCall('add', [
+                $name, 
+                new Reference($datasource['service_id']), 
+                $datasource['method'], 
+                $datasource['args'],
+            ]);
+        }
+
+        $container->setDefinition(
+            'radbrick.datasource_registry', 
+            $datasourceRegistry
+        );
 
         foreach ($areabricks as $id => $config) {
             $target = null;
@@ -31,6 +49,7 @@ class PimcoreRadBrickExtension extends Extension
             if (!$target) {
                 $target = new Definition(SimpleBrick::class, [
                     new Reference('pimcore.templating.tag_renderer'),
+                    new Reference('radbrick.datasource_registry'),
                     $config['label'],
                     $config['use_edit'],
                     $config['open'],

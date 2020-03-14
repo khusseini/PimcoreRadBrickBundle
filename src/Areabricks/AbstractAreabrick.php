@@ -2,6 +2,7 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\Areabricks;
 
+use Areabricks\DatasourceRegistry;
 use Pimcore\Extension\Document\Areabrick\AbstractTemplateAreabrick;
 use Pimcore\Model\Document\Tag\Area\Info;
 use Pimcore\Templating\Model\ViewModelInterface;
@@ -16,13 +17,18 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     private $openTag;
     /** @var string */
     private $closeTag;
-
-    private $label;
-    private $useEdit;
-    private $icon;
+    /** @var string */
+    private $label = null;
+    /** @var bool */
+    private $useEdit = false;
+    /** @var string */
+    private $icon = null;
+    /** @var DatasourceRegistry */
+    private $datasourceRegistry;
 
     public function __construct(
         TagRenderer $tagRenderer, 
+        DatasourceRegistry $datasourceRegistry,
         $label = null,
         $useEdit = false,
         string $open = '', 
@@ -30,6 +36,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
         string $icon = null
     ) {
         $this->tagRenderer = $tagRenderer;
+        $this->datasourceRegistry = $datasourceRegistry;
         $this->openTag = $open;
         $this->closeTag = $close;
         $this->label = $label;
@@ -78,12 +85,40 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     {
         if (!$this->getConfig()) return null;
         $this->processEditables($info);
+        $this->processDatasources($info);
         return $this->doAction($info);
     }
 
     public function doAction(Info $info)
     {
         return null;
+    }
+
+    protected function processDatasources(Info $info)
+    {
+        $propertyAccessor = PropertyAccess::createPropertyAccessor();
+        $datasources = @$this->getConfig()['datasources'] ?: [];
+        $view= $info->getView();
+        $data = [
+            'request' => $info->getRequest(),
+            'view' => $view,
+        ];
+        
+        foreach ($datasources as $name => $options) {
+            if (!$options['args']) {
+                continue;
+            }
+            $arguments = $options['args'];
+            foreach ($arguments as $key => $value) {
+                if (
+                    !preg_match('/!g:.*/', $value)
+                    && !$propertyAccessor->isReadable($data, substr($value, 3))
+                ) {
+                    $arguments[$name] = $propertyAccessor->getValue($data, substr($value, 3));
+                }
+            }
+            $view[$name] = $this->datasourceRegistry->execute($name, $arguments);
+        }
     }
 
     protected function processEditables(Info $info)
@@ -94,7 +129,6 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
         $doc = $info->getDocument();
 
         foreach ($editables as $name => $elementConfig) {
-
             $elementConfig = $this->applyMap($elementConfig, $view);
 
             $source = $elementConfig['source'];
@@ -110,7 +144,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
                 $sourceElement = $view->get($source);
 
                 //TODO: Refactor to data provider
-                $count = (int)$sourceElement->getData() ?: 1;
+                $count = (int)$sourceElement->getData() ?: $sourceElement->getDefault();
                 $element = [];
                 for($i = 1; $i <= $count; ++$i) {
                     $ename = $name.'_'.$i;

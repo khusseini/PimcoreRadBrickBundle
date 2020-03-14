@@ -170,3 +170,50 @@ pimcore_rad_brick:
 The `source` and `target` properties uses the [Symfony Property Access Component](https://symfony.com/doc/current/components/property_access.html) to fetch and insert data.
 
 The above mapping example would fetch the `data` property's value from `image_thumbnail` editable (resides in ViewModel, hence the array notation) and insert right into the config tree in `[pimcore_rad_brick][areabricks][image][editables][image_content][options][thumbnail]`
+
+### Using Datasources
+
+Datasources simplify the creation of widgets that get their data from other services. For example, in CoreShop one might want to show a slider that contains the products of a certain category.
+
+`config.yml`
+```yml
+pimcore_rad_brick:
+  ## Define data sources to be used by areabricks
+  datasources:
+    products_by_category_id:
+      service_id: 'coreshop.repository.category' ## Prodive a symfony service
+      method: 'findOneById' ## Specify which method to call
+      args: 
+      - '!q:[category].id' ## Specify which data to pass. The input array is passed by areabricks. the `!q` is required to use `[category].id` as a property path, otherwise the input is seen as a string
+
+  areabricks:
+    category_slider:
+      label: Category Slider
+      editables:
+        category:
+          type: relation
+          options:
+            types: ['object']
+            subtypes:
+              object: ['object']
+            classes: ['CoreShopCategory']
+      
+      datasources: ## Datasource configuration for this areabrick
+        products_by_category_id:
+          category: '!q:[view][category].element' ## Define category argument (available in input array to the datasource above)
+```
+The property path of an input argument for a datasource contains following information:
+- `request`: Access to the current request object
+- `view`: Access to elements in the viewmodel
+
+`edit.html.twig`
+```twig
+Category: {{ category|raw }}
+```
+`view.html.twig`
+```twig
+<div class="slider">
+  {% for product in products_by_category_id %}
+  <div class="item">{% include 'product-tile.tml.twig' with {product: product} only %}</div>
+</div>
+```
