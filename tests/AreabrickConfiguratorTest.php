@@ -8,7 +8,7 @@ use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Templating\Renderer\TagRenderer;
 use Prophecy\Argument;
 
-class TestAreabrickConfigurator extends TestCase
+class AreabrickConfiguratorTest extends TestCase
 {
     public function testCanCreateEditables()
     {
