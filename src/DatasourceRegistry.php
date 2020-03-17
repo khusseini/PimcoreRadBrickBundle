@@ -3,17 +3,18 @@
 namespace Khusseini\PimcoreRadBrickBundle;
 
 use stdClass;
-use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\Component\DependencyInjection\ExpressionLanguage;
 
 class DatasourceRegistry
 {
-    private $propertyAccessor;
-
+    private $expressionLangauge;
     private $datasources = null;
 
-    public function __construct()
+    public function __construct(
+        ExpressionLanguage $expressionLangauge
+    )
     {
-        $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
+        $this->expressionLangauge = $expressionLangauge;
         $this->datasources = new stdClass();
     }
 
@@ -32,23 +33,32 @@ class DatasourceRegistry
         string $method, 
         array $args
     ) {
-        $this->datasources->{$name} = function(array $input) use ($service, $method, $args) {
-            foreach ($args as $index => $content) {
-                if (
-                    !is_string($content) 
-                    || !preg_match('/!q:.*/', $content)
-                ) {
-                    continue;
-                }
+        $this->datasources->{$name} = $this
+            ->createServiceCall($name, $service, $method, $args)
+        ; 
+    }
 
-                $content = substr($content, 3);
-                if (!$this->propertyAccessor->isReadable($input, $content)) {
+    protected function createServiceCall(
+        string $name, 
+        object $service,
+        string $method,
+        array $args
+    ): callable 
+    {
+        return function(array $input) use ($service, $method, $args) {
+            foreach ($args as $index => $expression) {
+                if (!is_string($expression)) {
                     continue;
                 }
-                $args[$index] = $this->propertyAccessor->getValue($input, $content);
+                $args[$index] = $this->getValue($input, $expression);
             }
 
             return call_user_func_array([$service, $method], $args);
         };
+    }
+
+    public function getValue(array $context, string $expression)
+    {
+        return $this->expressionLangauge->evaluate($expression, $context);
     }
 }

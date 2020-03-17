@@ -1,10 +1,9 @@
 # PimcoreRadBrickBundle
 A RAD way to create Areabricks in Pimcore
 
-Many areabricks do not need any PHP functionality in order to be 
-configured or shown and most of the work is in the templates.
-The RadBrickBundle was created to simplify this process by
-making Areabricks configurable.
+## Purpose
+
+Configure data and editables available in Pimcore Areabricks view and edit templates.
 
 ## Installation
 ```
@@ -13,7 +12,7 @@ composer require khusseini/pimcore-radbrick
 
 ## Usage
 
-Simply enable the Bundle and test out this configuration in your `config.yml` and start creating templates.
+Simply enable the Bundle, test out this configuration in your `config.yml` and start creating templates.
 
 ```yaml
 pimcore_rad_brick:
@@ -37,12 +36,15 @@ Now create a template as usual in `views/Areas/my_wysiwyg/view.html.twig`:
 </div>
 ```
 
-### Using sources
+### Using static datasources
 
 Sometimes editables need to be configurable to have more than one instance. For example a teaser could display 1, 2 or 3 items.
 A configuration for this could look like:
 
 ```yaml
+datasource:
+  num_columns:
+
 pimcore_rad_brick:
   areabricks:
     teaser:
@@ -200,7 +202,7 @@ pimcore_rad_brick:
       
       datasources: ## Datasource configuration for this areabrick
         products_by_category_id:
-          category: '!q:[view][category].element' ## Define category argument (available in input array to the datasource above)
+          category: 'view[category].element' ## Define category argument (available in input array to the datasource above)
 ```
 The property path of an input argument for a datasource contains following information:
 - `request`: Access to the current request object
@@ -231,8 +233,7 @@ pimcore_rad_brick:
       service_id: 'coreshop.repository.category'
       method: 'findOneById'
       args: 
-      - '!q:[category].id' ## Specify which data to pass. The input array is passed by areabricks. the `!q` is required to use `[category].id` as a property path, otherwise the input is seen as a string
-
+      - '[category].id' ## Specify which data to pass. The input array is passed by areabricks.   
   areabricks:
     category_slider:
       label: Category Slider

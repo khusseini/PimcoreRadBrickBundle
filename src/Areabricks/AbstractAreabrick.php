@@ -11,8 +11,6 @@ use Symfony\Component\PropertyAccess\PropertyAccess;
 
 abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 {
-    /** @var TagRenderer */
-    private $tagRenderer;
     /** @var string */
     private $openTag;
     /** @var string */
@@ -96,9 +94,8 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
     protected function processDatasources(Info $info)
     {
-        $propertyAccessor = PropertyAccess::createPropertyAccessor();
         $datasources = @$this->getConfig()['datasources'] ?: [];
-        $view= $info->getView();
+        $view = $info->getView();
         $data = [
             'request' => $info->getRequest(),
             'view' => $view,
@@ -110,16 +107,10 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
             }
             $arguments = $options['args'];
             foreach ($arguments as $key => $value) {
-                if (
-                    !is_string($value)
-                    || !(
-                        preg_match('/!q:.*/', $value)
-                        && $propertyAccessor->isReadable($data, substr($value, 3))
-                    )
-                ) {
+                if (!is_string($value)) {
                     continue;
                 }
-                $arguments[$key] = $propertyAccessor->getValue($data, substr($value, 3));
+                $arguments[$key] = $this->datasourceRegistry->getValue($data, $value);
             }
             $view[$name] = $this->datasourceRegistry->execute($name, $arguments) ?: [];
         }
@@ -135,30 +126,12 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
         foreach ($editables as $name => $elementConfig) {
             $elementConfig = $this->applyMap($elementConfig, $view);
 
-            $source = $elementConfig['source'];
             $type = $elementConfig['type'];
             $options = $elementConfig['options'] ?: [];
             $element = null;
 
-            if (!is_null($source)) {
-                if (!$view->has($source)) {
-                    continue;
-                }
-
-                $sourceElement = $view->get($source);
-
-                //TODO: Refactor to data provider
-                $count = (int)$sourceElement->getData() ?: $sourceElement->getDefault();
-                $element = [];
-                for($i = 1; $i <= $count; ++$i) {
-                    $ename = $name.'_'.$i;
-                    $e = $tagRenderer->render($doc, $type, $ename, $options);
-                    $element[$i] = $e;
-                }
-            }
-
             if (is_null($element)) {
-                $element = $this->getTagRenderer()->render($doc, $type, $name, $options);
+                $element = $tagRenderer->render($doc, $type, $name, $options);
             }
 
             $view[$name] = $element;
