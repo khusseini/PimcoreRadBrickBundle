@@ -1,4 +1,5 @@
 {
     "files.autoSave": "afterDelay",
-    "phpcs.standard": "PSR2"
+    "phpcs.standard": "PSR2",
+    "coverage-gutters.coverageReportFileName": ".phpunit/**/coverage.xml"
 }

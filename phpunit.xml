@@ -25,5 +25,15 @@
     <php>
         <env name="APP_ENV" value="testing"/>
     </php>
+    <logging>
+    <log type="coverage-html" target="./.phpunit/report" lowUpperBound="35"
+        highLowerBound="70"/>
+    <log type="coverage-clover" target="./.phpunit/coverage.xml"/>
+    <log type="coverage-php" target="./.phpunit/coverage.serialized"/>
+    <log type="coverage-text" target="php://stdout" showUncoveredFiles="false"/>
+    <log type="junit" target="./.phpunit/logfile.xml"/>
+    <log type="testdox-html" target="./.phpunit/testdox.html"/>
+    <log type="testdox-text" target="./.phpunit/tmp/testdox.txt"/>
+    </logging>
 
 </phpunit>

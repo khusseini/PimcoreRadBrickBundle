@@ -18,11 +18,16 @@ Simply enable the Bundle, test out this configuration in your `config.yml` and s
 pimcore_rad_brick:
   areabricks:
     my_wysiwyg: 
-      label: WYSIWYG
+      label: WYSIWYG // Label to use in admin UI
+      icon:  ~ // Path to icon in admin UI
+      open: ~ // Set the open html
+      close: ~ // Set the close html
+      use_edit: false // Use edit.html.twig
+      class: ~ // Use an existing symfony service
       editables:
         wysiwyg_content:
           type: wysiwyg
-          options: []
+          options: [] // you can pass here any options accepted by the editable
 ```
 
 Now create a template as usual in `views/Areas/my_wysiwyg/view.html.twig`:
@@ -36,48 +41,80 @@ Now create a template as usual in `views/Areas/my_wysiwyg/view.html.twig`:
 </div>
 ```
 
-### Using static datasources
 
-Sometimes editables need to be configurable to have more than one instance. For example a teaser could display 1, 2 or 3 items.
-A configuration for this could look like:
+### Creating multiple instances
 
-```yaml
-datasource:
-  num_columns:
+In order to create multiple instances of an editable with the same configuraiton,
+it is as easy as adding the `instances` attribute:
 
+`config.yml`
+```yml
 pimcore_rad_brick:
   areabricks:
-    teaser:
-      label: Teaser
-      use_edit: true
+    my_wysiwyg: 
+      label: WYSIWYG
       editables:
-        num_items:
-          type: select
-          options:
-            store: [1, 2, 3]
-            defaultValue: 1
-        teaser_area_block:
-          type: areablock
-          source: num_columns
-          options:
-            params:
-              forceEditInView: true
+        wysiwyg_content:
+          instances: 3
+          instance_ids: ['one', 'two', 'three'] // you can specifically set the postfix of the instance name (which will result in the twig variable name)
+          type: wysiwyg
+          options: [] // you can pass here any options accepted by the editable
 ```
 
-This simplifies templates to look like this:
+The instance variables are created using the basename of the editable and postfixing it with either the provided ids in `instance_ids` or by simply using the array index.
 
-`edit.html.twig`
 ```twig
-Items: {{ num_items|raw }}
-```
-
-`view.html.twig`
-```twig
-{% for i in range(1, num_items) %}
-{{ teaser_area_block[i]|raw }}
+{% for wysiwyg_instance in wysiwyg_content %}
+  {{ wysiwyg_instance|raw }}
 {% endfor %}
 ```
----
+
+or 
+```twig
+<div>
+Come content:
+{{ wysiwyg_content.one|raw }}
+</div>
+<div>
+Other Content:
+{{ wysiwyg_content.two|raw }}
+</div>
+<div>
+More Content:
+{{ wysiwyg_content.three|raw }}
+</div>
+```
+
+#### Making instances configurable
+
+In most cases, it doesn't make much sense to hardcode the number of instances
+of an editable. In order to make the number of instances configurable via admin
+we will leverage the power of the (Expression Language Component)[https://symfony.com/doc/current/components/expression_language.html].
+
+```yml
+pimcore_rad_brick:
+  areabricks:
+    my_wysiwyg: 
+      label: WYSIWYG
+      use_edit: true // Note that we use an edit template to configure the instances
+      editables:
+        num_editors:
+          type: select
+          options:
+            store: [1,2,5]
+        wysiwyg_content:
+          instances: view[num_editors].getValue()
+          type: wysiwyg
+```
+
+NOTE: The expression context contains the following objects:
+- `request`: The current `Request` object
+- `view`: The current `ViewModel`
+- `datasources`: The `DatasourceRegistry`
+
+
+#### Practical example
+
 A more practical example is an integration into the bootstrap grid.
 Two areabricks can be easily created in order to support the bootstrap grid.
 
@@ -95,7 +132,6 @@ pimcore_rad_brick:
           options:
             allowed:
             - columns
-            - hero_slider
             params:
               forceEditInView: true
     columns:
@@ -108,8 +144,8 @@ pimcore_rad_brick:
             store: [1, 2, 3, 4, 5, 6]
             defaultValue: 1
         column_area_block:
+          instances: view[num_columns].getData()
           type: areablock
-          source: num_columns
           options:
             params:
               forceEditInView: true
@@ -126,9 +162,9 @@ pimcore_rad_brick:
 ```twig
 {% set col_width = 12 / num_columns.getData() %}
 <div class="row">
-  {% for i in range(1, num_columns.getData()) %}
+  {% for i in range(0, num_columns.getData()) %}
   <div class="col-{{ col_width }}">
-      {{ column_area_block[i]|raw }}
+      {{ column_area_block[i-1]|raw }}
   </div>
   {% endfor %}
 </div>

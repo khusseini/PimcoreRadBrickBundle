@@ -27,6 +27,11 @@ class DatasourceRegistry
         return $ds($args);
     }
 
+    public function __invoke(string $name, array $args = [])
+    {
+        return $this->execute($name, $args);
+    }
+
     public function add(
         string $name, 
         object $service, 

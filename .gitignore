@@ -48,3 +48,5 @@
 # Embedded web-server pid file
 /.web-server-pid
 /shell.sh
+
+/.phpunit

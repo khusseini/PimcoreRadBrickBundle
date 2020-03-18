@@ -2,28 +2,33 @@
 
 namespace Khusseini\PimcoreRadBrickBundle;
 
-use Pimcore\Model\Document;
 use Pimcore\Model\Document\PageSnippet;
-use Pimcore\Templating\Renderer\TagRenderer;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AreabrickConfigurator
 {
-    /** @var TagRenderer */
-    private $tagRenderer;
-
-    /** array  */
+    /** @var array  */
     private $config = [];
 
-    public function __construct(TagRenderer $tagRenderer, array $config)
-    {
+    /** @var IConfigurator[] */
+    private $configurators = [];
+
+    public function __construct(
+        array $config,
+        array $configurators = []
+    ) {
         $or = new OptionsResolver();
         $or->setDefaults([
             'areabricks' => [],
             'datasources' => [],
         ]);
         $this->config = $or->resolve($config);
-        $this->tagRenderer = $tagRenderer;
+        $this->configurators = $configurators;
+    }
+
+    public function setConfigurators(array $configurators)
+    {
+        $this->configurators = $configurators;
     }
 
     public function compileEditablesConfig(array $config)
@@ -31,27 +36,47 @@ class AreabrickConfigurator
         $editablesConfig = $config['editables'];
         $or = new OptionsResolver();
         $or->setDefaults([
-            'options' => []
+            'options' => [],
         ]);
         $or->setRequired([
             'type'
         ]);
 
-        foreach ($editablesConfig as $name => $config) {
-            yield $name => $or->resolve($config);
+        foreach ($this->configurators as $configurator) {
+            $configurator->configureEditableOptions($or);
+        }
+
+        foreach ($editablesConfig as $name => $econfig) {
+            $econfig = $or->resolve($econfig);
+            yield $name => $econfig;
         }
     }
 
     public function createEditables(string $areabrick, PageSnippet $document)
     {
         $compiledConfig = $this->compileEditablesConfig($this->config['areabricks'][$areabrick]);
+        $compiledConfig = iterator_to_array($compiledConfig);
+        
         foreach ($compiledConfig as $name => $config) {
-            yield $name => $this->render($document, $config['type'], $name, $config['options']);
-        }
-    }
+            $toRender = [
+                $name => [
+                    'type'=> $config['type'],
+                    'options' => $config['options'],
+                ]
+            ];
 
-    protected function render(PageSnippet $document, string $type, string $name, array $options = [])
-    {
-        return $this->tagRenderer->render($document, $type, $name, $options);
+            foreach ($this->configurators as $configurator) {
+                if (!$configurator->supports('create_editables', $name, $config)) {
+                    continue;
+                }
+                
+                $toRender = $configurator->processConfig(
+                    'create_editables',
+                    [$name => $config],
+                    $compiledConfig
+                );
+            }
+            yield from $toRender;
+        }
     }
 }
