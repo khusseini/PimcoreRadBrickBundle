@@ -6,6 +6,9 @@ build:
         override:
         - php-scrutinizer-run
       dependencies:
+        before:
+        - sudo apt-get update 
+        - sudo apt-get install -y php-zip
         override:
         - composer install --no-interaction --no-scripts
 tools:
