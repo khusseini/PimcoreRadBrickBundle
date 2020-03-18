@@ -36,18 +36,6 @@ class AreabrickConfigurator
         $this->configurators = $configurators;
     }
 
-    /** @var OptionsResolver */
-    private $outOptionsResolver;
-    protected function getOutOptionsResolver()
-    {
-        if (!$this->outOptionsResolver) {
-            $this->outOptionsResolver = new OptionsResolver();
-            $this->outOptionsResolver->setRequired(['type', 'options']);
-        }
-
-        return $this->outOptionsResolver;
-    }
-
     public function compileEditablesConfig(array $config)
     {
         $editablesConfig = $config['editables'];

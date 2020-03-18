@@ -6,9 +6,22 @@ use Khusseini\PimcoreRadBrickBundle\Configurator\AbstractConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\MapConfigurator;
 use Khusseini\PimcoreRadBrickBundle\RenderArgs;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class MapConfiguratorTest extends TestCase
 {
+    public function testDoesNotSupport()
+    {
+        $instance = new MapConfigurator();
+        $args = new RenderArgs();
+        $or = new OptionsResolver();
+        $instance->configureEditableOptions($or);
+        $result = $instance->processConfig('no', $args, [
+            'editable' => ['config' => [], 'name' => 'nop']
+        ]);
+        $this->assertSame($args, $result);
+    }
+
     public function testCanMap()
     {
         $source = (object)[
