@@ -41,23 +41,24 @@ class RenderArgs
 
     public function merge(array $data)
     {
+        $this->data = array_merge($this->data, $data);
+
+        return $this;
+    }
+
+    public function update(array $data)
+    {
         foreach ($this->data as $editable => $config) {
             if (!isset($data[$editable])) {
                 continue;
             }
+            $toMerge = array_intersect_key(
+                $data[$editable], $config
+            );
 
-            $toMerge = $data[$editable];
-            $config = array_merge($config, $toMerge);
-            $this->data[$editable] = $config;
+            $this->data[$editable] = array_merge($config, $toMerge);
         }
 
-        foreach ($data as $editable => $config) {
-            if (isset($this->data[$editable])) {
-                continue;
-            }
-            
-            $this->data[$editable] = $config;
-        }
         return $this;
     }
 

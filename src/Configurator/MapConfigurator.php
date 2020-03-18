@@ -17,7 +17,7 @@ class MapConfigurator extends AbstractConfigurator
     public function supports(string $action, string $editableName, array $config): bool
     {
         return
-            $action === 'create_editables'
+            $action === self::ACTION_CREATE_EDIT
             && count($config['map'])
         ;
     }
@@ -50,6 +50,7 @@ class MapConfigurator extends AbstractConfigurator
     {
         $pa = $this->getPropAccess();
         $pa->setValue($context, $path, $value);
+        return $context;
     }
 
     public function doProcessConfig(string $action, RenderArgs $renderArgs, array $data): RenderArgs
@@ -58,14 +59,14 @@ class MapConfigurator extends AbstractConfigurator
             return $renderArgs;
         }
 
-        $localOR = new OptionsResolver();
-        $localOR->setRequired(['source', 'target']);
+        $maps = $data['editable']['config']['map'];
+        foreach ($maps as $map) {
+            $map = $this->resolveMapOptions($map);
+            $source = $this->processValue($map['source'], $data['context']);
+            $data['editable']['config'] = $this->writeProperty($data['editable']['config'], $map['target'], $source);
+        }
 
-        $map = $localOR->resolve($data['editable']['config']['map']);
-
-        $source = $this->processValue($map['source'], $data['context']);
-        $this->writeProperty($data['editable'], $map['target'], $source);
-
+        $renderArgs->update([$data['editable']['name'] => $data['editable']['config']]);
         return $renderArgs;
     }
 }

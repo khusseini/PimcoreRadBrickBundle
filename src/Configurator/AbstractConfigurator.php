@@ -10,6 +10,8 @@ use Khusseini\PimcoreRadBrickBundle\RenderArgs;
 
 abstract class AbstractConfigurator implements IConfigurator
 {
+    const ACTION_CREATE_EDIT = 'create_editables';
+
     /** @var ExpressionLanguage */
     private $expressionLanguage;
 

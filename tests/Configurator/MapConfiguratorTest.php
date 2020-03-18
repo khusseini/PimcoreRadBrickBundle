@@ -2,6 +2,7 @@
 
 namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 
+use Khusseini\PimcoreRadBrickBundle\Configurator\AbstractConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\MapConfigurator;
 use Khusseini\PimcoreRadBrickBundle\RenderArgs;
 use PHPUnit\Framework\TestCase;
@@ -10,7 +11,6 @@ class MapConfiguratorTest extends TestCase
 {
     public function testCanMap()
     {
-        $this->markTestSkipped();
         $source = (object)[
             'data' => 'hello world',
         ];
@@ -29,8 +29,24 @@ class MapConfiguratorTest extends TestCase
 
         $mapConfig = new MapConfigurator();
         $renderArgs = new RenderArgs();
-        $mapConfig->processConfig('create_editable', $renderArgs, $data);
+        $renderArgs->set([
+            'test' => ['options' => ['overwrite' => 'me']]
+        ]);
 
-        $this->assertTrue(true);
+        $renderArgs = $mapConfig->processConfig(AbstractConfigurator::ACTION_CREATE_EDIT, $renderArgs, [
+            'context' => ['source' => $source],
+            'editable' => [
+                'name' => 'test',
+                'config' => $editables['test']
+            ],
+        ]);
+
+        $expected = [
+            'test' => [
+                'options' => ['overwrite' => 'hello world']
+            ]
+        ];
+
+        $this->assertEquals($expected, $renderArgs->getAll());
     }
 }
