@@ -31,6 +31,18 @@ class AreabrickConfigurator
         $this->configurators = $configurators;
     }
 
+    /** @var OptionsResolver */
+    private $outOptionsResolver;
+    protected function getOutOptionsResolver()
+    {
+        if (!$this->outOptionsResolver) {
+            $this->outOptionsResolver = new OptionsResolver();
+            $this->outOptionsResolver->setRequired(['type', 'options']);
+        }
+
+        return $this->outOptionsResolver;
+    }
+
     public function compileEditablesConfig(array $config)
     {
         $editablesConfig = $config['editables'];
@@ -72,8 +84,17 @@ class AreabrickConfigurator
                 
                 $toRender = $configurator->processConfig(
                     'create_editables',
-                    [$name => $config],
-                    $compiledConfig
+                    $this->getOutOptionsResolver(),
+                    [
+                        'editable' => [
+                            'name' => $name,
+                            'config' => $config,
+                        ],
+                        'renderArgs' => $toRender,
+                    ],
+                    $compiledConfig,
+                    $toRender,
+                    ['options', 'type']
                 );
             }
             yield from $toRender;
