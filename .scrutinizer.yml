@@ -1,0 +1,25 @@
+inherit: true
+build:
+  nodes:
+    analysis:
+      tests:
+        override:
+        - php-scrutinizer-run
+      dependencies:
+        override:
+        - composer install --no-interaction --no-scripts
+tools:
+  php_code_sniffer:
+    config:
+      standard: PSR2
+  php_loc: true
+  php_pdepend: true
+  php_sim: true
+  php_changetracking: true
+checks:
+    php: true
+filter:
+  excluded_paths:
+  - "tests/"
+  - "vendor/"
+  - "docs/"
