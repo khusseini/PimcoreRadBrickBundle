@@ -27,12 +27,12 @@ class DatasourceRegistry
     }
 
     public function add(
-        string $name, 
-        object $service, 
-        string $method, 
+        string $name,
+        object $service,
+        string $method,
         array $args
     ) {
-        $this->datasources->{$name} = function(array $input) use ($service, $method, $args) {
+        $this->datasources->{$name} = function (array $input) use ($service, $method, $args) {
             foreach ($args as $index => $content) {
                 if (!preg_match('/!q:.*/', $content)) {
                     continue;

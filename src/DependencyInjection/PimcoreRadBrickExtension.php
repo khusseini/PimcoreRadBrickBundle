@@ -26,15 +26,15 @@ class PimcoreRadBrickExtension extends Extension
 
         foreach ($datasources as $name => $datasource) {
             $datasourceRegistry->addMethodCall('add', [
-                $name, 
-                new Reference($datasource['service_id']), 
-                $datasource['method'], 
+                $name,
+                new Reference($datasource['service_id']),
+                $datasource['method'],
                 $datasource['args'],
             ]);
         }
 
         $container->setDefinition(
-            'radbrick.datasource_registry', 
+            'radbrick.datasource_registry',
             $datasourceRegistry
         );
 

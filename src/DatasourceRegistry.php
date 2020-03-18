@@ -12,8 +12,7 @@ class DatasourceRegistry
 
     public function __construct(
         ExpressionLanguage $expressionLangauge
-    )
-    {
+    ) {
         $this->expressionLangauge = $expressionLangauge;
         $this->datasources = new stdClass();
     }
@@ -33,24 +32,23 @@ class DatasourceRegistry
     }
 
     public function add(
-        string $name, 
-        object $service, 
-        string $method, 
+        string $name,
+        object $service,
+        string $method,
         array $args
     ) {
         $this->datasources->{$name} = $this
             ->createServiceCall($name, $service, $method, $args)
-        ; 
+        ;
     }
 
     protected function createServiceCall(
-        string $name, 
+        string $name,
         object $service,
         string $method,
         array $args
-    ): callable 
-    {
-        return function(array $input) use ($service, $method, $args) {
+    ): callable {
+        return function (array $input) use ($service, $method, $args) {
             foreach ($args as $index => $expression) {
                 if (!is_string($expression)) {
                     continue;

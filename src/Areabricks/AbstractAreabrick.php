@@ -25,11 +25,11 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     private $datasourceRegistry;
 
     public function __construct(
-        TagRenderer $tagRenderer, 
+        TagRenderer $tagRenderer,
         DatasourceRegistry $datasourceRegistry,
         $label = null,
         $useEdit = false,
-        string $open = '', 
+        string $open = '',
         string $close = '',
         string $icon = null
     ) {
@@ -45,7 +45,6 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     public function getIcon()
     {
         return $this->icon ?: parent::getIcon();
-
     }
 
     public function getName()
@@ -81,7 +80,9 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
     public function action(Info $info)
     {
-        if (!$this->getConfig()) return null;
+        if (!$this->getConfig()) {
+            return null;
+        }
         $this->processEditables($info);
         $this->processDatasources($info);
         return $this->doAction($info);
@@ -154,11 +155,11 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
             $propertyAccessor
                 ->setValue(
-                    $editableConfig, 
-                    $map['target'], 
+                    $editableConfig,
+                    $map['target'],
                     $propertyAccessor->getValue($view, $map['source'])
                 )
-            ;    
+            ;
         }
         
 
