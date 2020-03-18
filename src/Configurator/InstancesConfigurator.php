@@ -4,7 +4,7 @@ namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class InstancesConfigurator implements IConfigurator
+class InstancesConfigurator extends AbstractConfigurator
 {
     public function supports(string $action, string $editableName, array $config): bool
     {
@@ -20,7 +20,7 @@ class InstancesConfigurator implements IConfigurator
             return $data['renderArgs'];
         }
         $config = $data['editable']['config'];
-        $instances = (int)$config['instances'];
+        $instances = $this->processValue($config['instances'], @$data['context'] ?: []);
 
         if ($instances == 1) {
             return $data['renderArgs'];

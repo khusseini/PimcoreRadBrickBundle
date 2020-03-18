@@ -1,6 +1,6 @@
 <?php
 
-namespace Khusseini\PimcoreRadBrickBundle\Tests\Configurator;
+namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\InstancesConfigurator;

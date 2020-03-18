@@ -64,7 +64,7 @@ class AreabrickConfigurator
         }
     }
 
-    public function createEditables(string $areabrick, PageSnippet $document)
+    public function createEditables(string $areabrick, PageSnippet $document, array $context = [])
     {
         $compiledConfig = $this->compileEditablesConfig($this->config['areabricks'][$areabrick]);
         $compiledConfig = iterator_to_array($compiledConfig);
@@ -91,6 +91,7 @@ class AreabrickConfigurator
                             'config' => $config,
                         ],
                         'renderArgs' => $toRender,
+                        'context' =>  $context
                     ],
                     $compiledConfig,
                     $toRender,
