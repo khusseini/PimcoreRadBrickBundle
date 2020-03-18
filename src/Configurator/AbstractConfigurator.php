@@ -5,8 +5,8 @@ namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 use Sensio\Bundle\FrameworkExtraBundle\Security\ExpressionLanguage;
 use Symfony\Component\PropertyAccess\Exception\AccessException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\PropertyAccess\Exception\NoSuchIndexException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
+use Khusseini\PimcoreRadBrickBundle\RenderArgs;
 
 abstract class AbstractConfigurator implements IConfigurator
 {
@@ -29,22 +29,23 @@ abstract class AbstractConfigurator implements IConfigurator
 
     abstract public function doProcessConfig(
         string $action,
-        OptionsResolver $or,
+        RenderArgs $renderArgs,
         array $data
-    );
+    ): RenderArgs;
 
     public function getExpressionAttributes(): array
     {
         return [];
     }
 
-    public function processConfig(string $action, OptionsResolver $or, array $data)
+    public function processConfig(string $action, RenderArgs $renderArgs, array $data): RenderArgs
     {
         $attributes = $this->getExpressionAttributes();
         $propAccess = PropertyAccess::createPropertyAccessorBuilder()
             ->enableExceptionOnInvalidIndex()
             ->getPropertyAccessor()
         ;
+
         $target = $data['editable']['config'];
         foreach ($attributes as $attributePath) {
             try {
@@ -60,7 +61,7 @@ abstract class AbstractConfigurator implements IConfigurator
 
         return $this->doProcessConfig(
             $action,
-            $or,
+            $renderArgs,
             $data
         );
     }

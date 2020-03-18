@@ -103,7 +103,7 @@ pimcore_rad_brick:
           options:
             store: [1,2,5]
         wysiwyg_content:
-          instances: view[num_editors].getValue()
+          instances: view.get("num_editors").getValue()
           type: wysiwyg
 ```
 
@@ -144,7 +144,7 @@ pimcore_rad_brick:
             store: [1, 2, 3, 4, 5, 6]
             defaultValue: 1
         column_area_block:
-          instances: view[num_columns].getData()
+          instances: view.get("num_columns").getData()
           type: areablock
           options:
             params:
@@ -269,7 +269,7 @@ pimcore_rad_brick:
       service_id: 'coreshop.repository.category'
       method: 'findOneById'
       args: 
-      - '[category].id' ## Specify which data to pass. The input array is passed by areabricks.   
+      - 'category.id' ## Specify which data to pass. The input array is passed by areabricks.   
   areabricks:
     category_slider:
       label: Category Slider

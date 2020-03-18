@@ -2,6 +2,7 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
+use Khusseini\PimcoreRadBrickBundle\RenderArgs;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class InstancesConfigurator extends AbstractConfigurator
@@ -21,34 +22,35 @@ class InstancesConfigurator extends AbstractConfigurator
 
     public function doProcessConfig(
         string $action,
-        OptionsResolver $or,
+        RenderArgs $renderArgs,
         array $data
-    ) {
+    ): RenderArgs {
         if ($action !== 'create_editables') {
-            return $data['renderArgs'];
+            return $renderArgs;
         }
+
         $config = $data['editable']['config'];
         $instances = $config['instances'];
+        $name = $data['editable']['name'];
 
         if ($instances == 1) {
-            return $data['renderArgs'];
+            return $renderArgs;
         }
 
         if ($instances < 1) {
-            return [];
+            $renderArgs->remove($name);
+            return $renderArgs;
         }
         
-        $name = $data['editable']['name'];
-        $renderArgs = [];
+        $editableArgs = $renderArgs->get($name);
+        $renderData = [];
+
         for ($i = 0; $i < $instances; ++$i) {
-            $args = [];
-
-            foreach ($or->getRequiredOptions() as $p) {
-                $args[$p] = @$config[$p];
-            }
-
-            $renderArgs[$name.'_'.$i] = $args;
+            $renderData[$name.'_'.$i] = $editableArgs;
         }
+
+        $renderArgs->merge($renderData);
+        $renderArgs->remove($name);
 
         return $renderArgs;
     }

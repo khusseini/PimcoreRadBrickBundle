@@ -4,8 +4,8 @@ namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\InstancesConfigurator;
+use Khusseini\PimcoreRadBrickBundle\RenderArgs;
 use PHPUnit\Framework\TestCase;
-use Pimcore\Model\Document\PageSnippet;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class InstancesConfiguratorTest extends TestCase
@@ -39,7 +39,7 @@ class InstancesConfiguratorTest extends TestCase
             $config,
             function ($areabrick, $renderArgs) use ($config, $expected) {
                 $this->assertArrayHasKey($areabrick, $config['areabricks']);
-                $this->assertSame($expected, $renderArgs);
+                $this->assertSame($expected, $renderArgs->getAll());
             }
         ];
     }
@@ -98,8 +98,8 @@ class InstancesConfiguratorTest extends TestCase
         ];
         $ic = new InstancesConfigurator();
         $areabrickConf = new AreabrickConfigurator($config, [$ic]);
-        $actualEditables = iterator_to_array($areabrickConf->createEditables($brickName));
-        $this->assertSame($expected, $actualEditables);
+        $renderArgs = $areabrickConf->createEditables($brickName);
+        $this->assertSame($expected, iterator_to_array($renderArgs));
     }
 
     /** @dataProvider canProcessConfigProvider */
@@ -112,18 +112,19 @@ class InstancesConfiguratorTest extends TestCase
                 $actualSupports = $configurator->supports($action, $editableName, $editableConfig);
                 $expectedSupports = isset($editableConfig['instances']) && $action === 'create_editables';
                 $this->assertEquals($expectedSupports, $actualSupports);
-                $renderArgs = [
+                $renderArgs = new RenderArgs();
+                $renderArgs->set([
                     $editableName => []
-                ];
+                ]);
+
                 $renderArgs = $configurator->processConfig(
                     $action,
-                    $or,
+                    $renderArgs,
                     [
                         'editable' => [
                             'name' => $editableName,
                             'config' => $editableConfig
                         ],
-                        'renderArgs' => $renderArgs,
                     ]
                 );
                 $assert($name, $renderArgs);

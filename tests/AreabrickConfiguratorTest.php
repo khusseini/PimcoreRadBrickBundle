@@ -5,6 +5,7 @@ namespace Tests\Khusseini\PimcoreRadBrickBundle\Tests;
 use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\AbstractConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\IConfigurator;
+use Khusseini\PimcoreRadBrickBundle\RenderArgs;
 use PHPUnit\Framework\TestCase;
 use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Templating\Model\ViewModel;
@@ -13,18 +14,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AreabrickConfiguratorTest extends TestCase
 {
-    /** @var PageSnippet */
-    private $pageSnippet;
-
-    private function getPageSnippet(): PageSnippet
-    {
-        if (!$this->pageSnippet) {
-            $this->pageSnippet = $this->prophesize(PageSnippet::class)->reveal();
-        }
-
-        return $this->pageSnippet;
-    }
-
     protected function getSimpleBrickTestData(): array
     {
         $expected = [
@@ -109,10 +98,13 @@ class AreabrickConfiguratorTest extends TestCase
                 ]
             ]
         ];
+        
+        $expectedRenderArgs = new RenderArgs();
+        $expectedRenderArgs->set($expected);
 
         $configuratorInterface
             ->processConfig(Argument::any(), Argument::cetera())
-            ->willReturn($expected)
+            ->willReturn($expectedRenderArgs)
         ;
 
         $assert = function ($areabrick, $editables) use ($expected) {
@@ -149,12 +141,10 @@ class AreabrickConfiguratorTest extends TestCase
             ]
         ];
 
-        $dummy = new class() extends AbstractConfigurator
-        {
-            
+        $dummy = new class() extends AbstractConfigurator {
             public function configureEditableOptions(OptionsResolver $or): void
             {
-
+                return ;
             }
 
             public function supports(string $action, string $editableName, array $config): bool
@@ -167,11 +157,16 @@ class AreabrickConfiguratorTest extends TestCase
                 return ['[options][placeholder]'];
             }
 
-            public function doProcessConfig(string $action, OptionsResolver $or, array $data)
-            {
-                return [
-                    $data['editable']['name'] => $data['editable']['config']
-                ];
+            public function doProcessConfig(
+                string $action,
+                RenderArgs $renderArgs,
+                array $data
+            ): RenderArgs {
+                $renderArgs->merge([
+                    $data['editable']['name'] => $data['editable']['config'],
+                ]);
+                
+                return $renderArgs;
             }
         };
 

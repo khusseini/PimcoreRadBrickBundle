@@ -77,35 +77,35 @@ class AreabrickConfigurator
         $compiledConfig = iterator_to_array($compiledConfig);
         
         foreach ($compiledConfig as $name => $config) {
-            $toRender = [
-                $name => [
+            $renderArgs = new RenderArgs();
+            $renderArgs->set(
+                [$name => [
                     'type'=> $config['type'],
                     'options' => $config['options'],
-                ]
-            ];
+                ]]
+            );
 
             foreach ($this->configurators as $configurator) {
                 if (!$configurator->supports('create_editables', $name, $config)) {
                     continue;
                 }
                 
-                $toRender = $configurator->processConfig(
+                $renderArgs = $configurator->processConfig(
                     'create_editables',
-                    $this->getOutOptionsResolver(),
+                    $renderArgs,
                     [
                         'editable' => [
                             'name' => $name,
                             'config' => $config,
                         ],
-                        'renderArgs' => $toRender,
                         'context' =>  $context
                     ],
-                    $compiledConfig,
-                    $toRender,
-                    ['options', 'type']
                 );
+
+                yield from $renderArgs->getAll();
             }
-            yield from $toRender;
+
+            yield from $renderArgs->getAll();
         }
     }
 }

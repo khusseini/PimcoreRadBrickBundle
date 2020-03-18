@@ -2,8 +2,8 @@
 
 namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 
-use Khusseini\PimcoreRadBrickBundle\Areabricks\AbstractAreabrick;
 use Khusseini\PimcoreRadBrickBundle\Configurator\AbstractConfigurator;
+use Khusseini\PimcoreRadBrickBundle\RenderArgs;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -24,9 +24,11 @@ class AbstractConfiguratorTest extends TestCase
                 ];
             }
 
-            public function doProcessConfig(string $action, OptionsResolver $or, array $data)
+            public function doProcessConfig(string $action, RenderArgs $renderArgs, array $data): RenderArgs
             {
-                return $data['editable']['config']['options']['prop'];
+                return $renderArgs->merge([
+                    $data['editable']['name'] => ['prop' => $data['editable']['config']['options']['prop']]
+                ]);
             }
 
             public function configureEditableOptions(OptionsResolver $or): void
@@ -47,7 +49,7 @@ class AbstractConfiguratorTest extends TestCase
     public function testProcessValue()
     {
         $c = $this->getInstance();
-        $or = new OptionsResolver();
+        $renderArgs = new RenderArgs();
         $cases = [
             [
                 'context' => ['some' => ['context' => 'says hello']],
@@ -57,19 +59,22 @@ class AbstractConfiguratorTest extends TestCase
                 'expected' => 'some["context"]',
             ],
         ];
+
         foreach ($cases as $case) {
-            $actual = $c->processConfig('doesntmatter', $or, [
+            $actual = $c->processConfig('doesntmatter', $renderArgs, [
                 'editable' => [
                     'config' => [
                         'options' => [
                             'prop' => 'some["context"]',
                         ],
                     ],
+                    'name' => 'testedit'
                 ],
                 'context' => $case['context'],
             ]);
-
-            $this->assertEquals($case['expected'], $actual);
+            $this->assertInstanceOf(RenderArgs::class, $actual);
+            $actualData = $renderArgs->getAll();
+            $this->assertEquals($case['expected'], $actualData['testedit']['prop']);
         }
     }
 }
