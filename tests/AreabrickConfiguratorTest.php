@@ -3,10 +3,13 @@
 namespace Tests\Khusseini\PimcoreRadBrickBundle\Tests;
 
 use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
+use Khusseini\PimcoreRadBrickBundle\Configurator\AbstractConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\IConfigurator;
 use PHPUnit\Framework\TestCase;
 use Pimcore\Model\Document\PageSnippet;
+use Pimcore\Templating\Model\ViewModel;
 use Prophecy\Argument;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AreabrickConfiguratorTest extends TestCase
 {
@@ -66,7 +69,7 @@ class AreabrickConfiguratorTest extends TestCase
         $configurator->setConfigurators($configurators);
         $areabricks = $config['areabricks'];
         foreach ($areabricks as $areabrick => $aconfig) {
-            $editables = $configurator->createEditables($areabrick, $this->getPageSnippet());
+            $editables = $configurator->createEditables($areabrick);
             $tests($areabrick, $editables);
         }
     }
@@ -121,6 +124,70 @@ class AreabrickConfiguratorTest extends TestCase
         };
         $ci = $configuratorInterface->reveal();
         return [$config, $assert, [$ci]];
+    }
+
+    public function testDeferredProcessing()
+    {
+        $config = [
+            'areabricks' => [
+                'testbrick' => [
+                    'editables' => [
+                        'dummy' => [
+                            'type' => 'input',
+                            'options' => [
+                                'content' => 'hello world'
+                            ],
+                        ],
+                        'testeditable' => [
+                            'type' => 'input',
+                            'options' => [
+                                'placeholder' => 'view.get("dummy")["options"]["content"]'
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $dummy = new class() extends AbstractConfigurator
+        {
+            
+            public function configureEditableOptions(OptionsResolver $or): void
+            {
+
+            }
+
+            public function supports(string $action, string $editableName, array $config): bool
+            {
+                return true;
+            }
+
+            public function getExpressionAttributes(): array
+            {
+                return ['[options][placeholder]'];
+            }
+
+            public function doProcessConfig(string $action, OptionsResolver $or, array $data)
+            {
+                return [
+                    $data['editable']['name'] => $data['editable']['config']
+                ];
+            }
+        };
+
+        $configurator = $this->createConfigurator($config);
+        $configurator->setConfigurators([$dummy]);
+        $view = new ViewModel([]);
+
+        $editables = $configurator->createEditables('testbrick', ['view' => $view]);
+        $es = [];
+
+        foreach ($editables as $name => $editable) {
+            $view[$name] = $editable;
+            $es[$name] = $editable;
+        }
+
+        $this->assertEquals($es['testeditable']['options']['placeholder'], 'hello world');
     }
 
     private function createConfigurator(array $config)

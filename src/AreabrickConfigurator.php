@@ -13,15 +13,20 @@ class AreabrickConfigurator
     /** @var IConfigurator[] */
     private $configurators = [];
 
+    /** @var DatasourceRegistry */
+    private $datasources;
+
     public function __construct(
         array $config,
-        array $configurators = []
+        array $configurators = [],
+        DatasourceRegistry $datasources = null
     ) {
         $or = new OptionsResolver();
         $or->setDefaults([
             'areabricks' => [],
             'datasources' => [],
         ]);
+        $this->datasources = $datasources;
         $this->config = $or->resolve($config);
         $this->configurators = $configurators;
     }
@@ -64,8 +69,10 @@ class AreabrickConfigurator
         }
     }
 
-    public function createEditables(string $areabrick, PageSnippet $document, array $context = [])
-    {
+    public function createEditables(
+        string $areabrick,
+        array $context = []
+    ) {
         $compiledConfig = $this->compileEditablesConfig($this->config['areabricks'][$areabrick]);
         $compiledConfig = iterator_to_array($compiledConfig);
         

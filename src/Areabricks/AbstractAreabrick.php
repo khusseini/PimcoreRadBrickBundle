@@ -2,6 +2,7 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\Areabricks;
 
+use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
 use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
 use Pimcore\Extension\Document\Areabrick\AbstractTemplateAreabrick;
 use Pimcore\Model\Document\Tag\Area\Info;
@@ -11,35 +12,23 @@ use Symfony\Component\PropertyAccess\PropertyAccess;
 
 abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 {
-    /** @var string */
-    private $openTag;
-    /** @var string */
-    private $closeTag;
-    /** @var string */
-    private $label = null;
-    /** @var bool */
-    private $useEdit = false;
-    /** @var string */
-    private $icon = null;
     /** @var DatasourceRegistry */
     private $datasourceRegistry;
 
+    /** @var AreabrickConfigurator */
+    private $areabrickConfigurator;
+
+    private $name;
+
+
     public function __construct(
+        string $name,
         TagRenderer $tagRenderer,
-        DatasourceRegistry $datasourceRegistry,
-        $label = null,
-        $useEdit = false,
-        string $open = '',
-        string $close = '',
-        string $icon = null
+        AreabrickConfigurator $areabrickConfigurator
     ) {
+        $this->name = $name;
         $this->tagRenderer = $tagRenderer;
-        $this->datasourceRegistry = $datasourceRegistry;
-        $this->openTag = $open;
-        $this->closeTag = $close;
-        $this->label = $label;
-        $this->useEdit = $useEdit;
-        $this->icon = $icon;
+        $this->areabrickConfigurator = $areabrickConfigurator;
     }
 
     public function getIcon()
@@ -84,7 +73,6 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
             return null;
         }
         $this->processEditables($info);
-        $this->processDatasources($info);
         return $this->doAction($info);
     }
 
@@ -119,20 +107,29 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
     protected function processEditables(Info $info)
     {
-        $editables = $this->getConfig()['editables'] ? : [];
-        $view = $info->getView();
-        $tagRenderer = $this->getTagRenderer();
-        $doc = $info->getDocument();
+        $editables = $this->areabrickConfigurator->createEditables(
+            $this->name,
+            [
+                'request' => $info->getRequest(),
+                'view' => $info->getView(),
+            ]
+        );
 
         foreach ($editables as $name => $elementConfig) {
-            $elementConfig = $this->applyMap($elementConfig, $view);
-
             $type = $elementConfig['type'];
             $options = $elementConfig['options'] ?: [];
             $element = null;
 
             if (is_null($element)) {
-                $element = $tagRenderer->render($doc, $type, $name, $options);
+                $element = $this
+                    ->getTagRenderer()
+                    ->render(
+                        $info->getDocument(),
+                        $type,
+                        $name,
+                        $options
+                    )
+                ;
             }
 
             $view[$name] = $element;

@@ -98,8 +98,7 @@ class InstancesConfiguratorTest extends TestCase
         ];
         $ic = new InstancesConfigurator();
         $areabrickConf = new AreabrickConfigurator($config, [$ic]);
-        $document = $this->prophesize(PageSnippet::class);
-        $actualEditables = iterator_to_array($areabrickConf->createEditables($brickName, $document->reveal()));
+        $actualEditables = iterator_to_array($areabrickConf->createEditables($brickName));
         $this->assertSame($expected, $actualEditables);
     }
 

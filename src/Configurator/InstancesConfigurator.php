@@ -11,7 +11,15 @@ class InstancesConfigurator extends AbstractConfigurator
         return $action === 'create_editables' && isset($config['instances']);
     }
 
-    public function processConfig(
+    public function getExpressionAttributes(): array
+    {
+        return array_merge(
+            parent::getExpressionAttributes(),
+            ['[instances]']
+        );
+    }
+
+    public function doProcessConfig(
         string $action,
         OptionsResolver $or,
         array $data
@@ -20,7 +28,7 @@ class InstancesConfigurator extends AbstractConfigurator
             return $data['renderArgs'];
         }
         $config = $data['editable']['config'];
-        $instances = $this->processValue($config['instances'], @$data['context'] ?: []);
+        $instances = $config['instances'];
 
         if ($instances == 1) {
             return $data['renderArgs'];

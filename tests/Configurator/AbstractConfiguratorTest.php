@@ -17,9 +17,16 @@ class AbstractConfiguratorTest extends TestCase
                 return true;
             }
 
-            public function processConfig(string $action, OptionsResolver $or, array $data)
+            public function getExpressionAttributes(): array
             {
-                return $this->processValue($data['editable']['config']['options']['prop'], $data['context']);
+                return [
+                    '[options][prop]'
+                ];
+            }
+
+            public function doProcessConfig(string $action, OptionsResolver $or, array $data)
+            {
+                return $data['editable']['config']['options']['prop'];
             }
 
             public function configureEditableOptions(OptionsResolver $or): void
