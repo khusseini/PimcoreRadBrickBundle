@@ -7,7 +7,6 @@ use Khusseini\PimcoreRadBrickBundle\Configurator\AbstractConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\IConfigurator;
 use Khusseini\PimcoreRadBrickBundle\RenderArgs;
 use PHPUnit\Framework\TestCase;
-use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Templating\Model\ViewModel;
 use Prophecy\Argument;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -67,7 +66,7 @@ class AreabrickConfiguratorTest extends TestCase
     {
         $configuratorInterface = $this->prophesize(IConfigurator::class);
         $configuratorInterface
-            ->supports(Argument::cetera())
+            ->supportsEditable(Argument::cetera())
             ->willReturn($supports)
         ;
         $configuratorInterface
@@ -98,12 +97,12 @@ class AreabrickConfiguratorTest extends TestCase
                 ]
             ]
         ];
-        
+
         $expectedRenderArgs = new RenderArgs();
         $expectedRenderArgs->set($expected);
 
         $configuratorInterface
-            ->processConfig(Argument::any(), Argument::cetera())
+            ->createEditables(Argument::any(), Argument::cetera())
             ->willReturn($expectedRenderArgs)
         ;
 
@@ -147,25 +146,24 @@ class AreabrickConfiguratorTest extends TestCase
                 return ;
             }
 
-            public function supports(string $action, string $editableName, array $config): bool
+            public function supportsEditable(string $editableName, array $config): bool
             {
                 return true;
             }
 
-            public function getExpressionAttributes(): array
+            public function getEditablesExpressionAttributes(): array
             {
-                return ['[options][placeholder]'];
+                return ['[editable][config][options][placeholder]'];
             }
 
-            public function doProcessConfig(
-                string $action,
+            public function doCreateEditables(
                 RenderArgs $renderArgs,
                 array $data
             ): RenderArgs {
                 $renderArgs->merge([
                     $data['editable']['name'] => $data['editable']['config'],
                 ]);
-                
+
                 return $renderArgs;
             }
         };

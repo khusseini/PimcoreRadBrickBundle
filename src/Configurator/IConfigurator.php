@@ -7,8 +7,7 @@ use Khusseini\PimcoreRadBrickBundle\RenderArgs;
 
 interface IConfigurator
 {
-    public function supports(string $action, string $editableName, array $config): bool;
-    public function processConfig(string $action, RenderArgs $renderArgs, array $data): RenderArgs;
+    public function supportsEditable(string $editableName, array $config): bool;
+    public function createEditables(RenderArgs $renderArgs, array $data): RenderArgs;
     public function configureEditableOptions(OptionsResolver $or): void;
-    public function processValue($value, array $context);
 }

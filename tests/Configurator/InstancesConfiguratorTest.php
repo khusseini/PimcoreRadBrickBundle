@@ -11,7 +11,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class InstancesConfiguratorTest extends TestCase
 {
-    private function getStaticValueData($instances, $action = AbstractConfigurator::ACTION_CREATE_EDIT)
+    private function getStaticValueData($instances)
     {
         $config = [
             'areabricks' => [
@@ -26,19 +26,16 @@ class InstancesConfiguratorTest extends TestCase
         ];
 
         $expected = ['testeditable' => []];
-        if ($action === AbstractConfigurator::ACTION_CREATE_EDIT) {
-            if ($instances > 1) {
-                for ($i = 0; $i < $instances; ++$i) {
-                    $expected['testeditable'][$i] = [];
-                }
+        if ($instances > 1) {
+            for ($i = 0; $i < $instances; ++$i) {
+                $expected['testeditable'][$i] = [];
             }
-            if ($instances === 0) {
-                $expected = [];
-            }
+        }
+        if ($instances === 0) {
+            $expected = [];
         }
 
         return [
-            $action,
             $config,
             function ($areabrick, $renderArgs) use ($config, $expected) {
                 $this->assertArrayHasKey($areabrick, $config['areabricks']);
@@ -53,7 +50,6 @@ class InstancesConfiguratorTest extends TestCase
             $this->getStaticValueData(0),
             $this->getStaticValueData(1),
             $this->getStaticValueData(2),
-            $this->getStaticValueData(2, 'not_supported'),
         ];
     }
 
@@ -109,16 +105,14 @@ class InstancesConfiguratorTest extends TestCase
     }
 
     /** @dataProvider canProcessConfigProvider */
-    public function testCanProcessConfig($action, $config, $assert)
+    public function testCanProcessConfig($config, $assert)
     {
         $configurator = new InstancesConfigurator();
-        $or = new OptionsResolver();
         foreach ($config['areabricks'] as $name => $areabrickConfig) {
             foreach ($areabrickConfig['editables'] as $editableName => $editableConfig) {
-                $actualSupports = $configurator->supports($action, $editableName, $editableConfig);
+                $actualSupports = $configurator->supportsEditable($editableName, $editableConfig);
                 $expectedSupports =
                     isset($editableConfig['instances'])
-                    && $action === AbstractConfigurator::ACTION_CREATE_EDIT
                 ;
                 $this->assertEquals($expectedSupports, $actualSupports);
                 $renderArgs = new RenderArgs();
@@ -126,8 +120,7 @@ class InstancesConfiguratorTest extends TestCase
                     $editableName => []
                 ]);
 
-                $renderArgs = $configurator->processConfig(
-                    $action,
+                $renderArgs = $configurator->createEditables(
                     $renderArgs,
                     [
                         'editable' => [

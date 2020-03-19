@@ -62,7 +62,7 @@ class AreabrickConfigurator
     ) {
         $compiledConfig = $this->compileEditablesConfig($this->config['areabricks'][$areabrick]);
         $compiledConfig = iterator_to_array($compiledConfig);
-        
+
         foreach ($compiledConfig as $name => $config) {
             $renderArgs = new RenderArgs();
             $renderArgs->set(
@@ -73,12 +73,11 @@ class AreabrickConfigurator
             );
 
             foreach ($this->configurators as $configurator) {
-                if (!$configurator->supports('create_editables', $name, $config)) {
+                if (!$configurator->supportsEditable($name, $config)) {
                     continue;
                 }
-                
-                $renderArgs = $configurator->processConfig(
-                    'create_editables',
+
+                $renderArgs = $configurator->createEditables(
                     $renderArgs,
                     [
                         'editable' => [

@@ -2,37 +2,28 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
-use Khusseini\PimcoreRadBrickBundle\Areabricks\AbstractAreabrick;
 use Khusseini\PimcoreRadBrickBundle\RenderArgs;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class InstancesConfigurator extends AbstractConfigurator
 {
-    public function supports(string $action, string $editableName, array $config): bool
+    public function supportsEditable(string $editableName, array $config): bool
     {
-        return $action ===
-            AbstractConfigurator::ACTION_CREATE_EDIT
-            && isset($config['instances'])
-        ;
+        return isset($config['instances']);
     }
 
-    public function getExpressionAttributes(): array
+    public function getEditablesExpressionAttributes(): array
     {
         return array_merge(
-            parent::getExpressionAttributes(),
+            parent::getEditablesExpressionAttributes(),
             ['[instances]']
         );
     }
 
-    public function doProcessConfig(
-        string $action,
+    public function doCreateEditables(
         RenderArgs $renderArgs,
         array $data
     ): RenderArgs {
-        if ($action !== AbstractConfigurator::ACTION_CREATE_EDIT) {
-            return $renderArgs;
-        }
-
         $config = $data['editable']['config'];
         $instances = $config['instances'];
         $name = $data['editable']['name'];

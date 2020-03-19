@@ -2,78 +2,76 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
-use Sensio\Bundle\FrameworkExtraBundle\Security\ExpressionLanguage;
-use Symfony\Component\PropertyAccess\Exception\AccessException;
-use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\PropertyAccess\PropertyAccess;
+use Khusseini\PimcoreRadBrickBundle\ExpressionLanguage\ExpressionWrapper;
 use Khusseini\PimcoreRadBrickBundle\RenderArgs;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 abstract class AbstractConfigurator implements IConfigurator
 {
-    const ACTION_CREATE_EDIT = 'create_editables';
+    /** @var ExpressionWrapper */
+    private $expressionWrapper;
 
-    /** @var ExpressionLanguage */
-    private $expressionLanguage;
-
-    public function __construct(ExpressionLanguage $expressionLanguage = null)
+    public function __construct(ExpressionWrapper $expressionWrapper = null)
     {
-        $this->expressionLanguage = $expressionLanguage;
-    }
-
-    protected function getExpressionLanguage(): ExpressionLanguage
-    {
-        if (!$this->expressionLanguage) {
-            $this->expressionLanguage = new ExpressionLanguage();
+        if (!$expressionWrapper) {
+            $expressionWrapper = new ExpressionWrapper();
         }
 
-        return $this->expressionLanguage;
+        $this->expressionWrapper = $expressionWrapper;
     }
 
-    abstract public function doProcessConfig(
-        string $action,
+    abstract public function doCreateEditables(
         RenderArgs $renderArgs,
         array $data
     ): RenderArgs;
 
-    public function getExpressionAttributes(): array
+    public function getEditablesExpressionAttributes(): array
     {
         return [];
     }
 
-    public function processConfig(string $action, RenderArgs $renderArgs, array $data): RenderArgs
+    private $dataOptionsResolver;
+    public function getDataOptionsResolver()
     {
-        $attributes = $this->getExpressionAttributes();
-        $propAccess = PropertyAccess::createPropertyAccessorBuilder()
-            ->enableExceptionOnInvalidIndex()
-            ->getPropertyAccessor()
-        ;
-
-        $target = $data['editable']['config'];
-        foreach ($attributes as $attributePath) {
-            try {
-                $value = $propAccess->getValue($target, $attributePath);
-            } catch (AccessException $ex) {
-                continue;
-            }
-
-            $value = $this->processValue($value, @$data['context'] ?: []);
-            $propAccess->setValue($target, $attributePath, $value);
-            $data['editable']['config'] = $target;
+        if (!$this->dataOptionsResolver) {
+            $this->dataOptionsResolver = new OptionsResolver();
+            $this
+                ->dataOptionsResolver
+                ->setDefault('editable', function (OptionsResolver $or) {
+                    $or->setRequired('name');
+                    $or->setAllowedTypes('name', ['string']);
+                    $or->setDefault('config', []);
+                    $or->setAllowedTypes('config', ['array']);
+                })
+                ->setDefault('context', [])
+            ;
         }
+        return $this->dataOptionsResolver;
+    }
 
-        return $this->doProcessConfig(
-            $action,
+    protected function resolveDataOptions(array $options)
+    {
+        return $this->getDataOptionsResolver()->resolve($options);
+    }
+
+    public function createEditables(RenderArgs $renderArgs, array $data): RenderArgs
+    {
+        $data = $this->resolveDataOptions($data);
+        $attributes = $this->getEditablesExpressionAttributes();
+        $data = $this->evaluateExpressions($data, $attributes);
+        return $this->doCreateEditables(
             $renderArgs,
             $data
         );
     }
 
-    public function processValue($value, array $context)
+    protected function evaluateExpressions(array $data, array $attributes)
     {
-        try {
-            return $this->getExpressionLanguage()->evaluate($value, $context);
-        } catch (\Exception $ex) {
-            return $value;
-        }
+        return $this->getExpressionWrapper()->evaluateExpressions($data, $attributes, '[context]');
+    }
+
+    protected function getExpressionWrapper(): ExpressionWrapper
+    {
+        return $this->expressionWrapper;
     }
 }

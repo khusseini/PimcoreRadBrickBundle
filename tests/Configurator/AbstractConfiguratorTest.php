@@ -12,22 +12,22 @@ class AbstractConfiguratorTest extends TestCase
     protected function getInstance()
     {
         $configurator = new class() extends AbstractConfigurator {
-            public function supports(string $action, string $editableName, array $config): bool
+            public function supportsEditable(string $editableName, array $config): bool
             {
                 return true;
             }
 
-            public function getExpressionAttributes(): array
+            public function getEditablesExpressionAttributes(): array
             {
                 return [
-                    '[options][prop]'
+                    '[editable][config][options][prop]'
                 ];
             }
 
-            public function doProcessConfig(string $action, RenderArgs $renderArgs, array $data): RenderArgs
+            public function doCreateEditables(RenderArgs $renderArgs, array $data): RenderArgs
             {
                 return $renderArgs->merge([
-                    $data['editable']['name'] => ['prop' => $data['editable']['config']['options']['prop']]
+                    $data['editable']['name'] => $data['editable']['config']
                 ]);
             }
 
@@ -61,7 +61,7 @@ class AbstractConfiguratorTest extends TestCase
         ];
 
         foreach ($cases as $case) {
-            $actual = $c->processConfig('doesntmatter', $renderArgs, [
+            $actual = $c->createEditables($renderArgs, [
                 'editable' => [
                     'config' => [
                         'options' => [
@@ -74,7 +74,7 @@ class AbstractConfiguratorTest extends TestCase
             ]);
             $this->assertInstanceOf(RenderArgs::class, $actual);
             $actualData = $renderArgs->getAll();
-            $this->assertEquals($case['expected'], $actualData['testedit']['prop']);
+            $this->assertEquals($case['expected'], $actualData['testedit']['options']['prop']);
         }
     }
 }

@@ -4,8 +4,6 @@ namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\RenderArgs;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\PropertyAccess\PropertyAccess;
-use Symfony\Component\PropertyAccess\PropertyAccessor;
 
 class MapConfigurator extends AbstractConfigurator
 {
@@ -14,11 +12,10 @@ class MapConfigurator extends AbstractConfigurator
         $or->setDefault('map', []);
     }
 
-    public function supports(string $action, string $editableName, array $config): bool
+    public function supportsEditable(string $editableName, array $config): bool
     {
         return
-            $action === self::ACTION_CREATE_EDIT
-            && count($config['map'])
+            count($config['map'])
         ;
     }
 
@@ -33,37 +30,20 @@ class MapConfigurator extends AbstractConfigurator
         return $this->mapOr->resolve($options);
     }
 
-    private $propAccess;
-    private function getPropAccess(): PropertyAccessor
+    public function doCreateEditables(RenderArgs $renderArgs, array $data): RenderArgs
     {
-        if (!$this->propAccess) {
-            $this->propAccess = PropertyAccess::createPropertyAccessorBuilder()
-                ->enableExceptionOnInvalidIndex()
-                ->getPropertyAccessor()
-            ;
-        }
-
-        return $this->propAccess;
-    }
-
-    private function writeProperty($context, $path, $value)
-    {
-        $pa = $this->getPropAccess();
-        $pa->setValue($context, $path, $value);
-        return $context;
-    }
-
-    public function doProcessConfig(string $action, RenderArgs $renderArgs, array $data): RenderArgs
-    {
-        if (!$this->supports($action, $data['editable']['name'], $data['editable']['config'])) {
+        if (!$this->supportsEditable($data['editable']['name'], $data['editable']['config'])) {
             return $renderArgs;
         }
 
         $maps = $data['editable']['config']['map'];
         foreach ($maps as $map) {
             $map = $this->resolveMapOptions($map);
-            $source = $this->processValue($map['source'], $data['context']);
-            $data['editable']['config'] = $this->writeProperty($data['editable']['config'], $map['target'], $source);
+            $source = $this->getExpressionWrapper()->evaluateExpression($map['source'], $data['context']);
+            $data['editable']['config'] = $this
+                ->getExpressionWrapper()
+                ->setPropertyValue($data['editable']['config'], $map['target'], $source)
+            ;
         }
 
         $renderArgs->update([$data['editable']['name'] => $data['editable']['config']]);

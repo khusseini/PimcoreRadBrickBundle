@@ -17,7 +17,7 @@ Simply enable the Bundle, test out this configuration in your `config.yml` and s
 ```yaml
 pimcore_rad_brick:
   areabricks:
-    my_wysiwyg: 
+    my_wysiwyg:
       label: WYSIWYG // Label to use in admin UI
       icon:  ~ // Path to icon in admin UI
       open: ~ // Set the open html
@@ -51,7 +51,7 @@ it is as easy as adding the `instances` attribute:
 ```yml
 pimcore_rad_brick:
   areabricks:
-    my_wysiwyg: 
+    my_wysiwyg:
       label: WYSIWYG
       editables:
         wysiwyg_content:
@@ -77,7 +77,7 @@ we will leverage the power of the (Expression Language Component)[https://symfon
 ```yml
 pimcore_rad_brick:
   areabricks:
-    my_wysiwyg: 
+    my_wysiwyg:
       label: WYSIWYG
       use_edit: true // Note that we use an edit template to configure the instances
       editables:
@@ -143,11 +143,11 @@ pimcore_rad_brick:
 
 `columns/view.html.twig`:
 ```twig
-{% set col_width = 12 / num_columns.getData() %}
+{% set col_width = 12 / column_area_block|length %}
 <div class="row">
-  {% for i in range(0, num_columns.getData()) %}
+  {% for column in column_area_block) %}
   <div class="col-{{ col_width }}">
-      {{ column_area_block[i-1]|raw }}
+      {{ column|raw }}
   </div>
   {% endfor %}
 </div>
@@ -183,7 +183,7 @@ pimcore_rad_brick:
           type: input
         image_content:
           type: image
-          map: 
+          map:
           - source: '[image_thumbnail].data'
             target: '[options][thumbnail]'
 ```
@@ -191,6 +191,7 @@ pimcore_rad_brick:
 The `source` and `target` properties uses the [Symfony Property Access Component](https://symfony.com/doc/current/components/property_access.html) to fetch and insert data.
 
 The above mapping example would fetch the `data` property's value from `image_thumbnail` editable (resides in ViewModel, hence the array notation) and insert right into the config tree in `[pimcore_rad_brick][areabricks][image][editables][image_content][options][thumbnail]`
+
 
 ### Using Datasources
 
@@ -201,27 +202,28 @@ Datasources simplify the creation of widgets that get their data from other serv
 pimcore_rad_brick:
   ## Define data sources to be used by areabricks
   datasources:
-    products_by_category_id:
-      service_id: 'coreshop.repository.category' ## Prodive a symfony service
-      method: 'findOneById' ## Specify which method to call
-      args: 
-      - '!q:[category].id' ## Specify which data to pass. The input array is passed by areabricks. the `!q` is required to use `[category].id` as a property path, otherwise the input is seen as a string
-
+    products_by_category:
+      service_id: 'app.repository.product'
+      method: 'findByCategory'
+      args:
+      - '[category]' ## Specify which data to pass. The input array is passed by areabricks.
   areabricks:
     category_slider:
       label: Category Slider
       editables:
-        category:
+        select_category:
           type: relation
           options:
             types: ['object']
             subtypes:
               object: ['object']
             classes: ['CoreShopCategory']
-      
+
       datasources: ## Datasource configuration for this areabrick
-        products_by_category_id:
-          category: 'view[category].element' ## Define category argument (available in input array to the datasource above)
+        products:
+          id: products_by_category
+          args:
+            category: 'view["category"].getElement()' ## Define category argument (available in input array to the datasource above)
 ```
 The property path of an input argument for a datasource contains following information:
 - `request`: Access to the current request object
@@ -229,12 +231,12 @@ The property path of an input argument for a datasource contains following infor
 
 `edit.html.twig`
 ```twig
-Category: {{ category|raw }}
+Category: {{ select_category|raw }}
 ```
 `view.html.twig`
 ```twig
 <div class="slider">
-  {% for product in products_by_category_id %}
+  {% for product in products %}
   <div class="item">{% include 'product-tile.tml.twig' with {product: product} only %}</div>
 </div>
 ```
@@ -249,27 +251,32 @@ but all other fields are filled by the product. The following configuration can 
 pimcore_rad_brick:
   datasources:
     products_by_category:
-      service_id: 'coreshop.repository.category'
-      method: 'findOneById'
-      args: 
-      - 'category.id' ## Specify which data to pass. The input array is passed by areabricks.   
+      service_id: 'app.repository.product'
+      method: 'findByCategory'
+      args:
+      - '[category]' ## Specify which data to pass. The input array is passed by areabricks.
   areabricks:
     category_slider:
       label: Category Slider
       use_edit: true
       editables:
-        category:
+        select_category:
           type: relation
           options:
             types: ['object']
             subtypes:
               object: ['object']
             classes: ['CoreShopCategory']
-        tagline:
+        product_title:
           type: input
           datasource:
-            products_by_category: id # Provide the property with which the editable can be identified. in this case the editable id will be `tagline` appended to it `_` with the value of the id property of each item coming from the datasource  
+            name: products
+            id: item.getId() # Specify ID source (will be casted to string)
+
       datasources:
-        products_by_category:
-          category: '!q:[view][category].element'
+        products:
+          id: products_by_category
+          args:
+            category: view["select_category"].getElement()
+
 ```
