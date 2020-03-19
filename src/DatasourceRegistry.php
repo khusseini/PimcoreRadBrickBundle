@@ -3,7 +3,7 @@
 namespace Khusseini\PimcoreRadBrickBundle;
 
 use stdClass;
-use Symfony\Component\DependencyInjection\ExpressionLanguage;
+use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 
 class DatasourceRegistry
 {
@@ -11,19 +11,23 @@ class DatasourceRegistry
     private $datasources = null;
 
     public function __construct(
-        ExpressionLanguage $expressionLangauge
+        ExpressionLanguage $expressionLangauge = null
     ) {
+        if (!$expressionLangauge) {
+            $expressionLangauge = new ExpressionLanguage();
+        }
+
         $this->expressionLangauge = $expressionLangauge;
         $this->datasources = new stdClass();
     }
 
-    public function execute(string $name, array $args)
+    public function execute(string $name, array $args = [])
     {
         if (! $ds = $this->datasources->{$name}) {
             return;
         }
 
-        return $ds($args);
+        return $this->data[$name] = $ds($args);
     }
 
     public function __invoke(string $name, array $args = [])
@@ -31,19 +35,12 @@ class DatasourceRegistry
         return $this->execute($name, $args);
     }
 
-    public function add(
-        string $name,
-        object $service,
-        string $method,
-        array $args
-    ) {
-        $this->datasources->{$name} = $this
-            ->createServiceCall($name, $service, $method, $args)
-        ;
+    public function add(string $name, callable $callable): void
+    {
+        $this->datasources->{$name} = $callable;
     }
 
-    protected function createServiceCall(
-        string $name,
+    public function createMethodCall(
         object $service,
         string $method,
         array $args
@@ -62,6 +59,10 @@ class DatasourceRegistry
 
     public function getValue(array $context, string $expression)
     {
-        return $this->expressionLangauge->evaluate($expression, $context);
+        try {
+            return $this->expressionLangauge->evaluate($expression, $context);
+        } catch (\Exception $ex) {
+            return $expression;
+        }
     }
 }

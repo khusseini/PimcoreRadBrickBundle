@@ -2,6 +2,8 @@
 
 namespace Khusseini\PimcoreRadBrickBundle;
 
+use Khusseini\PimcoreRadBrickBundle\ExpressionLanguage\ExpressionWrapper;
+use Symfony\Component\DependencyInjection\ExpressionLanguage;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AreabrickConfigurator
@@ -35,7 +37,42 @@ class AreabrickConfigurator
         $this->configurators = $configurators;
     }
 
-    public function compileEditablesConfig(array $config)
+    public function compileAreaBrick(string $name, array $context)
+    {
+        $or = new OptionsResolver();
+        $or->setRequired(['view', 'request']);
+        $or->setDefault('datasources', []);
+        $context = $or->resolve($context);
+        $config = $this->getAreabrickConfig($name);
+
+        foreach ($this->configurators as $configurator) {
+            $context = $configurator->preCreateEditable($name, $config, $this->config, $context);
+        }
+
+        return $this->createEditables($name, $context);
+    }
+
+    protected function getDatasourceConfig(string $name)
+    {
+        return $this->config['datasources'][$name];
+    }
+
+    public function getAreabrickConfig(string $name)
+    {
+        $or = new OptionsResolver();
+        $or->setDefaults([
+            'icon' => null,
+            'label' => null,
+            'open' => '',
+            'close' => '',
+        ]);
+        $config = $this->config['areabricks'][$name] ?: [];
+        $or->setDefined(array_keys($config));
+
+        return $or->resolve($config);
+    }
+
+    protected function compileEditablesConfig(array $config)
     {
         $editablesConfig = $config['editables'];
         $or = new OptionsResolver();

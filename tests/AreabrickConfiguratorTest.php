@@ -13,6 +13,39 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AreabrickConfiguratorTest extends TestCase
 {
+    public function testCanCompileAreaBrick()
+    {
+        $config = [
+            'areabricks' => [
+                'test_brick' => [
+                    'editables' => [
+                        'test_edit' => [
+                            'type' => 'input'
+                        ]
+                    ],
+                ]
+            ]
+        ];
+
+        $expected = [
+            'test_edit' => [
+                'type' => 'input',
+                'options' => [],
+            ]
+        ];
+
+        $view = new ViewModel();
+        $configurator = $this->createConfigurator($config);
+        $editables = $configurator->compileAreaBrick('test_brick', [
+            'view' => $view,
+            'request' => [],
+        ]);
+
+        foreach ($editables as $name => $editable) {
+            $this->assertSame($expected[$name], $editable);
+        }
+    }
+
     protected function getSimpleBrickTestData(): array
     {
         $expected = [

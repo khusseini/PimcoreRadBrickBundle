@@ -74,4 +74,9 @@ abstract class AbstractConfigurator implements IConfigurator
     {
         return $this->expressionWrapper;
     }
+
+    public function preCreateEditables(string $brickName, array $brickConfig, array $config, array $context): array
+    {
+        return $context;
+    }
 }
