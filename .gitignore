@@ -49,3 +49,4 @@
 /shell.sh
 
 /.phpunit
+/.php_cs.cache

@@ -2,7 +2,7 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\DependencyInjection;
 
-use Symfony\Component\Config\Definition\Builder\NodeDefinition;
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -19,6 +19,7 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
+        /** @var ArrayNodeDefinition $rootNode  */
         $rootNode = $treeBuilder->root('pimcore_rad_brick');
 
         // Here you should define the parameters that are allowed to
@@ -32,17 +33,19 @@ class Configuration implements ConfigurationInterface
                     ->arrayPrototype()
                         ->children()
                             ->scalarNode('service_id')
-                                ->info('Prodive Symfony service')
+                                ->info('Provide a Symfony service id')
                                 ->isRequired()
                                 ->cannotBeEmpty()
                             ->end()
                             ->scalarNode('method')
-                                ->info('Prodive Symfony service')
+                                ->info('Method to be called on service')
                                 ->isRequired()
                                 ->cannotBeEmpty()
                             ->end()
                             ->arrayNode('args')
-                                ->variablePrototype()->end()
+                                ->variablePrototype()
+                                    ->info('Method arguments. Expressions can be used here')
+                                ->end()
                             ->end()
                         ->end()
                     ->end()
@@ -73,11 +76,15 @@ class Configuration implements ConfigurationInterface
                                 ->defaultValue(false)
                             ->end()
                             ->arrayNode('datasources')
-                                ->info('Configure datasources to user  in view template')
+                                ->info('Configure datasources to use  in view template')
                                 ->useAttributeAsKey('name')
                                     ->arrayPrototype()
                                         ->children()
+                                            ->scalarNode('id')
+                                                ->info('Provide the id of the datasource to use')
+                                            ->end()
                                             ->arrayNode('args')
+                                                ->info('Configure arguments to pass to method call')
                                                 ->useAttributeAsKey('name')
                                                 ->scalarPrototype()
                                             ->end()
@@ -117,6 +124,17 @@ class Configuration implements ConfigurationInterface
                                                         ->isRequired()
                                                         ->cannotBeEmpty()
                                                     ->end()
+                                                ->end()
+                                            ->end()
+                                        ->end()
+                                        ->arrayNode('datasource')
+                                            ->info('Bind editable to a datasource')
+                                            ->children()
+                                                ->scalarNode('name')
+                                                    ->info('The name of the datasource')
+                                                ->end()
+                                                ->scalarNode('id')
+                                                    ->info('The id to use for each item (uses expression language)')
                                                 ->end()
                                             ->end()
                                         ->end()

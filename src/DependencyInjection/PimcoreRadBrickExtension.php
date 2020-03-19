@@ -2,10 +2,12 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\DependencyInjection;
 
+use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Areabricks\SimpleBrick;
-use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
+use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Reference;
 
@@ -16,27 +18,26 @@ class PimcoreRadBrickExtension extends Extension
      */
     public function load(array $configs, ContainerBuilder $container)
     {
+        $loader = new YamlFileLoader($container, new FileLocator(dirname(__DIR__).'/Resources/config'));
+        $loader->load('services.yml');
+
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $areabricks = $config['areabricks'];
-        $datasources = $config['datasources'];
-        
-        $datasourceRegistry =  new Definition(DatasourceRegistry::class);
-
-        foreach ($datasources as $name => $datasource) {
-            $datasourceRegistry->addMethodCall('add', [
-                $name,
-                new Reference($datasource['service_id']),
-                $datasource['method'],
-                $datasource['args'],
-            ]);
+        $configurators = [];
+        $ids = $container->findTaggedServiceIds('rabrick.configurator');
+        foreach ($ids as $id) {
+            $configurators[] = new Reference($id);
         }
 
-        $container->setDefinition(
-            'radbrick.datasource_registry',
-            $datasourceRegistry
-        );
+        $configurator = new Definition(AreabrickConfigurator::class, [
+            $config,
+            $configurators
+        ]);
+
+        $container->setDefinition(AreabrickConfigurator::class, $configurator);
+
+        $areabricks = $config['areabricks'];
 
         foreach ($areabricks as $id => $config) {
             $target = null;
@@ -48,13 +49,8 @@ class PimcoreRadBrickExtension extends Extension
 
             if (!$target) {
                 $target = new Definition(SimpleBrick::class, [
+                    $id,
                     new Reference('pimcore.templating.tag_renderer'),
-                    new Reference('radbrick.datasource_registry'),
-                    $config['label'],
-                    $config['use_edit'],
-                    $config['open'],
-                    $config['close'],
-                    $config['icon'],
                 ]);
             }
 

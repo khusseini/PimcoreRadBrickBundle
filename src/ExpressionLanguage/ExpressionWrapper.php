@@ -5,27 +5,28 @@ namespace Khusseini\PimcoreRadBrickBundle\ExpressionLanguage;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\PropertyAccess\Exception\AccessException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 class ExpressionWrapper
 {
     /** @var ExpressionLanguage */
     private $expressionLanguage;
 
-    /** @var PropertyAccess */
+    /** @var PropertyAccessorInterface */
     private $propAccess;
 
     private function getExpressionLanguage(): ExpressionLanguage
     {
-        if (!$this->expressionLanguage) {
+        if (is_null($this->expressionLanguage)) {
             $this->expressionLanguage = new ExpressionLanguage();
         }
 
         return $this->expressionLanguage;
     }
 
-    private function getPropertyAccess()
+    private function getPropertyAccess(): PropertyAccessorInterface
     {
-        if (!$this->propAccess) {
+        if (is_null($this->propAccess)) {
             $this->propAccess = PropertyAccess::createPropertyAccessorBuilder()
                 ->enableExceptionOnInvalidIndex()
                 ->getPropertyAccessor()

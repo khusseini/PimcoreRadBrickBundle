@@ -5,17 +5,26 @@ namespace Khusseini\PimcoreRadBrickBundle\Areabricks;
 use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
 use Pimcore\Extension\Document\Areabrick\AbstractTemplateAreabrick;
 use Pimcore\Model\Document\Tag\Area\Info;
-use Pimcore\Templating\Model\ViewModelInterface;
 use Pimcore\Templating\Renderer\TagRenderer;
-use Symfony\Component\PropertyAccess\PropertyAccess;
 
 abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 {
     /** @var AreabrickConfigurator */
     private $areabrickConfigurator;
-
     /** @var string */
     private $name;
+    /** @var string */
+    private $icon;
+    /** @var string */
+    private $label;
+    /** @var string */
+    private $openTag = '';
+    /** @var string */
+    private $closeTag = '';
+    /** @var bool */
+    private $useEdit = false;
+    /** @var TagRenderer */
+    private $tagRenderer;
 
     public function __construct(
         string $name,
@@ -28,8 +37,9 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
         $options = $this->areabrickConfigurator->getAreabrickConfig($name);
         $this->icon = $options['icon'];
         $this->label = $options['label'];
-        $this->open = $options['open'];
-        $this->close = $options['close'];
+        $this->openTag = $options['open'];
+        $this->closeTag = $options['close'];
+        $this->useEdit = $options['use_edit'];
     }
 
     public function getIcon()
@@ -88,6 +98,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     private function processEditable(string $name, array $config, Info $info)
     {
         $view = $info->getView();
+        $rendered = null;
         if (isset($config['type'])) {
             $rendered = $this
                 ->getTagRenderer()

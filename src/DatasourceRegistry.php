@@ -27,7 +27,7 @@ class DatasourceRegistry
             return;
         }
 
-        return $this->data[$name] = $ds($args);
+        return $ds($args);
     }
 
     public function __invoke(string $name, array $args = [])

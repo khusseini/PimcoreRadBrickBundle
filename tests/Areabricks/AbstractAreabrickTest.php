@@ -46,7 +46,8 @@ class AbstractAreabrickTest extends TestCase
         $info->getDocument()->willReturn($doc->reveal());
         $info->getView()->willReturn($view);
 
-        $brick = new class('testbrick', $tagRenderer->reveal(), $configurator) extends AbstractAreabrick { };
+        $brick = new class('testbrick', $tagRenderer->reveal(), $configurator) extends AbstractAreabrick {
+        };
         $brick->action($info->reveal());
 
         $this->assertTrue($view->has('testedit'));

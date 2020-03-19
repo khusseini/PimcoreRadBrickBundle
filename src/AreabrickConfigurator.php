@@ -2,8 +2,7 @@
 
 namespace Khusseini\PimcoreRadBrickBundle;
 
-use Khusseini\PimcoreRadBrickBundle\ExpressionLanguage\ExpressionWrapper;
-use Symfony\Component\DependencyInjection\ExpressionLanguage;
+use Khusseini\PimcoreRadBrickBundle\Configurator\IConfigurator;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AreabrickConfigurator
@@ -14,20 +13,15 @@ class AreabrickConfigurator
     /** @var IConfigurator[] */
     private $configurators = [];
 
-    /** @var DatasourceRegistry */
-    private $datasources;
-
     public function __construct(
         array $config,
-        array $configurators = [],
-        DatasourceRegistry $datasources = null
+        array $configurators = []
     ) {
         $or = new OptionsResolver();
         $or->setDefaults([
             'areabricks' => [],
             'datasources' => [],
         ]);
-        $this->datasources = $datasources;
         $this->config = $or->resolve($config);
         $this->configurators = $configurators;
     }
@@ -45,6 +39,7 @@ class AreabrickConfigurator
         $context = $or->resolve($context);
         $config = $this->getAreabrickConfig($name);
 
+        /** @var IConfigurator $configurator */
         foreach ($this->configurators as $configurator) {
             $context = $configurator->preCreateEditable($name, $config, $this->config, $context);
         }
@@ -65,6 +60,7 @@ class AreabrickConfigurator
             'label' => null,
             'open' => '',
             'close' => '',
+            'use_edit' => false,
         ]);
         $config = $this->config['areabricks'][$name] ?: [];
         $or->setDefined(array_keys($config));

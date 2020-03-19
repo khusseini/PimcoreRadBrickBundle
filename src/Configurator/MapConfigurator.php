@@ -7,6 +7,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class MapConfigurator extends AbstractConfigurator
 {
+    /** @var OptionsResolver */
+    private $mapOr;
+
     public function configureEditableOptions(OptionsResolver $or): void
     {
         $or->setDefault('map', []);
@@ -14,12 +17,9 @@ class MapConfigurator extends AbstractConfigurator
 
     public function supportsEditable(string $editableName, array $config): bool
     {
-        return
-            count($config['map'])
-        ;
+        return (bool) count($config['map']);
     }
 
-    private $mapOr;
     private function resolveMapOptions($options)
     {
         if (!$this->mapOr) {
