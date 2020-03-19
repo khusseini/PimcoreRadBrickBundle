@@ -7,12 +7,16 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AreabrickConfigurator
 {
-    /** @var array  */
+    /** @var array<mixed>  */
     private $config = [];
 
     /** @var IConfigurator[] */
     private $configurators = [];
 
+    /**
+     * @param array<mixed> $config
+     * @param IConfigurator[] $configurators
+     */
     public function __construct(
         array $config,
         array $configurators = []
@@ -26,12 +30,20 @@ class AreabrickConfigurator
         $this->configurators = $configurators;
     }
 
-    public function setConfigurators(array $configurators)
+    /**
+     * @param IConfigurator[] $configurators
+     */
+    public function setConfigurators(array $configurators): void
     {
         $this->configurators = $configurators;
     }
 
-    public function compileAreaBrick(string $name, array $context)
+    /**
+     * @param array<mixed> $context
+     *
+     * @return \Generator<array>
+     */
+    public function compileAreaBrick(string $name, array $context): \Generator
     {
         $or = new OptionsResolver();
         $or->setRequired(['view', 'request']);
@@ -41,18 +53,24 @@ class AreabrickConfigurator
 
         /** @var IConfigurator $configurator */
         foreach ($this->configurators as $configurator) {
-            $context = $configurator->preCreateEditable($name, $config, $this->config, $context);
+            $context = $configurator->preCreateEditables($name, $config, $this->config, $context);
         }
 
         return $this->createEditables($name, $context);
     }
 
-    protected function getDatasourceConfig(string $name)
+    /**
+     * @return array<array>
+     */
+    protected function getDatasourceConfig(string $name): array
     {
         return $this->config['datasources'][$name];
     }
 
-    public function getAreabrickConfig(string $name)
+    /**
+     * @return array<mixed>
+     */
+    public function getAreabrickConfig(string $name): array
     {
         $or = new OptionsResolver();
         $or->setDefaults([
@@ -68,7 +86,12 @@ class AreabrickConfigurator
         return $or->resolve($config);
     }
 
-    protected function compileEditablesConfig(array $config)
+    /**
+     * @param array<array> $config
+     *
+     * @return \Generator<array>
+     */
+    protected function compileEditablesConfig(array $config): \Generator
     {
         $editablesConfig = $config['editables'];
         $or = new OptionsResolver();
@@ -89,10 +112,15 @@ class AreabrickConfigurator
         }
     }
 
+    /**
+     * @param array<mixed> $context
+     *
+     * @return \Generator<array>
+     */
     public function createEditables(
         string $areabrick,
         array $context = []
-    ) {
+    ): \Generator {
         $compiledConfig = $this->compileEditablesConfig($this->config['areabricks'][$areabrick]);
         $compiledConfig = iterator_to_array($compiledConfig);
 

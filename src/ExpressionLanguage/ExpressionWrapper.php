@@ -37,6 +37,12 @@ class ExpressionWrapper
     }
 
 
+    /**
+     * @param array<mixed> $data
+     * @param array<string> $attributes
+     *
+     * @return array<mixed>
+     */
     public function evaluateExpressions(
         array $data,
         array $attributes,
@@ -61,6 +67,11 @@ class ExpressionWrapper
         return $data;
     }
 
+    /**
+     * @param array<array>|object $objectOrArray
+     *
+     * @return mixed
+     */
     public function getPropertyValue($objectOrArray, string $propertyPath)
     {
         return $this
@@ -69,13 +80,25 @@ class ExpressionWrapper
         ;
     }
 
-    public function setPropertyValue($objectOrArray, string $properyPath, $value)
+    /**
+     * @param array<array>|object $objectOrArray
+     * @param string $propertyPath
+     * @param mixed $value
+     *
+     * @return array<array>|object
+     */
+    public function setPropertyValue($objectOrArray, string $propertyPath, $value)
     {
-        $this->getPropertyAccess()->setValue($objectOrArray, $properyPath, $value);
+        $this->getPropertyAccess()->setValue($objectOrArray, $propertyPath, $value);
         return $objectOrArray;
     }
 
-    public function evaluateExpression($value, array $context)
+    /**
+     * @param string $value
+     * @param array<array> $context
+     * @return mixed
+     */
+    public function evaluateExpression(string $value, array $context)
     {
         try {
             return $this->getExpressionLanguage()->evaluate($value, $context);

@@ -7,9 +7,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class MapConfigurator extends AbstractConfigurator
 {
-    /** @var OptionsResolver */
-    private $mapOr;
-
     public function configureEditableOptions(OptionsResolver $or): void
     {
         $or->setDefault('map', []);
@@ -20,14 +17,15 @@ class MapConfigurator extends AbstractConfigurator
         return (bool) count($config['map']);
     }
 
-    private function resolveMapOptions($options)
+    /**
+     * @param array<array> $options
+     * @return array<array>
+     */
+    private function resolveMapOptions(array $options): array
     {
-        if (!$this->mapOr) {
-            $this->mapOr = new OptionsResolver();
-            $this->mapOr->setRequired(['source', 'target']);
-        }
-
-        return $this->mapOr->resolve($options);
+        $or = new OptionsResolver();
+        $or->setRequired(['source', 'target']);
+        return $or->resolve($options);
     }
 
     public function doCreateEditables(RenderArgs $renderArgs, array $data): RenderArgs
@@ -38,6 +36,7 @@ class MapConfigurator extends AbstractConfigurator
 
         $maps = $data['editable']['config']['map'];
         foreach ($maps as $map) {
+            /** @var array<string> $map */
             $map = $this->resolveMapOptions($map);
             $source = $this->getExpressionWrapper()->evaluateExpression($map['source'], $data['context']);
             $data['editable']['config'] = $this

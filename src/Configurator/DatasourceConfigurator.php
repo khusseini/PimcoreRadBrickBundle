@@ -8,20 +8,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class DatasourceConfigurator extends AbstractConfigurator
 {
-    public function resolveBrickconfig(array $config)
-    {
-        $or = new OptionsResolver();
-        $or->setDefaults(['datasources' => [], 'editables' => []]);
-        return $or->resolve($config);
-    }
-
-    public function resolveConfig(array $config)
-    {
-        $or = new OptionsResolver();
-        $or->setDefaults(['datasources' => [], 'areabricks' => []]);
-        return $or->resolve($config);
-    }
-
     public function preCreateEditables(string $brickName, array $brickConfig, array $config, array $context): array
     {
         $brickConfig = $this->resolveBrickconfig($brickConfig);
@@ -103,5 +89,29 @@ class DatasourceConfigurator extends AbstractConfigurator
                 $or->setDefault('id', null);
             }
         );
+    }
+
+    /**
+     * @param array<mixed> $config
+     *
+     * @return array<mixed>
+     */
+    protected function resolveBrickconfig(array $config): array
+    {
+        $or = new OptionsResolver();
+        $or->setDefaults(['datasources' => [], 'editables' => []]);
+        return $or->resolve($config);
+    }
+
+    /**
+     * @param array<mixed> $config
+     *
+     * @return array<mixed>
+     */
+    protected function resolveConfig(array $config): array
+    {
+        $or = new OptionsResolver();
+        $or->setDefaults(['datasources' => [], 'areabricks' => []]);
+        return $or->resolve($config);
     }
 }

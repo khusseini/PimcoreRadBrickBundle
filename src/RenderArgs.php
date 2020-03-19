@@ -2,32 +2,39 @@
 
 namespace Khusseini\PimcoreRadBrickBundle;
 
-use Symfony\Component\OptionsResolver\OptionsResolver;
-
 class RenderArgs
 {
-    /** @var array */
+    /** @var array<array> */
     private $data = [];
 
-    public function set(array $data)
+    /**
+     * @param array<array> $data
+     */
+    public function set(array $data): self
     {
         $this->data = $data;
         return $this;
     }
 
-    public function remove(string $name)
+    public function remove(string $name): self
     {
         unset($this->data[$name]);
         return $this;
     }
 
-    public function merge(array $data)
+    /**
+     * @param array<array> $data
+     */
+    public function merge(array $data): self
     {
         $this->data = array_merge($this->data, $data);
         return $this;
     }
 
-    public function update(array $data)
+    /**
+     * @param array<array> $data
+     */
+    public function update(array $data): self
     {
         foreach ($this->data as $editable => $config) {
             if (!isset($data[$editable])) {
@@ -40,12 +47,18 @@ class RenderArgs
         return $this;
     }
 
-    public function get(string $editable)
+    /**
+     * @return array<array>
+     */
+    public function get(string $editable): array
     {
         return $this->data[$editable];
     }
 
-    public function getAll()
+    /**
+     * @return array<array>
+     */
+    public function getAll(): array
     {
         return $this->data;
     }

@@ -1,7 +1,7 @@
 {
     "name": "khusseini/pimcore-radbrick",
     "description": "A RAD way to create areabricks in Pimcore",
-    "type": "library",
+    "type": "pimcore-bundle",
     "license": "BSD-2-Clause",
     "authors": [
         {

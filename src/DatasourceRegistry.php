@@ -7,7 +7,10 @@ use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 
 class DatasourceRegistry
 {
+    /** @var ExpressionLanguage */
     private $expressionLangauge;
+
+    /** @var object */
     private $datasources = null;
 
     public function __construct(
@@ -21,6 +24,11 @@ class DatasourceRegistry
         $this->datasources = new stdClass();
     }
 
+    /**
+     * @param array<string> $args
+     *
+     * @return mixed
+     */
     public function execute(string $name, array $args = [])
     {
         if (! $ds = $this->datasources->{$name}) {
@@ -30,6 +38,11 @@ class DatasourceRegistry
         return $ds($args);
     }
 
+    /**
+     * @param array<string> $args
+     *
+     * @return mixed
+     */
     public function __invoke(string $name, array $args = [])
     {
         return $this->execute($name, $args);
@@ -40,6 +53,9 @@ class DatasourceRegistry
         $this->datasources->{$name} = $callable;
     }
 
+    /**
+     * @param array<string> $args
+     */
     public function createMethodCall(
         object $service,
         string $method,
@@ -57,6 +73,11 @@ class DatasourceRegistry
         };
     }
 
+    /**
+     * @param array<array> $context
+     *
+     * @return mixed
+     */
     public function getValue(array $context, string $expression)
     {
         try {

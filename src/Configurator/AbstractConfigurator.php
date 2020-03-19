@@ -20,38 +20,40 @@ abstract class AbstractConfigurator implements IConfigurator
         $this->expressionWrapper = $expressionWrapper;
     }
 
+    /**
+     * @param array<array> $data
+     */
     abstract public function doCreateEditables(
         RenderArgs $renderArgs,
         array $data
     ): RenderArgs;
 
+    /**
+     * @return array<string>
+     */
     public function getEditablesExpressionAttributes(): array
     {
         return [];
     }
 
-    private $dataOptionsResolver;
-    public function getDataOptionsResolver()
+    /**
+     * @param array<mixed> $options
+     *
+     * @return array<mixed>
+     */
+    protected function resolveDataOptions(array $options): array
     {
-        if (!$this->dataOptionsResolver) {
-            $this->dataOptionsResolver = new OptionsResolver();
-            $this
-                ->dataOptionsResolver
-                ->setDefault('editable', function (OptionsResolver $or) {
-                    $or->setRequired('name');
-                    $or->setAllowedTypes('name', ['string']);
-                    $or->setDefault('config', []);
-                    $or->setAllowedTypes('config', ['array']);
-                })
-                ->setDefault('context', [])
-            ;
-        }
-        return $this->dataOptionsResolver;
-    }
-
-    protected function resolveDataOptions(array $options)
-    {
-        return $this->getDataOptionsResolver()->resolve($options);
+        $or = new OptionsResolver();
+        $or
+            ->setDefault('editable', function (OptionsResolver $or) {
+                $or->setRequired('name');
+                $or->setAllowedTypes('name', ['string']);
+                $or->setDefault('config', []);
+                $or->setAllowedTypes('config', ['array']);
+            })
+            ->setDefault('context', [])
+        ;
+        return $or->resolve($options);
     }
 
     public function createEditables(RenderArgs $renderArgs, array $data): RenderArgs
@@ -65,6 +67,17 @@ abstract class AbstractConfigurator implements IConfigurator
         );
     }
 
+    public function preCreateEditables(string $brickName, array $brickConfig, array $config, array $context): array
+    {
+        return $context;
+    }
+
+    /**
+     * @param array<mixed> $data
+     * @param array<string> $attributes
+     *
+     * @return array<mixed>
+     */
     protected function evaluateExpressions(array $data, array $attributes)
     {
         return $this->getExpressionWrapper()->evaluateExpressions($data, $attributes, '[context]');
@@ -75,8 +88,4 @@ abstract class AbstractConfigurator implements IConfigurator
         return $this->expressionWrapper;
     }
 
-    public function preCreateEditables(string $brickName, array $brickConfig, array $config, array $context): array
-    {
-        return $context;
-    }
 }

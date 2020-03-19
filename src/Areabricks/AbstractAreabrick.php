@@ -6,6 +6,7 @@ use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
 use Pimcore\Extension\Document\Areabrick\AbstractTemplateAreabrick;
 use Pimcore\Model\Document\Tag\Area\Info;
 use Pimcore\Templating\Renderer\TagRenderer;
+use Symfony\Component\HttpFoundation\Response;
 
 abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 {
@@ -42,11 +43,17 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
         $this->useEdit = $options['use_edit'];
     }
 
+    /**
+     * @return string
+     */
     public function getIcon()
     {
         return $this->icon ?: parent::getIcon();
     }
 
+    /**
+     * @return string
+     */
     public function getName()
     {
         return $this->label ?: parent::getName();
@@ -57,6 +64,9 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
         return $this->tagRenderer;
     }
 
+    /**
+     * @return bool
+     */
     public function hasEditTemplate()
     {
         return $this->useEdit;
@@ -78,6 +88,9 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
         return static::TEMPLATE_SUFFIX_TWIG;
     }
 
+    /**
+     * @return null|Response
+     */
     public function action(Info $info)
     {
         $editables = $this
@@ -88,6 +101,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
             ])
         ;
 
+        /** @var string $name */
         foreach ($editables as $name => $config) {
             $this->processEditable($name, $config, $info);
         }
@@ -95,7 +109,10 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
         return $this->doAction($info);
     }
 
-    private function processEditable(string $name, array $config, Info $info)
+    /**
+     * @param array<mixed> $config
+     */
+    private function processEditable(string $name, array $config, Info $info): void
     {
         $view = $info->getView();
         $rendered = null;
@@ -121,7 +138,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
         $view[$name] = $rendered;
     }
 
-    public function doAction(Info $info)
+    public function doAction(Info $info): ?Response
     {
         return null;
     }

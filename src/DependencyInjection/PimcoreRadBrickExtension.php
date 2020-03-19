@@ -14,7 +14,9 @@ use Symfony\Component\DependencyInjection\Reference;
 class PimcoreRadBrickExtension extends Extension
 {
     /**
-     * {@inheritdoc}
+     *  @param array<array> $configs
+     *
+     *  @return void
      */
     public function load(array $configs, ContainerBuilder $container)
     {
@@ -25,8 +27,8 @@ class PimcoreRadBrickExtension extends Extension
         $config = $this->processConfiguration($configuration, $configs);
 
         $configurators = [];
-        $ids = $container->findTaggedServiceIds('rabrick.configurator');
-        foreach ($ids as $id) {
+        $ids = $container->findTaggedServiceIds('radbrick.configurator');
+        foreach ($ids as $id => $tags) {
             $configurators[] = new Reference($id);
         }
 
@@ -51,10 +53,9 @@ class PimcoreRadBrickExtension extends Extension
                 $target = new Definition(SimpleBrick::class, [
                     $id,
                     new Reference('pimcore.templating.tag_renderer'),
+                    new Reference(AreabrickConfigurator::class),
                 ]);
             }
-
-            $target->addMethodCall('setConfig', [$config]);
 
             if (!$target->hasTag('pimcore.area.brick')) {
                 $target->addTag('pimcore.area.brick', ['id' => $id]);
