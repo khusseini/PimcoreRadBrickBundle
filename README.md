@@ -56,7 +56,6 @@ pimcore_rad_brick:
       editables:
         wysiwyg_content:
           instances: 3
-          instance_ids: ['one', 'two', 'three'] // you can specifically set the postfix of the instance name (which will result in the twig variable name)
           type: wysiwyg
           options: [] // you can pass here any options accepted by the editable
 ```
@@ -67,22 +66,6 @@ The instance variables are created using the basename of the editable and postfi
 {% for wysiwyg_instance in wysiwyg_content %}
   {{ wysiwyg_instance|raw }}
 {% endfor %}
-```
-
-or 
-```twig
-<div>
-Come content:
-{{ wysiwyg_content.one|raw }}
-</div>
-<div>
-Other Content:
-{{ wysiwyg_content.two|raw }}
-</div>
-<div>
-More Content:
-{{ wysiwyg_content.three|raw }}
-</div>
 ```
 
 #### Making instances configurable

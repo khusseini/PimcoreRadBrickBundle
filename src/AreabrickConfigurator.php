@@ -2,7 +2,6 @@
 
 namespace Khusseini\PimcoreRadBrickBundle;
 
-use Pimcore\Model\Document\PageSnippet;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AreabrickConfigurator

@@ -2,6 +2,7 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
+use Khusseini\PimcoreRadBrickBundle\Areabricks\AbstractAreabrick;
 use Khusseini\PimcoreRadBrickBundle\RenderArgs;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -9,7 +10,10 @@ class InstancesConfigurator extends AbstractConfigurator
 {
     public function supports(string $action, string $editableName, array $config): bool
     {
-        return $action === 'create_editables' && isset($config['instances']);
+        return $action ===
+            AbstractConfigurator::ACTION_CREATE_EDIT
+            && isset($config['instances'])
+        ;
     }
 
     public function getExpressionAttributes(): array
@@ -25,7 +29,7 @@ class InstancesConfigurator extends AbstractConfigurator
         RenderArgs $renderArgs,
         array $data
     ): RenderArgs {
-        if ($action !== 'create_editables') {
+        if ($action !== AbstractConfigurator::ACTION_CREATE_EDIT) {
             return $renderArgs;
         }
 
@@ -41,23 +45,21 @@ class InstancesConfigurator extends AbstractConfigurator
             $renderArgs->remove($name);
             return $renderArgs;
         }
-        
+
         $editableArgs = $renderArgs->get($name);
         $renderData = [];
 
         for ($i = 0; $i < $instances; ++$i) {
-            $renderData[$name.'_'.$i] = $editableArgs;
+            $renderData[$i] = $editableArgs;
         }
 
-        $renderArgs->merge($renderData);
-        $renderArgs->remove($name);
-
+        $renderArgs->merge([$name => $renderData]);
         return $renderArgs;
     }
 
     public function configureEditableOptions(OptionsResolver $or): void
     {
         $or->setDefault('instances', 1);
-        $or->setAllowedTypes('instances', ['string', 'int']);
+        $or->setAllowedTypes('instances', ['int', 'string']);
     }
 }

@@ -3,6 +3,7 @@
 namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
+use Khusseini\PimcoreRadBrickBundle\Configurator\AbstractConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\InstancesConfigurator;
 use Khusseini\PimcoreRadBrickBundle\RenderArgs;
 use PHPUnit\Framework\TestCase;
@@ -10,7 +11,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class InstancesConfiguratorTest extends TestCase
 {
-    private function getStaticValueData($instances, $action = 'create_editables')
+    private function getStaticValueData($instances, $action = AbstractConfigurator::ACTION_CREATE_EDIT)
     {
         $config = [
             'areabricks' => [
@@ -24,13 +25,15 @@ class InstancesConfiguratorTest extends TestCase
             ]
         ];
 
-        $expected = [];
-
-        if ($action !== 'create_editables' || $instances === 1) {
-            $expected['testeditable'] = [];
-        } elseif ($action === 'create_editables') {
-            for ($i = 0; $i < $instances; ++$i) {
-                $expected['testeditable_'.$i] = [];
+        $expected = ['testeditable' => []];
+        if ($action === AbstractConfigurator::ACTION_CREATE_EDIT) {
+            if ($instances > 1) {
+                for ($i = 0; $i < $instances; ++$i) {
+                    $expected['testeditable'][$i] = [];
+                }
+            }
+            if ($instances === 0) {
+                $expected = [];
             }
         }
 
@@ -61,11 +64,12 @@ class InstancesConfiguratorTest extends TestCase
             'testedit' => [
                 'type' => 'input',
                 'options' => [],
-            ]
+            ],
+            'test' => [],
         ];
 
         for ($i = 0; $i < $count; ++$i) {
-            $expected['test_'.$i] = [
+            $expected['test'][$i] = [
                 'type' => 'input',
                 'options' => [],
             ];
@@ -99,7 +103,9 @@ class InstancesConfiguratorTest extends TestCase
         $ic = new InstancesConfigurator();
         $areabrickConf = new AreabrickConfigurator($config, [$ic]);
         $renderArgs = $areabrickConf->createEditables($brickName);
-        $this->assertSame($expected, iterator_to_array($renderArgs));
+        $actual = iterator_to_array($renderArgs);
+
+        $this->assertSame($expected, $actual);
     }
 
     /** @dataProvider canProcessConfigProvider */
@@ -110,7 +116,10 @@ class InstancesConfiguratorTest extends TestCase
         foreach ($config['areabricks'] as $name => $areabrickConfig) {
             foreach ($areabrickConfig['editables'] as $editableName => $editableConfig) {
                 $actualSupports = $configurator->supports($action, $editableName, $editableConfig);
-                $expectedSupports = isset($editableConfig['instances']) && $action === 'create_editables';
+                $expectedSupports =
+                    isset($editableConfig['instances'])
+                    && $action === AbstractConfigurator::ACTION_CREATE_EDIT
+                ;
                 $this->assertEquals($expectedSupports, $actualSupports);
                 $renderArgs = new RenderArgs();
                 $renderArgs->set([
@@ -127,6 +136,7 @@ class InstancesConfiguratorTest extends TestCase
                         ],
                     ]
                 );
+
                 $assert($name, $renderArgs);
             }
         }
