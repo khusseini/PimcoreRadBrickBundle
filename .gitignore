@@ -35,16 +35,11 @@
 /web/bundles/
 /web/uploads/
 
-# PHPUnit
-/app/phpunit.xml
-/phpunit.xml
-
 # Build data
 /build/
 
 # Composer PHAR
 /composer.phar
-/composer.lock
 
 # Backup entities generated with doctrine:generate:entities command
 **/Entity/*~
@@ -52,3 +47,6 @@
 # Embedded web-server pid file
 /.web-server-pid
 /shell.sh
+
+/.phpunit
+/.php_cs.cache

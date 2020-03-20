@@ -1,10 +1,9 @@
 # PimcoreRadBrickBundle
 A RAD way to create Areabricks in Pimcore
 
-Many areabricks do not need any PHP functionality in order to be 
-configured or shown and most of the work is in the templates.
-The RadBrickBundle was created to simplify this process by
-making Areabricks configurable.
+## Purpose
+
+Configure data and editables available in Pimcore Areabricks view and edit templates.
 
 ## Installation
 ```
@@ -13,17 +12,22 @@ composer require khusseini/pimcore-radbrick
 
 ## Usage
 
-Simply enable the Bundle and test out this configuration in your `config.yml` and start creating templates.
+Simply enable the Bundle, test out this configuration in your `config.yml` and start creating templates.
 
 ```yaml
 pimcore_rad_brick:
   areabricks:
-    my_wysiwyg: 
-      label: WYSIWYG
+    my_wysiwyg:
+      label: WYSIWYG // Label to use in admin UI
+      icon:  ~ // Path to icon in admin UI
+      open: ~ // Set the open html
+      close: ~ // Set the close html
+      use_edit: false // Use edit.html.twig
+      class: ~ // Use an existing symfony service
       editables:
         wysiwyg_content:
           type: wysiwyg
-          options: []
+          options: [] // you can pass here any options accepted by the editable
 ```
 
 Now create a template as usual in `views/Areas/my_wysiwyg/view.html.twig`:
@@ -37,45 +41,63 @@ Now create a template as usual in `views/Areas/my_wysiwyg/view.html.twig`:
 </div>
 ```
 
-### Using sources
 
-Sometimes editables need to be configurable to have more than one instance. For example a teaser could display 1, 2 or 3 items.
-A configuration for this could look like:
+### Creating multiple instances
 
-```yaml
+In order to create multiple instances of an editable with the same configuraiton,
+it is as easy as adding the `instances` attribute:
+
+`config.yml`
+```yml
 pimcore_rad_brick:
   areabricks:
-    teaser:
-      label: Teaser
-      use_edit: true
+    my_wysiwyg:
+      label: WYSIWYG
       editables:
-        num_items:
-          type: select
-          options:
-            store: [1, 2, 3]
-            defaultValue: 1
-        teaser_area_block:
-          type: areablock
-          source: num_columns
-          options:
-            params:
-              forceEditInView: true
+        wysiwyg_content:
+          instances: 3
+          type: wysiwyg
+          options: [] // you can pass here any options accepted by the editable
 ```
 
-This simplifies templates to look like this:
+The instance variables are created using the basename of the editable and postfixing it with either the provided ids in `instance_ids` or by simply using the array index.
 
-`edit.html.twig`
 ```twig
-Items: {{ num_items|raw }}
-```
-
-`view.html.twig`
-```twig
-{% for i in range(1, num_items) %}
-{{ teaser_area_block[i]|raw }}
+{% for wysiwyg_instance in wysiwyg_content %}
+  {{ wysiwyg_instance|raw }}
 {% endfor %}
 ```
----
+
+#### Making instances configurable
+
+In most cases, it doesn't make much sense to hardcode the number of instances
+of an editable. In order to make the number of instances configurable via admin
+we will leverage the power of the (Expression Language Component)[https://symfony.com/doc/current/components/expression_language.html].
+
+```yml
+pimcore_rad_brick:
+  areabricks:
+    my_wysiwyg:
+      label: WYSIWYG
+      use_edit: true // Note that we use an edit template to configure the instances
+      editables:
+        num_editors:
+          type: select
+          options:
+            store: [1,2,5]
+        wysiwyg_content:
+          instances: view.get("num_editors").getData()
+          type: wysiwyg
+```
+
+NOTE: The expression context contains the following objects:
+- `request`: The current `Request` object
+- `view`: The current `ViewModel`
+- `datasources`: The `DatasourceRegistry`
+
+
+#### Practical example
+
 A more practical example is an integration into the bootstrap grid.
 Two areabricks can be easily created in order to support the bootstrap grid.
 
@@ -93,7 +115,6 @@ pimcore_rad_brick:
           options:
             allowed:
             - columns
-            - hero_slider
             params:
               forceEditInView: true
     columns:
@@ -106,8 +127,8 @@ pimcore_rad_brick:
             store: [1, 2, 3, 4, 5, 6]
             defaultValue: 1
         column_area_block:
+          instances: view.get("num_columns").getData()
           type: areablock
-          source: num_columns
           options:
             params:
               forceEditInView: true
@@ -124,9 +145,13 @@ pimcore_rad_brick:
 ```twig
 {% set col_width = 12 / num_columns.getData() %}
 <div class="row">
-  {% for i in range(1, num_columns.getData()) %}
+  {% for column in column_area_block) %}
   <div class="col-{{ col_width }}">
-      {{ column_area_block[i]|raw }}
+      {{ column|raw }}
+  </div>
+  {% else %}
+  <div class="col-{{ col_width }}">
+      {{ column_area_block|raw }}
   </div>
   {% endfor %}
 </div>
@@ -162,7 +187,7 @@ pimcore_rad_brick:
           type: input
         image_content:
           type: image
-          map: 
+          map:
           - source: '[image_thumbnail].data'
             target: '[options][thumbnail]'
 ```
@@ -170,6 +195,7 @@ pimcore_rad_brick:
 The `source` and `target` properties uses the [Symfony Property Access Component](https://symfony.com/doc/current/components/property_access.html) to fetch and insert data.
 
 The above mapping example would fetch the `data` property's value from `image_thumbnail` editable (resides in ViewModel, hence the array notation) and insert right into the config tree in `[pimcore_rad_brick][areabricks][image][editables][image_content][options][thumbnail]`
+
 
 ### Using Datasources
 
@@ -180,27 +206,28 @@ Datasources simplify the creation of widgets that get their data from other serv
 pimcore_rad_brick:
   ## Define data sources to be used by areabricks
   datasources:
-    products_by_category_id:
-      service_id: 'coreshop.repository.category' ## Prodive a symfony service
-      method: 'findOneById' ## Specify which method to call
-      args: 
-      - '!q:[category].id' ## Specify which data to pass. The input array is passed by areabricks. the `!q` is required to use `[category].id` as a property path, otherwise the input is seen as a string
-
+    products_by_category:
+      service_id: 'app.repository.product'
+      method: 'findByCategory'
+      args:
+      - '[category]' ## Specify which data to pass. The input array is passed by areabricks.
   areabricks:
     category_slider:
       label: Category Slider
       editables:
-        category:
+        select_category:
           type: relation
           options:
             types: ['object']
             subtypes:
               object: ['object']
             classes: ['CoreShopCategory']
-      
+
       datasources: ## Datasource configuration for this areabrick
-        products_by_category_id:
-          category: '!q:[view][category].element' ## Define category argument (available in input array to the datasource above)
+        products:
+          id: products_by_category
+          args:
+            category: 'view["category"].getElement()' ## Define category argument (available in input array to the datasource above)
 ```
 The property path of an input argument for a datasource contains following information:
 - `request`: Access to the current request object
@@ -208,12 +235,12 @@ The property path of an input argument for a datasource contains following infor
 
 `edit.html.twig`
 ```twig
-Category: {{ category|raw }}
+Category: {{ select_category|raw }}
 ```
 `view.html.twig`
 ```twig
 <div class="slider">
-  {% for product in products_by_category_id %}
+  {% for product in products %}
   <div class="item">{% include 'product-tile.tml.twig' with {product: product} only %}</div>
 </div>
 ```
@@ -228,28 +255,32 @@ but all other fields are filled by the product. The following configuration can 
 pimcore_rad_brick:
   datasources:
     products_by_category:
-      service_id: 'coreshop.repository.category'
-      method: 'findOneById'
-      args: 
-      - '!q:[category].id' ## Specify which data to pass. The input array is passed by areabricks. the `!q` is required to use `[category].id` as a property path, otherwise the input is seen as a string
-
+      service_id: 'app.repository.product'
+      method: 'findByCategory'
+      args:
+      - '[category]' ## Specify which data to pass. The input array is passed by areabricks.
   areabricks:
     category_slider:
       label: Category Slider
       use_edit: true
       editables:
-        category:
+        select_category:
           type: relation
           options:
             types: ['object']
             subtypes:
               object: ['object']
             classes: ['CoreShopCategory']
-        tagline:
+        product_title:
           type: input
           datasource:
-            products_by_category: id # Provide the property with which the editable can be identified. in this case the editable id will be `tagline` appended to it `_` with the value of the id property of each item coming from the datasource  
+            name: products
+            id: item.getId() # Specify ID source (will be casted to string)
+
       datasources:
-        products_by_category:
-          category: '!q:[view][category].element'
+        products:
+          id: products_by_category
+          args:
+            category: view["select_category"].getElement()
+
 ```

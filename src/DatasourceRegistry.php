@@ -3,21 +3,33 @@
 namespace Khusseini\PimcoreRadBrickBundle;
 
 use stdClass;
-use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 
 class DatasourceRegistry
 {
-    private $propertyAccessor;
+    /** @var ExpressionLanguage */
+    private $expressionLangauge;
 
+    /** @var object */
     private $datasources = null;
 
-    public function __construct()
-    {
-        $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
+    public function __construct(
+        ExpressionLanguage $expressionLangauge = null
+    ) {
+        if (!$expressionLangauge) {
+            $expressionLangauge = new ExpressionLanguage();
+        }
+
+        $this->expressionLangauge = $expressionLangauge;
         $this->datasources = new stdClass();
     }
 
-    public function execute(string $name, array $args)
+    /**
+     * @param array<string> $args
+     *
+     * @return mixed
+     */
+    public function execute(string $name, array $args = [])
     {
         if (! $ds = $this->datasources->{$name}) {
             return;
@@ -26,29 +38,57 @@ class DatasourceRegistry
         return $ds($args);
     }
 
-    public function add(
-        string $name, 
-        object $service, 
-        string $method, 
-        array $args
-    ) {
-        $this->datasources->{$name} = function(array $input) use ($service, $method, $args) {
-            foreach ($args as $index => $content) {
-                if (
-                    !is_string($content) 
-                    || !preg_match('/!q:.*/', $content)
-                ) {
-                    continue;
-                }
+    /**
+     * @param array<string> $args
+     *
+     * @return mixed
+     */
+    public function __invoke(string $name, array $args = [])
+    {
+        return $this->execute($name, $args);
+    }
 
-                $content = substr($content, 3);
-                if (!$this->propertyAccessor->isReadable($input, $content)) {
+    public function add(string $name, callable $callable): void
+    {
+        $this->datasources->{$name} = $callable;
+    }
+
+    /**
+     * @param array<string> $args
+     */
+    public function createMethodCall(
+        object $service,
+        string $method,
+        array $args
+    ): callable {
+        return function (array $input) use ($service, $method, $args) {
+            foreach ($args as $index => $expression) {
+                if (!is_string($expression)) {
                     continue;
                 }
-                $args[$index] = $this->propertyAccessor->getValue($input, $content);
+                $args[$index] = $this->getValue($input, $expression);
             }
 
             return call_user_func_array([$service, $method], $args);
         };
+    }
+
+    /**
+     * @param array<array> $context
+     *
+     * @return mixed
+     */
+    public function getValue(array $context, string $expression)
+    {
+        try {
+            return $this->expressionLangauge->evaluate($expression, $context);
+        } catch (\Exception $ex) {
+            return $expression;
+        }
+    }
+
+    public function getAll()
+    {
+        return (array)$this->datasources;
     }
 }

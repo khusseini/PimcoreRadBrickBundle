@@ -2,54 +2,59 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\Areabricks;
 
+use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
 use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
 use Pimcore\Extension\Document\Areabrick\AbstractTemplateAreabrick;
 use Pimcore\Model\Document\Tag\Area\Info;
-use Pimcore\Templating\Model\ViewModelInterface;
 use Pimcore\Templating\Renderer\TagRenderer;
-use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\Component\HttpFoundation\Response;
 
 abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 {
-    /** @var TagRenderer */
-    private $tagRenderer;
+    /** @var AreabrickConfigurator */
+    private $areabrickConfigurator;
     /** @var string */
-    private $openTag;
+    private $name;
     /** @var string */
-    private $closeTag;
+    private $icon;
     /** @var string */
-    private $label = null;
+    private $label;
+    /** @var string */
+    private $openTag = '';
+    /** @var string */
+    private $closeTag = '';
     /** @var bool */
     private $useEdit = false;
-    /** @var string */
-    private $icon = null;
-    /** @var DatasourceRegistry */
-    private $datasourceRegistry;
+    /** @var TagRenderer */
+    private $tagRenderer;
 
     public function __construct(
-        TagRenderer $tagRenderer, 
-        DatasourceRegistry $datasourceRegistry,
-        $label = null,
-        $useEdit = false,
-        string $open = '', 
-        string $close = '',
-        string $icon = null
+        string $name,
+        TagRenderer $tagRenderer,
+        AreabrickConfigurator $areabrickConfigurator
     ) {
+        $this->name = $name;
         $this->tagRenderer = $tagRenderer;
-        $this->datasourceRegistry = $datasourceRegistry;
-        $this->openTag = $open;
-        $this->closeTag = $close;
-        $this->label = $label;
-        $this->useEdit = $useEdit;
-        $this->icon = $icon;
+        $this->areabrickConfigurator = $areabrickConfigurator;
+        $options = $this->areabrickConfigurator->getAreabrickConfig($name);
+        $this->icon = $options['icon'];
+        $this->label = $options['label'];
+        $this->openTag = $options['open'];
+        $this->closeTag = $options['close'];
+        $this->useEdit = $options['use_edit'];
     }
 
+    /**
+     * @return string
+     */
     public function getIcon()
     {
         return $this->icon ?: parent::getIcon();
-
     }
 
+    /**
+     * @return string
+     */
     public function getName()
     {
         return $this->label ?: parent::getName();
@@ -60,6 +65,9 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
         return $this->tagRenderer;
     }
 
+    /**
+     * @return bool
+     */
     public function hasEditTemplate()
     {
         return $this->useEdit;
@@ -81,125 +89,68 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
         return static::TEMPLATE_SUFFIX_TWIG;
     }
 
+    /**
+     * @return null|Response
+     */
     public function action(Info $info)
     {
-        if (!$this->getConfig()) return null;
-        $this->processEditables($info);
-        $this->processDatasources($info);
+        $view = $info->getView();
+        $context = [
+            'view' => $view,
+            'request' => $info->getRequest(),
+        ];
+        $editables = $this
+            ->areabrickConfigurator
+            ->compileAreaBrick($this->name, $context)
+        ;
+
+        /** @var string $name */
+        foreach ($editables as $name => $config) {
+            $this->processEditable($name, $config, $info);
+        }
+
+        /** @var DatasourceRegistry $registry */
+        if ($registry = @$context['datasources']) {
+            foreach ($registry->getAll() as $name => $callable) {
+                $view[$name] = $callable();
+            }
+        }
+
         return $this->doAction($info);
     }
 
-    public function doAction(Info $info)
+    /**
+     * @param array<mixed> $config
+     */
+    private function processEditable(string $name, array $config, Info $info): void
+    {
+        $view = $info->getView();
+        $rendered = null;
+        if (isset($config['type'])) {
+            $rendered = $this
+                ->getTagRenderer()
+                ->render($info->getDocument(), $config['type'], $name, $config['options'])
+            ;
+        }
+        if (!isset($config['type'])) {
+            $rendered = [];
+            foreach ($config as $id => $c) {
+                if (!is_array($c) && !isset($c['type'])) {
+                    return;
+                }
+                $rendered[] = $this
+                    ->getTagRenderer()
+                    ->render($info->getDocument(), $c['type'], $name.'_'.$id, $c['options'])
+                ;
+            }
+        }
+
+        $view[$name] = $rendered;
+    }
+
+    public function doAction(Info $info): ?Response
     {
         return null;
-    }
-
-    protected function processDatasources(Info $info)
-    {
-        $propertyAccessor = PropertyAccess::createPropertyAccessor();
-        $datasources = @$this->getConfig()['datasources'] ?: [];
-        $view= $info->getView();
-        $data = [
-            'request' => $info->getRequest(),
-            'view' => $view,
-        ];
-        
-        foreach ($datasources as $name => $options) {
-            if (!$options['args']) {
-                continue;
-            }
-            $arguments = $options['args'];
-            foreach ($arguments as $key => $value) {
-                if (
-                    !is_string($value)
-                    || !(
-                        preg_match('/!q:.*/', $value)
-                        && $propertyAccessor->isReadable($data, substr($value, 3))
-                    )
-                ) {
-                    continue;
-                }
-                $arguments[$key] = $propertyAccessor->getValue($data, substr($value, 3));
-            }
-            $view[$name] = $this->datasourceRegistry->execute($name, $arguments) ?: [];
-        }
-    }
-
-    protected function processEditables(Info $info)
-    {
-        $editables = $this->getConfig()['editables'] ? : [];
-        $view = $info->getView();
-        $tagRenderer = $this->getTagRenderer();
-        $doc = $info->getDocument();
-
-        foreach ($editables as $name => $elementConfig) {
-            $elementConfig = $this->applyMap($elementConfig, $view);
-
-            $source = $elementConfig['source'];
-            $type = $elementConfig['type'];
-            $options = $elementConfig['options'] ?: [];
-            $element = null;
-
-            if (!is_null($source)) {
-                if (!$view->has($source)) {
-                    continue;
-                }
-
-                $sourceElement = $view->get($source);
-
-                //TODO: Refactor to data provider
-                $count = (int)$sourceElement->getData() ?: $sourceElement->getDefault();
-                $element = [];
-                for($i = 1; $i <= $count; ++$i) {
-                    $ename = $name.'_'.$i;
-                    $e = $tagRenderer->render($doc, $type, $ename, $options);
-                    $element[$i] = $e;
-                }
-            }
-
-            if (is_null($element)) {
-                $element = $this->getTagRenderer()->render($doc, $type, $name, $options);
-            }
-
-            $view[$name] = $element;
-        };
-    }
-
-    public function applyMap(array $editableConfig, ViewModelInterface $view)
-    {
-        $propertyAccessor = PropertyAccess::createPropertyAccessor();
-        if (
-            !isset($editableConfig['map'])
-        ) {
-            return $editableConfig;
-        }
-
-        foreach ($editableConfig['map'] as $map) {
-            if (!$propertyAccessor->isReadable($view, $map['source'])) {
-                continue;
-            }
-
-            $propertyAccessor
-                ->setValue(
-                    $editableConfig, 
-                    $map['target'], 
-                    $propertyAccessor->getValue($view, $map['source'])
-                )
-            ;    
-        }
-        
-
-        return $editableConfig;
-    }
-
-    public function getConfig()
-    {
-        return $this->config;
-    }
-
-    public function setConfig(array $editableConfig)
-    {
-        $this->config = $editableConfig;
     }
 
     /**

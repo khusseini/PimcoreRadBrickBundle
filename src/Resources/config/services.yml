@@ -1,0 +1,14 @@
+services:
+    _defaults:
+        public: false
+        autowire: true
+        autoconfigure: true
+    Khusseini\PimcoreRadBrickBundle\Configurator\DatasourceConfigurator:
+        tags:
+        - name: radbrick.configurator
+    Khusseini\PimcoreRadBrickBundle\Configurator\InstancesConfigurator:
+        tags:
+        - name: radbrick.configurator
+    Khusseini\PimcoreRadBrickBundle\Configurator\MapConfigurator:
+        tags:
+        - name: radbrick.configurator
