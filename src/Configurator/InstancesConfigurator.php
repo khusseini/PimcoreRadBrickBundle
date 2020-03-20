@@ -16,7 +16,7 @@ class InstancesConfigurator extends AbstractConfigurator
     {
         return array_merge(
             parent::getEditablesExpressionAttributes(),
-            ['[instances]']
+            ['[editable][config][instances]']
         );
     }
 

@@ -76,19 +76,12 @@ class DatasourceConfigurator extends AbstractConfigurator
 
     public function supportsEditable(string $editableName, array $config): bool
     {
-        return isset($config['datasource']);
+        return isset($config['datasource']) && count($config['datasource']);
     }
 
     public function configureEditableOptions(OptionsResolver $optionsResolver): void
     {
-        $optionsResolver->setDefault(
-            'datasource',
-            function (OptionsResolver $or) {
-                $or->setRequired('name');
-                $or->setAllowedTypes('name', ['string']);
-                $or->setDefault('id', null);
-            }
-        );
+        $optionsResolver->setDefault('datasource', []);
     }
 
     /**
@@ -100,6 +93,7 @@ class DatasourceConfigurator extends AbstractConfigurator
     {
         $or = new OptionsResolver();
         $or->setDefaults(['datasources' => [], 'editables' => []]);
+        $or->setDefined(array_keys($config));
         return $or->resolve($config);
     }
 
@@ -112,6 +106,7 @@ class DatasourceConfigurator extends AbstractConfigurator
     {
         $or = new OptionsResolver();
         $or->setDefaults(['datasources' => [], 'areabricks' => []]);
+        $or->setDefined(array_keys($config));
         return $or->resolve($config);
     }
 }

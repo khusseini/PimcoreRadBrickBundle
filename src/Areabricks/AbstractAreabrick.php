@@ -3,6 +3,7 @@
 namespace Khusseini\PimcoreRadBrickBundle\Areabricks;
 
 use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
+use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
 use Pimcore\Extension\Document\Areabrick\AbstractTemplateAreabrick;
 use Pimcore\Model\Document\Tag\Area\Info;
 use Pimcore\Templating\Renderer\TagRenderer;
@@ -93,17 +94,26 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
      */
     public function action(Info $info)
     {
+        $view = $info->getView();
+        $context = [
+            'view' => $view,
+            'request' => $info->getRequest(),
+        ];
         $editables = $this
             ->areabrickConfigurator
-            ->compileAreaBrick($this->name, [
-                'view' => $info->getView(),
-                'request' => $info->getRequest(),
-            ])
+            ->compileAreaBrick($this->name, $context)
         ;
 
         /** @var string $name */
         foreach ($editables as $name => $config) {
             $this->processEditable($name, $config, $info);
+        }
+
+        /** @var DatasourceRegistry $registry */
+        if ($registry = @$context['datasources']) {
+            foreach ($registry->getAll() as $name => $callable) {
+                $view[$name] = $callable();
+            }
         }
 
         return $this->doAction($info);

@@ -32,19 +32,23 @@ class PimcoreRadBrickExtension extends Extension
             $configurators[] = new Reference($id);
         }
 
+        $datasources = $config['datasources'];
+        foreach ($datasources as $key => $datasource) {
+            $datasources[$key]['service_id'] = new Reference($datasource['service_id']);
+        }
+        $config['datasources'] = $datasources;
+
         $configurator = new Definition(AreabrickConfigurator::class, [
             $config,
             $configurators
         ]);
-
         $container->setDefinition(AreabrickConfigurator::class, $configurator);
 
         $areabricks = $config['areabricks'];
-
-        foreach ($areabricks as $id => $config) {
+        foreach ($areabricks as $id => $aconfig) {
             $target = null;
             $definitionId = 'radbrick.'.$id;
-            if ($class = $config['class']) {
+            if ($class = $aconfig['class']) {
                 $definitionId = $class;
                 $target = $container->getDefinition($class);
             }

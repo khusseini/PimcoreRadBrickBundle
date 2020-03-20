@@ -35,11 +35,12 @@ class AreabrickConfiguratorTest extends TestCase
         ];
 
         $view = new ViewModel();
-        $configurator = $this->createConfigurator($config);
-        $editables = $configurator->compileAreaBrick('test_brick', [
+        $context = [
             'view' => $view,
             'request' => [],
-        ]);
+        ];
+        $configurator = $this->createConfigurator($config);
+        $editables = $configurator->compileAreaBrick('test_brick', $context);
 
         foreach ($editables as $name => $editable) {
             $this->assertSame($expected[$name], $editable);

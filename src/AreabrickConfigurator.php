@@ -43,7 +43,7 @@ class AreabrickConfigurator
      *
      * @return \Generator<array>
      */
-    public function compileAreaBrick(string $name, array $context): \Generator
+    public function compileAreaBrick(string $name, array &$context): \Generator
     {
         $or = new OptionsResolver();
         $or->setRequired(['view', 'request']);

@@ -87,5 +87,4 @@ abstract class AbstractConfigurator implements IConfigurator
     {
         return $this->expressionWrapper;
     }
-
 }

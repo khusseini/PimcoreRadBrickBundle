@@ -86,7 +86,7 @@ pimcore_rad_brick:
           options:
             store: [1,2,5]
         wysiwyg_content:
-          instances: view.get("num_editors").getValue()
+          instances: view.get("num_editors").getData()
           type: wysiwyg
 ```
 
@@ -143,11 +143,15 @@ pimcore_rad_brick:
 
 `columns/view.html.twig`:
 ```twig
-{% set col_width = 12 / column_area_block|length %}
+{% set col_width = 12 / num_columns.getData() %}
 <div class="row">
   {% for column in column_area_block) %}
   <div class="col-{{ col_width }}">
       {{ column|raw }}
+  </div>
+  {% else %}
+  <div class="col-{{ col_width }}">
+      {{ column_area_block|raw }}
   </div>
   {% endfor %}
 </div>

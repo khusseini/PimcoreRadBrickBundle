@@ -86,4 +86,9 @@ class DatasourceRegistry
             return $expression;
         }
     }
+
+    public function getAll()
+    {
+        return (array)$this->datasources;
+    }
 }
