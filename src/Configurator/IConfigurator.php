@@ -14,6 +14,7 @@ interface IConfigurator
 
     /**
      * @param array<array> $config
+     * @return \Generator<RenderArgument>
      */
     public function createEditables(RenderArgument $renderArgs, string $name, array $config): \Generator;
 

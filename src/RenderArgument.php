@@ -13,6 +13,9 @@ class RenderArgument
     /** @var mixed */
     private $value;
 
+    /**
+     * @param mixed $value
+     */
     public function __construct(
         string $type,
         string $name,

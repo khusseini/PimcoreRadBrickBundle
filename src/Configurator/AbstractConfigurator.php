@@ -23,6 +23,7 @@ abstract class AbstractConfigurator implements IConfigurator
 
     /**
      * @param array<array> $data
+     * @return \Generator<RenderArgument>
      */
     abstract public function doCreateEditables(
         RenderArgument $argument,

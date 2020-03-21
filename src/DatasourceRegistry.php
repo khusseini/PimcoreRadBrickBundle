@@ -87,6 +87,9 @@ class DatasourceRegistry
         }
     }
 
+    /**
+     * @return array<callable>
+     */
     public function getAll()
     {
         return (array)$this->datasources;

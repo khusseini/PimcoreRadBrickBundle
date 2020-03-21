@@ -2,6 +2,7 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
+use ArrayObject;
 use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -56,7 +57,7 @@ class DatasourceConfigurator extends AbstractConfigurator
             $config = $editable;
             unset($config['datasource']);
 
-            $items = [];
+            $items = new ArrayObject();
             foreach ($dsData as $i => $item) {
                 if ($datasourceIdExpression) {
                     $i = $this->getExpressionWrapper()->evaluateExpression($datasourceIdExpression, ['item'=>$item]);

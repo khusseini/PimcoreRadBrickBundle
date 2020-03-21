@@ -2,7 +2,7 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
-use Khusseini\PimcoreRadBrickBundle\RenderArgs;
+use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class MapConfigurator extends AbstractConfigurator
@@ -28,24 +28,27 @@ class MapConfigurator extends AbstractConfigurator
         return $or->resolve($options);
     }
 
-    public function doCreateEditables(RenderArgs $renderArgs, array $data): RenderArgs
+    public function doCreateEditables(RenderArgument $argument, string $name, array $data): \Generator
     {
-        if (!$this->supportsEditable($data['editable']['name'], $data['editable']['config'])) {
-            return $renderArgs;
+        if ($this->supportsEditable($name, $data['editable'])) {
+            $maps = $data['editable']['map'];
+            foreach ($maps as $map) {
+                /** @var array<string> $map */
+                $map = $this->resolveMapOptions($map);
+                $source = $this->getExpressionWrapper()->evaluateExpression($map['source'], $data['context']);
+                $data['editable'] = $this
+                    ->getExpressionWrapper()
+                    ->setPropertyValue($data['editable'], $map['target'], $source)
+                ;
+            }
+
+            $argument = new RenderArgument(
+                $argument->getType(),
+                $argument->getName(),
+                $data['editable']['options']
+            );
         }
 
-        $maps = $data['editable']['config']['map'];
-        foreach ($maps as $map) {
-            /** @var array<string> $map */
-            $map = $this->resolveMapOptions($map);
-            $source = $this->getExpressionWrapper()->evaluateExpression($map['source'], $data['context']);
-            $data['editable']['config'] = $this
-                ->getExpressionWrapper()
-                ->setPropertyValue($data['editable']['config'], $map['target'], $source)
-            ;
-        }
-
-        $renderArgs->update([$data['editable']['name'] => $data['editable']['config']]);
-        return $renderArgs;
+        yield $name => $argument;
     }
 }

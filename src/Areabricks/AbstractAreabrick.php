@@ -2,9 +2,15 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\Areabricks;
 
+use ArrayAccess;
+use ArrayObject;
+use Iterator;
 use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
 use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
+use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Pimcore\Extension\Document\Areabrick\AbstractTemplateAreabrick;
+use Pimcore\Model\Document\PageSnippet;
+use Pimcore\Model\Document\Tag;
 use Pimcore\Model\Document\Tag\Area\Info;
 use Pimcore\Templating\Renderer\TagRenderer;
 use Symfony\Component\HttpFoundation\Response;
@@ -99,53 +105,46 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
             'view' => $view,
             'request' => $info->getRequest(),
         ];
-        $editables = $this
+
+        $renderArguments = $this
             ->areabrickConfigurator
             ->compileAreaBrick($this->name, $context)
         ;
 
-        /** @var string $name */
-        foreach ($editables as $name => $config) {
-            $this->processEditable($name, $config, $info);
-        }
-
-        /** @var DatasourceRegistry $registry */
-        if ($registry = @$context['datasources']) {
-            foreach ($registry->getAll() as $name => $callable) {
-                $view[$name] = $callable();
-            }
-        }
+        $this->processRenderArguments(
+            $renderArguments,
+            $info->getView(),
+            $info->getDocument()
+        );
 
         return $this->doAction($info);
     }
 
     /**
-     * @param array<mixed> $config
+     * @param ArrayAccess<string,mixed> $container
+     * @param Iterator<RenderArgument> $renderArguments
      */
-    private function processEditable(string $name, array $config, Info $info): void
-    {
-        $view = $info->getView();
-        $rendered = null;
-        if (isset($config['type'])) {
-            $rendered = $this
-                ->getTagRenderer()
-                ->render($info->getDocument(), $config['type'], $name, $config['options'])
-            ;
-        }
-        if (!isset($config['type'])) {
-            $rendered = [];
-            foreach ($config as $id => $c) {
-                if (!is_array($c) && !isset($c['type'])) {
-                    return;
-                }
-                $rendered[] = $this
-                    ->getTagRenderer()
-                    ->render($info->getDocument(), $c['type'], $name.'_'.$id, $c['options'])
-                ;
-            }
-        }
+    private function processRenderArguments(
+        Iterator $renderArguments,
+        ArrayAccess $container,
+        PageSnippet $document
+    ): void {
+        $render = function ($name, $config) use ($document) {
+            return $this->tagRenderer->render($document, $config['type'], $name, $config['options']);
+        };
 
-        $view[$name] = $rendered;
+        foreach ($renderArguments as $name => $renderArgument) {
+            if ($renderArgument->getType() === 'collection') {
+                $tag = new ArrayObject();
+                $this->processRenderArguments($renderArgument->getValue(), $tag, $document);
+            } elseif ($renderArgument->getType() === 'editable') {
+                $tag = $render($name, $renderArgument->getValue());
+            } else {
+                $tag = $renderArgument->getValue();
+            }
+
+            $container[$name] = $tag;
+        }
     }
 
     public function doAction(Info $info): ?Response

@@ -42,7 +42,7 @@ class AreabrickConfigurator
     /**
      * @param array<mixed> $context
      *
-     * @return \Generator<array>
+     * @return \Generator<RenderArgument>
      */
     public function compileAreaBrick(string $name, array &$context): \Generator
     {
@@ -116,7 +116,7 @@ class AreabrickConfigurator
     /**
      * @param array<mixed> $context
      *
-     * @return \Generator<array>
+     * @return \Generator<RenderArgument>
      */
     public function createEditables(
         string $areabrick,
@@ -127,24 +127,29 @@ class AreabrickConfigurator
 
         /** @var string $name */
         foreach ($compiledConfig as $name => $config) {
+            $renderArguments = [];
             $argument = new RenderArgument(
                 'editable',
                 $name,
-                ['type' => $config['type'], $config['options']]
+                ['type' => $config['type'], 'options' => $config['options']]
             );
-
-            yield $name => $argument;
 
             foreach ($this->configurators as $configurator) {
                 if (!$configurator->supportsEditable($name, $config)) {
                     continue;
                 }
 
-                yield from $configurator->createEditables(
+                $renderArguments = iterator_to_array($configurator->createEditables(
                     $argument,
                     $name,
                     ['editable' => $config, 'context' => $context]
-                );
+                ));
+
+                yield from $renderArguments;
+            }
+
+            if (!key_exists($name, $renderArguments)) {
+                yield $name => $argument;
             }
         }
     }

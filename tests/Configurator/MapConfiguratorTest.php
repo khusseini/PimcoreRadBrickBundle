@@ -4,6 +4,7 @@ namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\Configurator\MapConfigurator;
 use Khusseini\PimcoreRadBrickBundle\RenderArgs;
+use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use PHPUnit\Framework\TestCase;
 
 class MapConfiguratorTest extends TestCase
@@ -27,25 +28,28 @@ class MapConfiguratorTest extends TestCase
         ];
 
         $mapConfig = new MapConfigurator();
-        $renderArgs = new RenderArgs();
-        $renderArgs->set([
-            'test' => ['options' => ['overwrite' => 'me']]
-        ]);
 
-        $renderArgs = $mapConfig->createEditables($renderArgs, [
-            'context' => ['source' => $source],
-            'editable' => [
-                'name' => 'test',
-                'config' => $editables['test']
-            ],
-        ]);
+        $arguments = new RenderArgument(
+            'editable',
+            'test',
+            ['overwrite' => 'me']
+        );
 
-        $expected = [
-            'test' => [
-                'options' => ['overwrite' => 'hello world']
+        $actual = $mapConfig->createEditables(
+            $arguments,
+            'test',
+            [
+                'context' => ['source' => $source],
+                'editable' => $editables['test']
             ]
-        ];
+        );
 
-        $this->assertEquals($expected, $renderArgs->getAll());
+        $actual = iterator_to_array($actual);
+        $this->assertCount(1, $actual);
+        $actual = $actual['test'];
+
+        $expected = 'hello world';
+
+        $this->assertEquals($expected, $actual->getValue()['overwrite']);
     }
 }

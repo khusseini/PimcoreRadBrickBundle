@@ -2,6 +2,7 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
+use ArrayObject;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -33,11 +34,11 @@ class InstancesConfigurator extends AbstractConfigurator
         }
 
         if ($instances > 1) {
-            $editables = [];
+            $editables = new ArrayObject();
             for ($i = 0; $i < $instances; ++$i) {
                 $editables[] = new RenderArgument(
                     $argument->getType(),
-                    $i,
+                    (string) $i,
                     $argument->getValue()
                 );
             }
