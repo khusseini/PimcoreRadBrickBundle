@@ -6,6 +6,7 @@ use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\AbstractConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\IConfigurator;
 use Khusseini\PimcoreRadBrickBundle\RenderArgs;
+use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use PHPUnit\Framework\TestCase;
 use Pimcore\Templating\Model\ViewModel;
 use Prophecy\Argument;
@@ -191,14 +192,11 @@ class AreabrickConfiguratorTest extends TestCase
             }
 
             public function doCreateEditables(
-                RenderArgs $renderArgs,
+                RenderArgument $argument,
+                string $name,
                 array $data
-            ): RenderArgs {
-                $renderArgs->merge([
-                    $data['editable']['name'] => $data['editable']['config'],
-                ]);
-
-                return $renderArgs;
+            ): \Generator {
+                yield $name => $argument;
             }
         };
 

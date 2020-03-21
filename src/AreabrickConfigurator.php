@@ -3,6 +3,7 @@
 namespace Khusseini\PimcoreRadBrickBundle;
 
 use Khusseini\PimcoreRadBrickBundle\Configurator\IConfigurator;
+use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AreabrickConfigurator
@@ -124,35 +125,27 @@ class AreabrickConfigurator
         $compiledConfig = $this->compileEditablesConfig($this->config['areabricks'][$areabrick]);
         $compiledConfig = iterator_to_array($compiledConfig);
 
+        /** @var string $name */
         foreach ($compiledConfig as $name => $config) {
-            $renderArgs = new RenderArgs();
-            $renderArgs->set(
-                [$name => [
-                    'type'=> $config['type'],
-                    'options' => $config['options'],
-                ]]
+            $argument = new RenderArgument(
+                'editable',
+                $name,
+                ['type' => $config['type'], $config['options']]
             );
+
+            yield $name => $argument;
 
             foreach ($this->configurators as $configurator) {
                 if (!$configurator->supportsEditable($name, $config)) {
                     continue;
                 }
 
-                $renderArgs = $configurator->createEditables(
-                    $renderArgs,
-                    [
-                        'editable' => [
-                            'name' => $name,
-                            'config' => $config,
-                        ],
-                        'context' =>  $context
-                    ],
+                yield from $configurator->createEditables(
+                    $argument,
+                    $name,
+                    ['editable' => $config, 'context' => $context]
                 );
-
-                yield from $renderArgs->getAll();
             }
-
-            yield from $renderArgs->getAll();
         }
     }
 }

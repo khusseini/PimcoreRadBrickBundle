@@ -4,7 +4,7 @@ namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\Configurator\DatasourceConfigurator;
 use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
-use Khusseini\PimcoreRadBrickBundle\RenderArgs;
+use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use PHPUnit\Framework\TestCase;
 
 class DatasourceConfiguratorTest extends TestCase
@@ -76,15 +76,12 @@ class DatasourceConfiguratorTest extends TestCase
         $instance = new DatasourceConfigurator();
         $config = [
             'editable' => [
-                'name' => 'test',
-                'config' => [
-                    'options' => [
-                        'bla' => ''
-                    ],
-                    'datasource' => [
-                        'name' => 'test_source',
-                        'id' => 'item.id',
-                    ]
+                'options' => [
+                    'bla' => ''
+                ],
+                'datasource' => [
+                    'name' => 'test_source',
+                    'id' => 'item.id',
                 ]
             ],
             'context' => [
@@ -92,18 +89,26 @@ class DatasourceConfiguratorTest extends TestCase
             ]
         ];
 
-        $expected = ['test' => [
-            1 => [
-                'options' => ['bla' => '']
-            ],
-            2 => [
-                'options' => ['bla' => '']
-            ],
-        ]];
+        $argument = new RenderArgument('editable', 'test', [
+            'options' => ['bla' => '']
+        ]);
 
-        $renderArgs = new RenderArgs();
-        $registry->execute('test_source', []);
-        $renderArgs = $instance->doCreateEditables($renderArgs, $config);
-        $this->assertSame($expected, $renderArgs->getAll());
+        $actualGenerator = $instance->doCreateEditables($argument, 'test', $config);
+        $actual = iterator_to_array($actualGenerator);
+
+        $this->assertCount(2, $actual);
+
+        $types = [];
+        $collectionContent = [];
+        foreach ($actual as $actualArgument) {
+            $types[] = $actualArgument->getType();
+            if ($actualArgument->getType() === 'collection') {
+                $collectionContent = $actualArgument->getValue();
+            }
+        }
+
+        $expectedTypes = ['data', 'collection'];
+        $this->assertSame($expectedTypes, $types);
+        $this->assertCount($itemCount, $collectionContent);
     }
 }

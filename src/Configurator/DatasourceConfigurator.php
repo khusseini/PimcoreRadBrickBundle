@@ -3,7 +3,7 @@
 namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
-use Khusseini\PimcoreRadBrickBundle\RenderArgs;
+use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class DatasourceConfigurator extends AbstractConfigurator
@@ -43,35 +43,37 @@ class DatasourceConfigurator extends AbstractConfigurator
         return $context;
     }
 
-    public function doCreateEditables(RenderArgs $renderArgs, array $data): RenderArgs
+    public function doCreateEditables(RenderArgument $argument, string $name, array $data): \Generator
     {
-        if (!$this->supportsEditable($data['editable']['name'], $data['editable']['config'])) {
-            return $renderArgs;
-        }
+        if ($this->supportsEditable($name, $data['editable'])) {
+            $datasourcesRegistry = $data['context']['datasources'];
+            $editable = $data['editable'];
+            $datasourceConfig = $editable['datasource'];
+            $datasourceName = $datasourceConfig['name'];
+            $datasourceIdExpression = @$datasourceConfig['id'];
+            $dsData = $datasourcesRegistry->execute($datasourceName);
+            yield $datasourceName => new RenderArgument('data', $datasourceName, $dsData);
+            $config = $editable;
+            unset($config['datasource']);
 
-        $datasources = $data['context']['datasources'];
-        $editable = $data['editable'];
-        if (!$datasources instanceof DatasourceRegistry) {
-            return $renderArgs;
-        }
+            $items = [];
+            foreach ($dsData as $i => $item) {
+                if ($datasourceIdExpression) {
+                    $i = $this->getExpressionWrapper()->evaluateExpression($datasourceIdExpression, ['item'=>$item]);
+                }
 
-        $datasource = $editable['config']['datasource'];
-
-        $dsData = $datasources->execute($datasource['name']);
-        $id = $datasource['id'];
-        $config = $editable['config'];
-        unset($config['datasource']);
-
-        $items = [];
-        foreach ($dsData as $i => $item) {
-            if ($id) {
-                $i = $this->getExpressionWrapper()->evaluateExpression($id, ['item'=>$item]);
+                $itemArgument = new RenderArgument('editable', $i, $config);
+                $items[] = $itemArgument;
             }
-            $items[$i] = $config;
+
+            $argument = new RenderArgument(
+                'collection',
+                $argument->getName(),
+                $items
+            );
         }
 
-        $renderArgs->merge([$editable['name'] => $items]);
-        return $renderArgs;
+        yield $name => $argument;
     }
 
     public function supportsEditable(string $editableName, array $config): bool

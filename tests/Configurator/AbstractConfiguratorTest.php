@@ -3,7 +3,7 @@
 namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\Configurator\AbstractConfigurator;
-use Khusseini\PimcoreRadBrickBundle\RenderArgs;
+use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -20,15 +20,13 @@ class AbstractConfiguratorTest extends TestCase
             public function getEditablesExpressionAttributes(): array
             {
                 return [
-                    '[editable][config][options][prop]'
+                    '[editable][options][prop]'
                 ];
             }
 
-            public function doCreateEditables(RenderArgs $renderArgs, array $data): RenderArgs
+            public function doCreateEditables(RenderArgument $argument, string $name, array $data): \Generator
             {
-                return $renderArgs->merge([
-                    $data['editable']['name'] => $data['editable']['config']
-                ]);
+                yield $argument;
             }
 
             public function configureEditableOptions(OptionsResolver $or): void
@@ -46,10 +44,12 @@ class AbstractConfiguratorTest extends TestCase
         return $configurator;
     }
 
-    public function testProcessValue()
+    public function testCanEvaluateExpressions()
     {
         $c = $this->getInstance();
-        $renderArgs = new RenderArgs();
+        $argument = new RenderArgument('editable', 'testedit', [
+            'options' => ['prop' => 'some["context"]'],
+        ]);
         $cases = [
             [
                 'context' => ['some' => ['context' => 'says hello']],
@@ -61,20 +61,16 @@ class AbstractConfiguratorTest extends TestCase
         ];
 
         foreach ($cases as $case) {
-            $actual = $c->createEditables($renderArgs, [
-                'editable' => [
-                    'config' => [
-                        'options' => [
-                            'prop' => 'some["context"]',
-                        ],
-                    ],
-                    'name' => 'testedit'
-                ],
+            $actual = $c->createEditables($argument, 'testedit', [
+                'editable' => $argument->getValue(),
                 'context' => $case['context'],
             ]);
-            $this->assertInstanceOf(RenderArgs::class, $actual);
-            $actualData = $renderArgs->getAll();
-            $this->assertEquals($case['expected'], $actualData['testedit']['options']['prop']);
+
+            $actual = iterator_to_array($actual);
+            $this->assertCount(1, $actual);
+            $actual = $actual[0];
+            $this->assertEquals('testedit', $actual->getName());
+            $this->assertEquals($case['expected'], $actual->getValue()['options']['prop']);
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
-use Khusseini\PimcoreRadBrickBundle\RenderArgs;
+use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class InstancesConfigurator extends AbstractConfigurator
@@ -16,36 +16,36 @@ class InstancesConfigurator extends AbstractConfigurator
     {
         return array_merge(
             parent::getEditablesExpressionAttributes(),
-            ['[editable][config][instances]']
+            ['[editable][instances]']
         );
     }
 
     public function doCreateEditables(
-        RenderArgs $renderArgs,
+        RenderArgument $argument,
+        string $name,
         array $data
-    ): RenderArgs {
-        $config = $data['editable']['config'];
+    ): \Generator {
+        $config = $data['editable'];
         $instances = $config['instances'];
-        $name = $data['editable']['name'];
-
-        if ($instances == 1) {
-            return $renderArgs;
-        }
 
         if ($instances < 1) {
-            $renderArgs->remove($name);
-            return $renderArgs;
+            $argument = new RenderArgument('null', $name);
         }
 
-        $editableArgs = $renderArgs->get($name);
-        $renderData = [];
+        if ($instances > 1) {
+            $editables = [];
+            for ($i = 0; $i < $instances; ++$i) {
+                $editables[] = new RenderArgument(
+                    $argument->getType(),
+                    $i,
+                    $argument->getValue()
+                );
+            }
 
-        for ($i = 0; $i < $instances; ++$i) {
-            $renderData[$i] = $editableArgs;
+            $argument = new RenderArgument('collection', $name, $editables);
         }
 
-        $renderArgs->merge([$name => $renderData]);
-        return $renderArgs;
+        yield $name => $argument;
     }
 
     public function configureEditableOptions(OptionsResolver $or): void

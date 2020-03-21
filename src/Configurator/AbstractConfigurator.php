@@ -3,13 +3,14 @@
 namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\ExpressionLanguage\ExpressionWrapper;
-use Khusseini\PimcoreRadBrickBundle\RenderArgs;
+use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 abstract class AbstractConfigurator implements IConfigurator
 {
     /** @var ExpressionWrapper */
     private $expressionWrapper;
+
 
     public function __construct(ExpressionWrapper $expressionWrapper = null)
     {
@@ -24,9 +25,10 @@ abstract class AbstractConfigurator implements IConfigurator
      * @param array<array> $data
      */
     abstract public function doCreateEditables(
-        RenderArgs $renderArgs,
+        RenderArgument $argument,
+        string $name,
         array $data
-    ): RenderArgs;
+    ): \Generator;
 
     /**
      * @return array<string>
@@ -45,24 +47,26 @@ abstract class AbstractConfigurator implements IConfigurator
     {
         $or = new OptionsResolver();
         $or
-            ->setDefault('editable', function (OptionsResolver $or) {
-                $or->setRequired('name');
-                $or->setAllowedTypes('name', ['string']);
-                $or->setDefault('config', []);
-                $or->setAllowedTypes('config', ['array']);
-            })
+            ->setDefault('editable', [])
             ->setDefault('context', [])
         ;
         return $or->resolve($options);
     }
 
-    public function createEditables(RenderArgs $renderArgs, array $data): RenderArgs
+    public function createEditables(RenderArgument $argument, string $name, array $data): \Generator
     {
         $data = $this->resolveDataOptions($data);
         $attributes = $this->getEditablesExpressionAttributes();
         $data = $this->evaluateExpressions($data, $attributes);
-        return $this->doCreateEditables(
-            $renderArgs,
+        $argument = new RenderArgument(
+            $argument->getType(),
+            $argument->getName(),
+            $data['editable']
+        );
+
+        yield from $this->doCreateEditables(
+            $argument,
+            $name,
             $data
         );
     }
