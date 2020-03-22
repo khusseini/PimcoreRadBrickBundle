@@ -3,13 +3,15 @@
 namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\ExpressionLanguage\ExpressionWrapper;
-use Khusseini\PimcoreRadBrickBundle\RenderArgs;
+use Khusseini\PimcoreRadBrickBundle\RenderArgument;
+use Khusseini\PimcoreRadBrickBundle\Renderer;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 abstract class AbstractConfigurator implements IConfigurator
 {
     /** @var ExpressionWrapper */
     private $expressionWrapper;
+
 
     public function __construct(ExpressionWrapper $expressionWrapper = null)
     {
@@ -22,11 +24,13 @@ abstract class AbstractConfigurator implements IConfigurator
 
     /**
      * @param array<array> $data
+     * @return \Generator<RenderArgument>
      */
     abstract public function doCreateEditables(
-        RenderArgs $renderArgs,
+        Renderer $rednerer,
+        string $name,
         array $data
-    ): RenderArgs;
+    ): \Generator;
 
     /**
      * @return array<string>
@@ -45,31 +49,45 @@ abstract class AbstractConfigurator implements IConfigurator
     {
         $or = new OptionsResolver();
         $or
-            ->setDefault('editable', function (OptionsResolver $or) {
-                $or->setRequired('name');
-                $or->setAllowedTypes('name', ['string']);
-                $or->setDefault('config', []);
-                $or->setAllowedTypes('config', ['array']);
-            })
+            ->setDefault('editable', [])
             ->setDefault('context', [])
         ;
         return $or->resolve($options);
     }
 
-    public function createEditables(RenderArgs $renderArgs, array $data): RenderArgs
-    {
+    public function createEditables(
+        Renderer $renderer,
+        string $name,
+        array $data
+    ): \Generator {
+        $argument = $renderer->get($name);
         $data = $this->resolveDataOptions($data);
         $attributes = $this->getEditablesExpressionAttributes();
         $data = $this->evaluateExpressions($data, $attributes);
-        return $this->doCreateEditables(
-            $renderArgs,
+        $argument = new RenderArgument(
+            $argument->getType(),
+            $argument->getName(),
+            $data['editable']
+        );
+
+        $renderer->set($argument);
+
+        yield from $this->doCreateEditables(
+            $renderer,
+            $name,
             $data
         );
     }
 
-    public function preCreateEditables(string $brickName, array $brickConfig, array $config, array $context): array
+    public function preCreateEditables(string $brickName, \ArrayObject $data): array
     {
-        return $context;
+        return [];
+    }
+
+    public function postCreateEditables(string $brickName, array $config, Renderer $renderer): \Generator
+    {
+        return;
+        yield;
     }
 
     /**

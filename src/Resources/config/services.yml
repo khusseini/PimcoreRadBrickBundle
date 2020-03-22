@@ -3,6 +3,9 @@ services:
         public: false
         autowire: true
         autoconfigure: true
+    Khusseini\PimcoreRadBrickBundle\Configurator\GroupConfigurator:
+        tags:
+        - name: radbrick.configurator
     Khusseini\PimcoreRadBrickBundle\Configurator\DatasourceConfigurator:
         tags:
         - name: radbrick.configurator

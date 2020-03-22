@@ -141,6 +141,11 @@ pimcore_rad_brick:
 </div>
 ```
 
+`columns/edit.html.twig`:
+```twig
+# of Columns: {{ num_columns|raw }}
+```
+
 `columns/view.html.twig`:
 ```twig
 {% set col_width = 12 / num_columns.getData() %}
@@ -156,6 +161,56 @@ pimcore_rad_brick:
   {% endfor %}
 </div>
 ```
+
+
+### Using groups
+
+You might have noticed the strange `else` case in the above example.
+This is due to how the `instances` work. If only one instance is configured,
+then the variable is presented in the view as an editable, not an array.
+
+In order to keep instances in an array or group, you can use the `groups`
+and `group` configurations to provide templates to editables.
+
+`config.yml`:
+```yml
+areabricks:
+  promo_box:
+    label: Promo Box
+    use_edit: true
+    groups:
+      boxes:
+        instances: 'view["num_boxes"].getValue() ? : 2'
+    editables:
+      num_boxes:
+        type: select
+        options:
+          store: [2, 3, 5]
+      link:
+        type: link
+        group: boxes
+      image:
+        type: image
+        group: boxes
+```
+
+`promo_box/edit.html.twig`:
+```twig
+# of Boxes: {{ num_boxes|raw }}
+```
+
+`view.html.twig`:
+```twig
+<div>
+{% for box in boxes %}
+  {{ box.link|raw }}
+  {{ box.image|raw }}
+{% endfor %}
+</div>
+```
+
+Of course the same works for datasources.
+
 
 ### Using maps
 
