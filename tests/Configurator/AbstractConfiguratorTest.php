@@ -4,6 +4,7 @@ namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\Configurator\AbstractConfigurator;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
+use Khusseini\PimcoreRadBrickBundle\Renderer;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -24,9 +25,9 @@ class AbstractConfiguratorTest extends TestCase
                 ];
             }
 
-            public function doCreateEditables(RenderArgument $argument, string $name, array $data): \Generator
+            public function doCreateEditables(Renderer $renderer, string $name, array $data): \Generator
             {
-                yield $argument;
+                yield $name => $renderer->get($name);
             }
 
             public function configureEditableOptions(OptionsResolver $or): void
@@ -60,15 +61,19 @@ class AbstractConfiguratorTest extends TestCase
             ],
         ];
 
+        $renderer = new Renderer();
+        $renderer->set($argument);
+
         foreach ($cases as $case) {
-            $actual = $c->createEditables($argument, 'testedit', [
+            $actual = $c->createEditables($renderer, 'testedit', [
                 'editable' => $argument->getValue(),
                 'context' => $case['context'],
             ]);
 
             $actual = iterator_to_array($actual);
             $this->assertCount(1, $actual);
-            $actual = $actual[0];
+            $this->assertArrayHasKey('testedit', $actual);
+            $actual = $actual['testedit'];
             $this->assertEquals('testedit', $actual->getName());
             $this->assertEquals($case['expected'], $actual->getValue()['options']['prop']);
         }

@@ -5,6 +5,7 @@ namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\MapConfigurator;
 use Khusseini\PimcoreRadBrickBundle\RenderArgs;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
+use Khusseini\PimcoreRadBrickBundle\Renderer;
 use PHPUnit\Framework\TestCase;
 
 class MapConfiguratorTest extends TestCase
@@ -35,8 +36,11 @@ class MapConfiguratorTest extends TestCase
             ['overwrite' => 'me']
         );
 
+        $renderer = new Renderer();
+        $renderer->set($arguments);
+
         $actual = $mapConfig->createEditables(
-            $arguments,
+            $renderer,
             'test',
             [
                 'context' => ['source' => $source],

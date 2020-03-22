@@ -5,6 +5,7 @@ namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\InstancesConfigurator;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
+use Khusseini\PimcoreRadBrickBundle\Renderer;
 use PHPUnit\Framework\TestCase;
 
 class InstancesConfiguratorTest extends TestCase
@@ -64,9 +65,11 @@ class InstancesConfiguratorTest extends TestCase
                 ;
                 $this->assertEquals($expectedSupports, $actualSupports);
                 $renderArgs = new RenderArgument('editable', $editableName, $editableConfig);
+                $renderer = new Renderer();
+                $renderer->set($renderArgs);
 
                 $renderArgs = $configurator->createEditables(
-                    $renderArgs,
+                    $renderer,
                     $editableName,
                     ['context' => [], 'editable'=> $editableConfig]
                 );

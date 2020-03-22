@@ -4,6 +4,7 @@ namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use ArrayObject;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
+use Khusseini\PimcoreRadBrickBundle\Renderer;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class InstancesConfigurator extends AbstractConfigurator
@@ -22,10 +23,11 @@ class InstancesConfigurator extends AbstractConfigurator
     }
 
     public function doCreateEditables(
-        RenderArgument $argument,
+        Renderer $renderer,
         string $name,
         array $data
     ): \Generator {
+        $argument = $renderer->get($name);
         $config = $data['editable'];
         $instances = $config['instances'];
 
@@ -46,6 +48,7 @@ class InstancesConfigurator extends AbstractConfigurator
             $argument = new RenderArgument('collection', $name, $editables);
         }
 
+        $renderer->set($argument);
         yield $name => $argument;
     }
 

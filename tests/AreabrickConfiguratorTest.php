@@ -6,6 +6,7 @@ use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\AbstractConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\IConfigurator;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
+use Khusseini\PimcoreRadBrickBundle\Renderer;
 use PHPUnit\Framework\TestCase;
 use Pimcore\Templating\Model\ViewModel;
 use Prophecy\Argument;
@@ -76,8 +77,8 @@ class AreabrickConfiguratorTest extends TestCase
     public function canCreateEditablesProvider()
     {
         return [
-            //$this->getSimpleBrickTestData(),
-            //$this->getIConfiguratorIntegrationData(),
+            $this->getSimpleBrickTestData(),
+            $this->getIConfiguratorIntegrationData(),
             $this->getIConfiguratorIntegrationData(false),
         ];
     }
@@ -100,12 +101,22 @@ class AreabrickConfiguratorTest extends TestCase
     {
         $configuratorInterface = $this->prophesize(IConfigurator::class);
         $configuratorInterface
-            ->supportsEditable(Argument::cetera())
+            ->supportsEditable(Argument::Any(), Argument::cetera())
             ->willReturn($supports)
         ;
         $configuratorInterface
             ->configureEditableOptions(Argument::any())
         ;
+        $emptyGenerator = function () {
+            return;
+            yield;
+        };
+
+        $configuratorInterface
+            ->postCreateEditables(Argument::any(), Argument::cetera())
+            ->willReturn($emptyGenerator())
+        ;
+
         return $configuratorInterface;
     }
 
@@ -119,7 +130,12 @@ class AreabrickConfiguratorTest extends TestCase
                 'options' => [],
             ]
         ];
-        $config =[
+
+        if ($supports) {
+            $expected['testeditable'] = $expected[$name];
+        }
+
+        $config = [
             'areabricks' => [
                 'testbrick' => [
                     'editables' => [
@@ -132,18 +148,18 @@ class AreabrickConfiguratorTest extends TestCase
             ]
         ];
 
-        $expectedArguments = new RenderArgument('editable', $name, [
+        $generatedArgument = new RenderArgument('editable', $name, [
             'type' => 'input',
             'options' => [],
         ]);
 
-        $generator = function () use ($name, $expectedArguments) {
-            yield $name => $expectedArguments;
+        $generator = function () use ($name, $generatedArgument) {
+            yield $name => $generatedArgument;
         };
 
         $configuratorInterface
             ->createEditables(Argument::any(), Argument::cetera())
-            ->willReturn($generator)
+            ->willReturn($generator())
         ;
 
         $assert = function ($areabrick, $editables) use ($expected) {
@@ -199,10 +215,11 @@ class AreabrickConfiguratorTest extends TestCase
             }
 
             public function doCreateEditables(
-                RenderArgument $argument,
+                Renderer $renderer,
                 string $name,
                 array $data
             ): \Generator {
+                $argument = $renderer->get($name);
                 yield $name => $argument;
             }
         };
@@ -214,13 +231,17 @@ class AreabrickConfiguratorTest extends TestCase
         $renderArguments = $configurator->createEditables('testbrick', ['view' => $view]);
 
         $actual = [];
+        $argumentCalled = 0;
         foreach ($renderArguments as $name => $argument) {
             $view[$name] = $argument->getValue();
             $this->assertArrayHasKey($name, $editables);
 
             if ($name === 'testeditable') {
-                $actual = $argument->getValue()['options'];
-                $this->assertEquals('hello world', $actual['placeholder']);
+                ++$argumentCalled;
+                if ($argumentCalled == 2) {
+                    $actual = $argument->getValue()['options'];
+                    $this->assertEquals('hello world', $actual['placeholder']);
+                }
             }
         }
     }

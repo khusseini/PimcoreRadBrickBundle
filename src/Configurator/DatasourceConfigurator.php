@@ -5,14 +5,19 @@ namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 use ArrayObject;
 use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
+use Khusseini\PimcoreRadBrickBundle\Renderer;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class DatasourceConfigurator extends AbstractConfigurator
 {
-    public function preCreateEditables(string $brickName, array $brickConfig, array $config, array $context): array
+    /** @var array<string,mixed> */
+    private $cachedData = [];
+
+    public function preCreateEditables(string $brickName, \ArrayObject $data): array
     {
-        $brickConfig = $this->resolveBrickconfig($brickConfig);
-        $config = $this->resolveConfig($config);
+        $config = $this->resolveConfig($data['config']);
+        $context = $data['context'];
+        $brickConfig = $this->resolveBrickconfig($config['areabricks'][$brickName]);
         $registry = new DatasourceRegistry();
         foreach ($brickConfig['datasources'] as $id => $datasourceConfig) {
             $dsId = $datasourceConfig['id'];
@@ -40,30 +45,63 @@ class DatasourceConfigurator extends AbstractConfigurator
             );
         }
 
-        $context['datasources'] = $registry;
-        return $context;
+        return ['datasources' => $registry];
     }
 
-    public function doCreateEditables(RenderArgument $argument, string $name, array $data): \Generator
+    /**
+     * @param array<mixed> $data
+     */
+    private function fetchDataArgument(string $datasourceName, array $data): RenderArgument
     {
-        if ($this->supportsEditable($name, $data['editable'])) {
-            $datasourcesRegistry = $data['context']['datasources'];
-            $editable = $data['editable'];
-            $datasourceConfig = $editable['datasource'];
-            $datasourceName = $datasourceConfig['name'];
-            $datasourceIdExpression = @$datasourceConfig['id'];
-            $dsData = $datasourcesRegistry->execute($datasourceName);
-            yield $datasourceName => new RenderArgument('data', $datasourceName, $dsData);
-            $config = $editable;
-            unset($config['datasource']);
+        if (isset($this->cachedData[$datasourceName])) {
+            return $this->cachedData[$datasourceName];
+        }
 
+        $datasourcesRegistry = $data['context']['datasources'];
+        $sourceData =
+            new RenderArgument(
+                'data',
+                $datasourceName,
+                $datasourcesRegistry->execute($datasourceName)
+            )
+        ;
+
+        $this->cachedData[$datasourceName] = $sourceData;
+        return $sourceData;
+    }
+
+    private function hasCached(string $name): bool
+    {
+        return isset($this->cachedData[$name]);
+    }
+
+    public function doCreateEditables(Renderer $renderer, string $name, array $data): \Generator
+    {
+        $argument = $renderer->get($name);
+
+        if ($this->supportsEditable($name, $data['editable'])) {
+            $editable = $data['editable'];
+            $datasourceName = $editable['datasource']['name'];
+            $datasourceIdExpression = @$editable['datasource']['id'];
+            $yieldData = !$this->hasCached($datasourceName);
+            $dataArgument = $this->fetchDataArgument($datasourceName, $data);
+
+            if ($yieldData) {
+                yield $dataArgument->getName() => $dataArgument;
+            }
+
+            unset($editable['datasource']);
             $items = new ArrayObject();
-            foreach ($dsData as $i => $item) {
+
+            foreach ($dataArgument->getValue() as $i => $item) {
                 if ($datasourceIdExpression) {
-                    $i = $this->getExpressionWrapper()->evaluateExpression($datasourceIdExpression, ['item'=>$item]);
+                    $i = $this
+                        ->getExpressionWrapper()
+                        ->evaluateExpression($datasourceIdExpression, ['item'=>$item])
+                    ;
                 }
 
-                $itemArgument = new RenderArgument('editable', $i, $config);
+                $itemArgument = new RenderArgument('editable', $i, $editable);
                 $items[] = $itemArgument;
             }
 
@@ -74,6 +112,7 @@ class DatasourceConfigurator extends AbstractConfigurator
             );
         }
 
+        $renderer->set($argument);
         yield $name => $argument;
     }
 
@@ -108,7 +147,7 @@ class DatasourceConfigurator extends AbstractConfigurator
     protected function resolveConfig(array $config): array
     {
         $or = new OptionsResolver();
-        $or->setDefaults(['datasources' => [], 'areabricks' => []]);
+        $or->setDefaults(['context' => [], 'datasources' => [], 'areabricks' => []]);
         $or->setDefined(array_keys($config));
         return $or->resolve($config);
     }

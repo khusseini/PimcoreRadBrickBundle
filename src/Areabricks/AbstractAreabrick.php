@@ -7,6 +7,7 @@ use ArrayObject;
 use Iterator;
 use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
+use Metadata\NullMetadata;
 use Pimcore\Extension\Document\Areabrick\AbstractTemplateAreabrick;
 use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Document\Tag\Area\Info;
@@ -40,6 +41,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
         $this->name = $name;
         $this->tagRenderer = $tagRenderer;
         $this->areabrickConfigurator = $areabrickConfigurator;
+        $this->areabrickConfigurator->resolveAreaBrickConfig($name);
         $options = $this->areabrickConfigurator->getAreabrickConfig($name);
         $this->icon = $options['icon'];
         $this->label = $options['label'];
@@ -125,23 +127,41 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     private function processRenderArguments(
         Iterator $renderArguments,
         ArrayAccess $container,
-        PageSnippet $document
+        PageSnippet $document,
+        ArrayAccess $referencesContainer = null,
+        string $parentName = ''
     ): void {
+        if (!$referencesContainer) {
+            $referencesContainer = new \ArrayObject();
+        }
+
         $render = function ($name, $config) use ($document) {
             return $this->tagRenderer->render($document, $config['type'], $name, $config['options']);
         };
 
         foreach ($renderArguments as $name => $renderArgument) {
+            $referenceId = $parentName ? $parentName.'_'.$name : $name;
+
             if ($renderArgument->getType() === 'collection') {
                 $tag = new ArrayObject();
-                $this->processRenderArguments($renderArgument->getValue(), $tag, $document);
+                $this->processRenderArguments(
+                    new \ArrayIterator($renderArgument->getValue()),
+                    $tag,
+                    $document,
+                    $referencesContainer,
+                    $referenceId
+                );
+                $tag = (array)$tag;
             } elseif ($renderArgument->getType() === 'editable') {
-                $tag = $render($name, $renderArgument->getValue());
+                $tag = $render($referenceId, $renderArgument->getValue());
+            } elseif ($renderArgument->getType() === 'reference') {
+                  $reference = $renderArgument->getValue();
+                  $tag = $referencesContainer[$reference];
             } else {
                 $tag = $renderArgument->getValue();
             }
 
-            $container[$name] = $tag;
+            $referencesContainer[$referenceId] = $container[$name] = $tag;
         }
     }
 

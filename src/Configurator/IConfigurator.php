@@ -3,6 +3,7 @@
 namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
+use Khusseini\PimcoreRadBrickBundle\Renderer;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 interface IConfigurator
@@ -16,16 +17,21 @@ interface IConfigurator
      * @param array<array> $config
      * @return \Generator<RenderArgument>
      */
-    public function createEditables(RenderArgument $renderArgs, string $name, array $config): \Generator;
+    public function createEditables(Renderer $renderer, string $name, array $config): \Generator;
 
     public function configureEditableOptions(OptionsResolver $or): void;
 
     /**
-     * @param array<mixed> $brickConfig
-     * @param array<mixed> $config
-     * @param array<mixed> $context
+     * @param \ArrayObject<string,mixed> $data
      *
-     * @return array<mixed>
+     * @return array<string,mixed>
      */
-    public function preCreateEditables(string $brickName, array $brickConfig, array $config, array $context): array;
+    public function preCreateEditables(string $brickName, \ArrayObject $data): array;
+
+    /**
+     * @param array<string,mixed> $config
+     *
+     * @return \Generator<string,RenderArgument>
+     */
+    public function postCreateEditables(string $brickName, array $config, Renderer $renderer): \Generator;
 }

@@ -3,6 +3,7 @@
 namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
+use Khusseini\PimcoreRadBrickBundle\Renderer;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class MapConfigurator extends AbstractConfigurator
@@ -28,8 +29,9 @@ class MapConfigurator extends AbstractConfigurator
         return $or->resolve($options);
     }
 
-    public function doCreateEditables(RenderArgument $argument, string $name, array $data): \Generator
+    public function doCreateEditables(Renderer $renderer, string $name, array $data): \Generator
     {
+        $argument = $renderer->get($name);
         if ($this->supportsEditable($name, $data['editable'])) {
             $maps = $data['editable']['map'];
             foreach ($maps as $map) {
@@ -49,6 +51,7 @@ class MapConfigurator extends AbstractConfigurator
             );
         }
 
+        $renderer->set($argument);
         yield $name => $argument;
     }
 }
