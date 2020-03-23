@@ -92,7 +92,7 @@ class Configuration implements ConfigurationInterface
                         ->arrayNode('args')
                             ->info('Configure arguments to pass to method call')
                             ->useAttributeAsKey('name')
-                            ->scalarPrototype()
+                            ->variablePrototype()
                         ->end()
                     ->end()
                 ->end()

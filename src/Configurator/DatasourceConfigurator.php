@@ -31,6 +31,11 @@ class DatasourceConfigurator extends AbstractConfigurator
                     $input = [];
 
                     foreach ($datasourceConfig['args'] as $name => $value) {
+                        if (!is_string($value)) {
+                            $input[$name] = $value;
+                            continue;
+                        }
+
                         $input[$name] = $this
                             ->getExpressionWrapper()
                             ->evaluateExpression($value, $context)
