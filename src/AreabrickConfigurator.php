@@ -63,7 +63,7 @@ class AreabrickConfigurator
 
         $this->config = $data['config'];
 
-        return $this->createEditables($name, $context);
+        return $this->createEditables($name, $data['context']);
     }
 
     /**

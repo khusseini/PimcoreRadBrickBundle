@@ -38,6 +38,14 @@ class DatasourceRegistry
         return $ds($args);
     }
 
+    public function executeAll(): \Generator
+    {
+        $ds = (array)$this->datasources;
+        foreach ($ds as $name => $callback) {
+            yield $name => $callback();
+        }
+    }
+
     /**
      * @param array<string> $args
      *

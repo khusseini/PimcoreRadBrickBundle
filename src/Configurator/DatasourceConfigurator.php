@@ -10,9 +10,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class DatasourceConfigurator extends AbstractConfigurator
 {
-    /** @var array<string,mixed> */
-    private $cachedData = [];
-
     public function preCreateEditables(string $brickName, \ArrayObject $data): array
     {
         $config = $this->resolveConfig($data['config']);
@@ -48,47 +45,29 @@ class DatasourceConfigurator extends AbstractConfigurator
         return ['datasources' => $registry];
     }
 
-    /**
-     * @param array<mixed> $data
-     */
-    private function fetchDataArgument(string $datasourceName, array $data): RenderArgument
+    public function generateDatasources(Renderer $renderer, $data): \Generator
     {
-        if (isset($this->cachedData[$datasourceName])) {
-            return $this->cachedData[$datasourceName];
+        foreach ($data['context']['datasources']->executeAll() as $name => $value) {
+            $argument = new RenderArgument('data', $name, $value);
+            $renderer->set($argument);
+            yield $argument->getName() => $argument;
         }
-
-        $datasourcesRegistry = $data['context']['datasources'];
-        $sourceData =
-            new RenderArgument(
-                'data',
-                $datasourceName,
-                $datasourcesRegistry->execute($datasourceName)
-            )
-        ;
-
-        $this->cachedData[$datasourceName] = $sourceData;
-        return $sourceData;
-    }
-
-    private function hasCached(string $name): bool
-    {
-        return isset($this->cachedData[$name]);
     }
 
     public function doCreateEditables(Renderer $renderer, string $name, array $data): \Generator
     {
         $argument = $renderer->get($name);
+        if (!$data['context']['datasources']) {
+            return;
+        }
 
-        if ($this->supportsEditable($name, $data['editable'])) {
-            $editable = $data['editable'];
+        yield from $this->generateDatasources($renderer, $data);
+
+        $editable = $data['editable'];
+        if (@$editable['datasource']['name']) {
             $datasourceName = $editable['datasource']['name'];
             $datasourceIdExpression = @$editable['datasource']['id'];
-            $yieldData = !$this->hasCached($datasourceName);
-            $dataArgument = $this->fetchDataArgument($datasourceName, $data);
-
-            if ($yieldData) {
-                yield $dataArgument->getName() => $dataArgument;
-            }
+            $dataArgument = $renderer->get($datasourceName);
 
             unset($editable['datasource']);
             $items = new ArrayObject();
@@ -118,7 +97,7 @@ class DatasourceConfigurator extends AbstractConfigurator
 
     public function supportsEditable(string $editableName, array $config): bool
     {
-        return isset($config['datasource']) && count($config['datasource']);
+        return true;
     }
 
     public function configureEditableOptions(OptionsResolver $optionsResolver): void

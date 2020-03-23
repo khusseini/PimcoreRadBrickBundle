@@ -71,7 +71,7 @@ class DatasourceConfiguratorTest extends TestCase
             $items[] = $createItem($i+1);
         }
 
-        $registry->add('test_source', function ($input) use ($items) {
+        $registry->add('test_source', function () use ($items) {
             return $items;
         });
 
