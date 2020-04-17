@@ -1,6 +1,7 @@
 # PimcoreRadBrickBundle
 A RAD way to create Areabricks in Pimcore
 
+
 ## Purpose
 
 Configure data and editables available in Pimcore Areabricks view and edit templates.
@@ -9,6 +10,7 @@ Configure data and editables available in Pimcore Areabricks view and edit templ
 ```
 composer require khusseini/pimcore-radbrick
 ```
+
 
 ## Usage
 
@@ -68,11 +70,12 @@ The instance variables are created using the basename of the editable and postfi
 {% endfor %}
 ```
 
+
 #### Making instances configurable
 
 In most cases, it doesn't make much sense to hardcode the number of instances
 of an editable. In order to make the number of instances configurable via admin
-we will leverage the power of the (Expression Language Component)[https://symfony.com/doc/current/components/expression_language.html].
+we will leverage the power of the [Expression Language Component](https://symfony.com/doc/current/components/expression_language.html).
 
 ```yml
 pimcore_rad_brick:
@@ -209,8 +212,6 @@ areabricks:
 </div>
 ```
 
-Of course the same works for datasources.
-
 
 ### Using maps
 
@@ -300,6 +301,7 @@ Category: {{ select_category|raw }}
 </div>
 ```
 
+
 #### Connecting Editables and datasources
 
 When using datasources, it is also possible to connect editables to items in datasources.
@@ -337,5 +339,16 @@ pimcore_rad_brick:
           id: products_by_category
           args:
             category: view["select_category"].getElement()
-
 ```
+
+
+## Contribute
+
+If you find something that is missing which there is no issue for or want to help fix a bug or documentation, please feel free to submit a PR.
+Read through the code and try to run the tests with `vendor/bin/phpunit`
+Coding standard is `@PSR2` and `php-cs-fixer` will be used to format the code. Scrutinizer will be used in future for enforcing coding standards.
+
+
+## Donations
+
+<a href="https://www.buymeacoffee.com/5sAwkYgyb" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/arial-white.png" alt="Buy Me A Coffee" style="height: 51px !important;width: 217px !important;" ></a>
