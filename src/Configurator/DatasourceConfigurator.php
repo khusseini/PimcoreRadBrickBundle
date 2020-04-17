@@ -31,15 +31,7 @@ class DatasourceConfigurator extends AbstractConfigurator
                     $input = [];
 
                     foreach ($datasourceConfig['args'] as $name => $value) {
-                        if (!is_string($value)) {
-                            $input[$name] = $value;
-                            continue;
-                        }
-
-                        $input[$name] = $this
-                            ->getExpressionWrapper()
-                            ->evaluateExpression($value, $context)
-                        ;
+                        $input[$name] = $this->recurseExpression($value, $context);
                     }
 
                     return $dataCall($input);
@@ -48,6 +40,24 @@ class DatasourceConfigurator extends AbstractConfigurator
         }
 
         return ['datasources' => $registry];
+    }
+
+    protected function recurseExpression($value, array $context)
+    {
+        if (is_string($value)) {
+            return $this
+                ->getExpressionWrapper()
+                ->evaluateExpression($value, $context)
+            ;
+        }
+
+        if (is_array($value)) {
+            foreach ($value as $key => $item) {
+                $value[$key] = $this->recurseExpression($item, $context);
+            }
+        }
+
+        return $value;
     }
 
     public function generateDatasources(Renderer $renderer, $data): \Generator
