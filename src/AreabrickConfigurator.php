@@ -73,6 +73,11 @@ class AreabrickConfigurator
         $this->config['areabricks'][$name] = $config;
     }
 
+    public function hasAreabrickConfig(string $name): bool
+    {
+        return (bool)$this->getAreabrickConfig($name);
+    }
+
     /**
      * @return array<string,mixed>
      */

@@ -2,25 +2,14 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\Areabricks;
 
-use ArrayAccess;
-use ArrayObject;
-use Iterator;
-use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
-use Khusseini\PimcoreRadBrickBundle\Context;
-use Khusseini\PimcoreRadBrickBundle\RenderArgument;
-use Metadata\NullMetadata;
+use Khusseini\PimcoreRadBrickBundle\AreabrickRenderer;
 use Pimcore\Extension\Document\Areabrick\AbstractTemplateAreabrick;
-use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Document\Tag\Area\Info;
 use Pimcore\Templating\Renderer\TagRenderer;
 use Symfony\Component\HttpFoundation\Response;
 
 abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 {
-    /**
-     * @var AreabrickConfigurator
-     */
-    private $areabrickConfigurator;
     /**
      * @var string
      */
@@ -45,21 +34,19 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
      * @var bool
      */
     private $useEdit = false;
+
     /**
-     * @var TagRenderer
+     * @var AreabrickRenderer
      */
-    private $tagRenderer;
+    private $areabrickRenderer;
 
     public function __construct(
         string $name,
-        TagRenderer $tagRenderer,
-        AreabrickConfigurator $areabrickConfigurator
+        AreabrickRenderer $areabrickRenderer
     ) {
         $this->name = $name;
-        $this->tagRenderer = $tagRenderer;
-        $this->areabrickConfigurator = $areabrickConfigurator;
-        $this->areabrickConfigurator->resolveAreaBrickConfig($name);
-        $options = $this->areabrickConfigurator->getAreabrickConfig($name);
+        $this->areabrickRenderer = $areabrickRenderer;
+        $options = $areabrickRenderer->getAreabrickConfig($name);
         $this->icon = $options['icon'];
         $this->label = $options['label'];
         $this->openTag = $options['open'];
@@ -117,73 +104,8 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
      */
     public function action(Info $info)
     {
-        $view = $info->getView();
-        $context = new Context($view, $info->getRequest());
-
-        $renderArguments = $this
-            ->areabrickConfigurator
-            ->compileAreaBrick($this->name, $context);
-
-        $this->processRenderArguments(
-            $renderArguments,
-            $info->getView(),
-            $info->getDocument()
-        );
-
+        $this->areabrickRenderer->render($this->name, $info);
         return $this->doAction($info);
-    }
-
-    /**
-     * @param ArrayAccess<string,mixed> $container
-     * @param Iterator<RenderArgument>  $renderArguments
-     */
-    private function processRenderArguments(
-        Iterator $renderArguments,
-        ArrayAccess $container,
-        PageSnippet $document,
-        ArrayAccess $referencesContainer = null,
-        string $parentName = ''
-    ): void {
-        if (!$referencesContainer) {
-            $referencesContainer = new \ArrayObject();
-        }
-
-        $render = function ($name, $config) use ($document) {
-            return $this->tagRenderer->render($document, $config['type'], $name, $config['options']);
-        };
-
-        foreach ($renderArguments as $name => $renderArgument) {
-            $referenceId = $parentName ? $parentName.'_'.$name : $name;
-
-            if (!$renderArgument instanceof RenderArgument) {
-                continue;
-            }
-
-            if ($renderArgument->getType() === 'null') {
-                continue;
-            }
-
-            if ($renderArgument->getType() === 'collection') {
-                $tag = new ArrayObject();
-                $this->processRenderArguments(
-                    new \ArrayIterator($renderArgument->getValue()),
-                    $tag,
-                    $document,
-                    $referencesContainer,
-                    $referenceId
-                );
-                $tag = (array)$tag;
-            } elseif ($renderArgument->getType() === 'editable') {
-                $tag = $render($referenceId, $renderArgument->getValue());
-            } elseif ($renderArgument->getType() === 'reference') {
-                $reference = $renderArgument->getValue();
-                $tag = $referencesContainer[$reference];
-            } else {
-                $tag = $renderArgument->getValue();
-            }
-
-            $referencesContainer[$referenceId] = $container[$name] = $tag;
-        }
     }
 
     public function doAction(Info $info): ?Response
@@ -196,7 +118,6 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
      */
     public function postRenderAction(Info $info)
     {
-        // noop - implement as needed
         return null;
     }
 

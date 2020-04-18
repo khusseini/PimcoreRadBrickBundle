@@ -3,10 +3,12 @@
 namespace Test\Khusseini\PimcoreRadBrickBundle\Areabricks;
 
 use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
+use Khusseini\PimcoreRadBrickBundle\AreabrickRenderer;
 use Khusseini\PimcoreRadBrickBundle\Areabricks\AbstractAreabrick;
 use PHPUnit\Framework\TestCase;
 use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Document\Tag\Area\Info;
+use Pimcore\Model\Element\Tag;
 use Pimcore\Templating\Model\ViewModel;
 use Pimcore\Templating\Renderer\TagRenderer;
 use Prophecy\Argument;
@@ -31,11 +33,12 @@ class AbstractAreabrickTest extends TestCase
         $configurator = new AreabrickConfigurator($config);
 
         $tagRenderer = $this->prophesize(TagRenderer::class);
+        $tag = $this->prophesize(Tag::class);
         $tagRenderer
             ->render(Argument::any(), Argument::cetera())
             ->will(
-                function ($args) {
-                    return $args;
+                function ($args) use($tag) {
+                    return $tag->reveal();
                 }
             );
 
@@ -47,11 +50,14 @@ class AbstractAreabrickTest extends TestCase
         $info->getDocument()->willReturn($doc->reveal());
         $info->getView()->willReturn($view);
 
-        $brick = new class('testbrick', $tagRenderer->reveal(), $configurator) extends AbstractAreabrick {
+        $areabrickRenderer = new AreabrickRenderer($configurator, $tagRenderer->reveal());
+
+        $brick = new class('testbrick', $areabrickRenderer) extends AbstractAreabrick {
         };
 
         $brick->action($info->reveal());
 
         $this->assertTrue($view->has('testedit'));
     }
+
 }
