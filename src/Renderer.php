@@ -7,17 +7,17 @@ use InvalidArgumentException;
 class Renderer
 {
     /**
-     * @var array<RenderArgument> 
+     * @var array<RenderArgument>
      */
     private $arguments = [];
 
     /**
-     * @var array<RenderArgument> 
+     * @var array<RenderArgument>
      */
     private $emittedArguments = [];
 
     /**
-     * @var array<RenderArgument> 
+     * @var array<RenderArgument>
      */
     private $toEmit = [];
 
@@ -36,19 +36,8 @@ class Renderer
         return $this->arguments[$name];
     }
 
-    public function emitArgument($nameOrArgument): void
+    public function emitArgument(RenderArgument $argument): void
     {
-        if (! is_string($nameOrArgument)
-            && ! $nameOrArgument instanceof RenderArgument
-        ) {
-            throw new InvalidArgumentException(sprintf("Argument of type %s not suppoert in %s.", gettype($nameOrArgument), __METHOD__));
-        }
-
-        $argument = $nameOrArgument;
-        if (is_string($argument)) {
-            $argument = $this->get($argument);
-        }
-
         $this->set($argument);
         $this->toEmit[$argument->getName()] = $argument;
     }
@@ -56,18 +45,17 @@ class Renderer
     public function emit(): \Generator
     {
         foreach ($this->toEmit as $name => $argument) {
-            if (isset($this->emittedArguments[$name])) {
+            if ($this->isArgumentEmitted($argument)) {
                 continue;
             }
-
             $this->emittedArguments[$name] = $argument;
-
             yield $name => $argument;
+            unset($this->toEmit[$name]);
         }
     }
 
-    public function isArgumentEmitted(string $name): bool
+    public function isArgumentEmitted(RenderArgument $renderArgument): bool
     {
-        return isset($this->emittedArguments[$name]);
+        return isset($this->emittedArguments[$renderArgument->getName()]);
     }
 }
