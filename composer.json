@@ -24,6 +24,7 @@
         "phpunit/phpunit": "^9.0",
         "squizlabs/php_codesniffer": "^3.5",
         "phpstan/phpstan": "^0.12.17",
-        "pimcore/pimcore": "^6"
+        "pimcore/pimcore": "^6",
+        "sebastian/phpcpd": "^5.0"
     }
 }
