@@ -6,6 +6,7 @@ use ArrayAccess;
 use ArrayObject;
 use Iterator;
 use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
+use Khusseini\PimcoreRadBrickBundle\Context;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Metadata\NullMetadata;
 use Pimcore\Extension\Document\Areabrick\AbstractTemplateAreabrick;
@@ -17,35 +18,35 @@ use Symfony\Component\HttpFoundation\Response;
 abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 {
     /**
-     * @var AreabrickConfigurator 
+     * @var AreabrickConfigurator
      */
     private $areabrickConfigurator;
     /**
-     * @var string 
+     * @var string
      */
     private $name;
     /**
-     * @var string 
+     * @var string
      */
     private $icon;
     /**
-     * @var string 
+     * @var string
      */
     private $label;
     /**
-     * @var string 
+     * @var string
      */
     private $openTag = '';
     /**
-     * @var string 
+     * @var string
      */
     private $closeTag = '';
     /**
-     * @var bool 
+     * @var bool
      */
     private $useEdit = false;
     /**
-     * @var TagRenderer 
+     * @var TagRenderer
      */
     private $tagRenderer;
 
@@ -117,10 +118,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     public function action(Info $info)
     {
         $view = $info->getView();
-        $context = [
-            'view' => $view,
-            'request' => $info->getRequest(),
-        ];
+        $context = new Context($view, $info->getRequest());
 
         $renderArguments = $this
             ->areabrickConfigurator

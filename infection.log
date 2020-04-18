@@ -1,0 +1,1325 @@
+Escaped mutants:
+================
+
+1) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:105    [M] FalseValue
+
+--- Original
++++ New
+@@ @@
+     public function resolveAreaBrickConfig(string $name) : array
+     {
+         $or = new OptionsResolver();
+-        $or->setDefaults(['icon' => null, 'label' => null, 'open' => '', 'close' => '', 'use_edit' => false]);
++        $or->setDefaults(['icon' => null, 'label' => null, 'open' => '', 'close' => '', 'use_edit' => true]);
+         $config = $this->getAreabrickConfig($name);
+         $or->setDefined(array_keys($config));
+         $this->setAreabrickConfig($name, $or->resolve($config));
+
+
+2) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:137    [M] Foreach_
+
+--- Original
++++ New
+@@ @@
+         $or = new OptionsResolver();
+         $or->setDefaults(['options' => []]);
+         $or->setRequired(['type']);
+-        foreach ($this->configurators as $configurator) {
++        foreach (array() as $configurator) {
+             $configurator->configureEditableOptions($or);
+         }
+         $return = [];
+
+
+3) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:138    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+         $or->setDefaults(['options' => []]);
+         $or->setRequired(['type']);
+         foreach ($this->configurators as $configurator) {
+-            $configurator->configureEditableOptions($or);
++            
+         }
+         $return = [];
+         foreach ($editablesConfig as $name => $econfig) {
+
+
+4) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:148    [M] ArrayOneItem
+
+--- Original
++++ New
+@@ @@
+             $econfig = $or->resolve($econfig);
+             $return[$name] = $econfig;
+         }
+-        return $return;
++        return count($return) > 1 ? array_slice($return, 0, 1, true) : $return;
+     }
+     /**
+      * @return \Generator<RenderArgument>
+
+
+5) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:172    [M] Foreach_
+
+--- Original
++++ New
+@@ @@
+         foreach ($editablesConfig as $editableName => $editableConfig) {
+             $argument = new RenderArgument('editable', $editableName, ['type' => $editableConfig['type'], 'options' => $editableConfig['options']]);
+             $renderer->emitArgument($argument);
+-            foreach ($this->configurators as $configurator) {
++            foreach (array() as $configurator) {
+                 if ($configurator->supportsEditable($editableName, $editableConfig)) {
+                     $configurator->createEditables($renderer, $editableName, ['editable' => $editableConfig, 'context' => $context]);
+                 }
+
+
+6) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:174    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+             $renderer->emitArgument($argument);
+             foreach ($this->configurators as $configurator) {
+                 if ($configurator->supportsEditable($editableName, $editableConfig)) {
+-                    $configurator->createEditables($renderer, $editableName, ['editable' => $editableConfig, 'context' => $context]);
++                    
+                 }
+             }
+             yield from $renderer->emit();
+
+
+7) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:188    [M] Foreach_
+
+--- Original
++++ New
+@@ @@
+         /**
+          * @var IConfigurator $configurator
+         */
+-        foreach ($this->configurators as $configurator) {
++        foreach (array() as $configurator) {
+             $configurator->postCreateEditables($areabrick, $areaBrickConfig, $renderer);
+         }
+         yield from $renderer->emit();
+     }
+ }
+
+
+8) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:189    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+          * @var IConfigurator $configurator
+         */
+         foreach ($this->configurators as $configurator) {
+-            $configurator->postCreateEditables($areabrick, $areaBrickConfig, $renderer);
++            
+         }
+         yield from $renderer->emit();
+     }
+ }
+
+
+9) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Areabricks/AbstractAreabrick.php:147    [M] LogicalNot
+
+--- Original
++++ New
+@@ @@
+      */
+     private function processRenderArguments(Iterator $renderArguments, ArrayAccess $container, PageSnippet $document, ArrayAccess $referencesContainer = null, string $parentName = '') : void
+     {
+-        if (!$referencesContainer) {
++        if ($referencesContainer) {
+             $referencesContainer = new \ArrayObject();
+         }
+         $render = function ($name, $config) use($document) {
+
+
+10) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Areabricks/AbstractAreabrick.php:166    [M] Identical
+
+--- Original
++++ New
+@@ @@
+             if ($renderArgument->getType() === 'null') {
+                 continue;
+             }
+-            if ($renderArgument->getType() === 'collection') {
++            if ($renderArgument->getType() !== 'collection') {
+                 $tag = new ArrayObject();
+                 $this->processRenderArguments(new \ArrayIterator($renderArgument->getValue()), $tag, $document, $referencesContainer, $referenceId);
+                 $tag = (array) $tag;
+
+
+11) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Areabricks/AbstractAreabrick.php:176    [M] Identical
+
+--- Original
++++ New
+@@ @@
+                 $tag = new ArrayObject();
+                 $this->processRenderArguments(new \ArrayIterator($renderArgument->getValue()), $tag, $document, $referencesContainer, $referenceId);
+                 $tag = (array) $tag;
+-            } elseif ($renderArgument->getType() === 'editable') {
++            } elseif ($renderArgument->getType() !== 'editable') {
+                 $tag = $render($referenceId, $renderArgument->getValue());
+             } elseif ($renderArgument->getType() === 'reference') {
+                 $reference = $renderArgument->getValue();
+
+
+12) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:37    [M] FunctionCall
+
+--- Original
++++ New
+@@ @@
+                 foreach ($datasourceConfig['args'] as $name => $value) {
+                     $input[$name] = $this->recurseExpression($value, $context);
+                 }
+-                return $dataCall($input);
++                $dataCall($input);
++                return null;
+             });
+         }
+         return ['datasources' => $registry];
+
+
+13) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:94    [M] ArrayItemRemoval
+
+--- Original
++++ New
+@@ @@
+             $items = new ArrayObject();
+             foreach ($dataArgument->getValue() as $i => $item) {
+                 if ($datasourceIdExpression) {
+-                    $i = $this->getExpressionWrapper()->evaluateExpression($datasourceIdExpression, ['item' => $item]);
++                    $i = $this->getExpressionWrapper()->evaluateExpression($datasourceIdExpression, []);
+                 }
+                 $itemArgument = new RenderArgument('editable', $i, $editable);
+                 $items[] = $itemArgument;
+
+
+14) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:129    [M] ArrayItemRemoval
+
+--- Original
++++ New
+@@ @@
+     protected function resolveBrickconfig(array $config) : array
+     {
+         $or = new OptionsResolver();
+-        $or->setDefaults(['datasources' => [], 'editables' => []]);
++        $or->setDefaults(['editables' => []]);
+         $or->setDefined(array_keys($config));
+         return $or->resolve($config);
+     }
+
+
+15) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:129    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+     protected function resolveBrickconfig(array $config) : array
+     {
+         $or = new OptionsResolver();
+-        $or->setDefaults(['datasources' => [], 'editables' => []]);
++        
+         $or->setDefined(array_keys($config));
+         return $or->resolve($config);
+     }
+
+
+16) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:130    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+     {
+         $or = new OptionsResolver();
+         $or->setDefaults(['datasources' => [], 'editables' => []]);
+-        $or->setDefined(array_keys($config));
++        
+         return $or->resolve($config);
+     }
+     /**
+
+
+17) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:142    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+     protected function resolveConfig(array $config) : array
+     {
+         $or = new OptionsResolver();
+-        $or->setDefaults(['context' => [], 'datasources' => [], 'areabricks' => []]);
++        
+         $or->setDefined(array_keys($config));
+         return $or->resolve($config);
+     }
+ }
+
+
+18) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:142    [M] ArrayItemRemoval
+
+--- Original
++++ New
+@@ @@
+     protected function resolveConfig(array $config) : array
+     {
+         $or = new OptionsResolver();
+-        $or->setDefaults(['context' => [], 'datasources' => [], 'areabricks' => []]);
++        $or->setDefaults(['datasources' => [], 'areabricks' => []]);
+         $or->setDefined(array_keys($config));
+         return $or->resolve($config);
+     }
+ }
+
+
+19) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:143    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+     {
+         $or = new OptionsResolver();
+         $or->setDefaults(['context' => [], 'datasources' => [], 'areabricks' => []]);
+-        $or->setDefined(array_keys($config));
++        
+         return $or->resolve($config);
+     }
+ }
+
+
+20) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:36    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+     protected function resolveBrickConfig(array $config) : array
+     {
+         $or = new OptionsResolver();
+-        $or->setDefined(array_keys($config));
++        
+         $or->setDefault('groups', []);
+         $or->setDefault('editables', []);
+         return $or->resolve($config);
+
+
+21) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:37    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+     {
+         $or = new OptionsResolver();
+         $or->setDefined(array_keys($config));
+-        $or->setDefault('groups', []);
++        
+         $or->setDefault('editables', []);
+         return $or->resolve($config);
+     }
+
+
+22) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:38    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+         $or = new OptionsResolver();
+         $or->setDefined(array_keys($config));
+         $or->setDefault('groups', []);
+-        $or->setDefault('editables', []);
++        
+         return $or->resolve($config);
+     }
+     public function preCreateEditables(string $brickName, \ArrayObject $data) : array
+
+
+23) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:94    [M] LogicalNot
+
+--- Original
++++ New
+@@ @@
+                 continue;
+             }
+             $groupName = $config['group'];
+-            if (!isset($groupArguments[$groupName])) {
++            if (isset($groupArguments[$groupName])) {
+                 $groupArguments[$groupName] = [];
+             }
+             $renderArg = $renderer->get($name);
+
+
+24) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:107    [M] OneZeroInteger
+
+--- Original
++++ New
+@@ @@
+                     $groupArguments[$groupName][$key][$name] = new RenderArgument('reference', $name, $referenceId);
+                 }
+             } else {
+-                if (!isset($groupArguments[$groupName][0])) {
++                if (!isset($groupArguments[$groupName][1])) {
+                     $groupArguments[$groupName][0] = [];
+                 }
+                 $groupArguments[$groupName][0][$renderArg->getName()] = new RenderArgument('reference', $renderArg->getName(), $renderArg->getName());
+
+
+25) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:107    [M] DecrementInteger
+
+--- Original
++++ New
+@@ @@
+                     $groupArguments[$groupName][$key][$name] = new RenderArgument('reference', $name, $referenceId);
+                 }
+             } else {
+-                if (!isset($groupArguments[$groupName][0])) {
++                if (!isset($groupArguments[$groupName][-1])) {
+                     $groupArguments[$groupName][0] = [];
+                 }
+                 $groupArguments[$groupName][0][$renderArg->getName()] = new RenderArgument('reference', $renderArg->getName(), $renderArg->getName());
+
+
+26) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:107    [M] LogicalNot
+
+--- Original
++++ New
+@@ @@
+                     $groupArguments[$groupName][$key][$name] = new RenderArgument('reference', $name, $referenceId);
+                 }
+             } else {
+-                if (!isset($groupArguments[$groupName][0])) {
++                if (isset($groupArguments[$groupName][0])) {
+                     $groupArguments[$groupName][0] = [];
+                 }
+                 $groupArguments[$groupName][0][$renderArg->getName()] = new RenderArgument('reference', $renderArg->getName(), $renderArg->getName());
+
+
+27) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:19    [M] UnwrapArrayMerge
+
+--- Original
++++ New
+@@ @@
+     }
+     public function getEditablesExpressionAttributes() : array
+     {
+-        return array_merge(parent::getEditablesExpressionAttributes(), ['[editable][instances]']);
++        return parent::getEditablesExpressionAttributes();
+     }
+     public function doCreateEditables(Renderer $renderer, string $name, array $data) : void
+     {
+
+
+28) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:19    [M] UnwrapArrayMerge
+
+--- Original
++++ New
+@@ @@
+     }
+     public function getEditablesExpressionAttributes() : array
+     {
+-        return array_merge(parent::getEditablesExpressionAttributes(), ['[editable][instances]']);
++        return ['[editable][instances]'];
+     }
+     public function doCreateEditables(Renderer $renderer, string $name, array $data) : void
+     {
+
+
+29) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:21    [M] ArrayItemRemoval
+
+--- Original
++++ New
+@@ @@
+     }
+     public function getEditablesExpressionAttributes() : array
+     {
+-        return array_merge(parent::getEditablesExpressionAttributes(), ['[editable][instances]']);
++        return array_merge(parent::getEditablesExpressionAttributes(), []);
+     }
+     public function doCreateEditables(Renderer $renderer, string $name, array $data) : void
+     {
+
+
+30) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:43    [M] CastString
+
+--- Original
++++ New
+@@ @@
+         if ($instances > 1) {
+             $editables = new ArrayObject();
+             for ($i = 0; $i < $instances; ++$i) {
+-                $editables[] = new RenderArgument($argument->getType(), (string) $i, $argument->getValue());
++                $editables[] = new RenderArgument($argument->getType(), $i, $argument->getValue());
+             }
+             $argument = new RenderArgument('collection', $name, $editables);
+         }
+
+
+31) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/MapConfigurator.php:18    [M] CastBool
+
+--- Original
++++ New
+@@ @@
+     }
+     public function supportsEditable(string $editableName, array $config) : bool
+     {
+-        return (bool) count($config['map']);
++        return count($config['map']);
+     }
+     /**
+      * @param  array<array> $options
+
+
+32) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/ExpressionLanguage/ExpressionWrapper.php:72    [M] Continue_
+
+--- Original
++++ New
+@@ @@
+             try {
+                 $value = $this->getPropertyValue($data, $attributePath);
+             } catch (AccessException $ex) {
+-                continue;
++                break;
+             }
+             $value = $this->evaluateExpression($value, $context);
+             $data = $this->setPropertyValue($data, $attributePath, $value);
+
+
+Timed Out mutants:
+==================
+
+Not Covered mutants:
+====================
+
+1) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Areabricks/AbstractAreabrick.php:159    [M] Continue_
+
+--- Original
++++ New
+@@ @@
+         foreach ($renderArguments as $name => $renderArgument) {
+             $referenceId = $parentName ? $parentName . '_' . $name : $name;
+             if (!$renderArgument instanceof RenderArgument) {
+-                continue;
++                break;
+             }
+             if ($renderArgument->getType() === 'null') {
+                 continue;
+
+
+2) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Areabricks/AbstractAreabrick.php:163    [M] Continue_
+
+--- Original
++++ New
+@@ @@
+                 continue;
+             }
+             if ($renderArgument->getType() === 'null') {
+-                continue;
++                break;
+             }
+             if ($renderArgument->getType() === 'collection') {
+                 $tag = new ArrayObject();
+
+
+3) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Areabricks/AbstractAreabrick.php:168    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+             }
+             if ($renderArgument->getType() === 'collection') {
+                 $tag = new ArrayObject();
+-                $this->processRenderArguments(new \ArrayIterator($renderArgument->getValue()), $tag, $document, $referencesContainer, $referenceId);
++                
+                 $tag = (array) $tag;
+             } elseif ($renderArgument->getType() === 'editable') {
+                 $tag = $render($referenceId, $renderArgument->getValue());
+
+
+4) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Areabricks/AbstractAreabrick.php:175    [M] CastArray
+
+--- Original
++++ New
+@@ @@
+             if ($renderArgument->getType() === 'collection') {
+                 $tag = new ArrayObject();
+                 $this->processRenderArguments(new \ArrayIterator($renderArgument->getValue()), $tag, $document, $referencesContainer, $referenceId);
+-                $tag = (array) $tag;
++                $tag = $tag;
+             } elseif ($renderArgument->getType() === 'editable') {
+                 $tag = $render($referenceId, $renderArgument->getValue());
+             } elseif ($renderArgument->getType() === 'reference') {
+
+
+5) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Areabricks/AbstractAreabrick.php:178    [M] Identical
+
+--- Original
++++ New
+@@ @@
+                 $tag = (array) $tag;
+             } elseif ($renderArgument->getType() === 'editable') {
+                 $tag = $render($referenceId, $renderArgument->getValue());
+-            } elseif ($renderArgument->getType() === 'reference') {
++            } elseif ($renderArgument->getType() !== 'reference') {
+                 $reference = $renderArgument->getValue();
+                 $tag = $referencesContainer[$reference];
+             } else {
+
+
+6) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:54    [M] Foreach_
+
+--- Original
++++ New
+@@ @@
+             return $this->getExpressionWrapper()->evaluateExpression($value, $context);
+         }
+         if (is_array($value)) {
+-            foreach ($value as $key => $item) {
++            foreach (array() as $key => $item) {
+                 $value[$key] = $this->recurseExpression($item, $context);
+             }
+         }
+
+
+7) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:75    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+         $argument = $renderer->get($name);
+         if (!$data['context']['datasources']) {
+             $argument = new RenderArgument('null', $argument->getName());
+-            $renderer->emitArgument($argument);
++            
+             return;
+         }
+         $this->generateDatasources($renderer, $data);
+
+
+8) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:113    [M] TrueValue
+
+--- Original
++++ New
+@@ @@
+     }
+     public function supportsEditable(string $editableName, array $config) : bool
+     {
+-        return true;
++        return false;
+     }
+     public function configureEditableOptions(OptionsResolver $optionsResolver) : void
+     {
+
+
+9) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:118    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+     }
+     public function configureEditableOptions(OptionsResolver $optionsResolver) : void
+     {
+-        $optionsResolver->setDefault('datasource', []);
++        
+     }
+     /**
+      * @param array<mixed> $config
+
+
+10) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:13    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+ {
+     public function configureEditableOptions(OptionsResolver $or) : void
+     {
+-        $or->setDefault('group', null);
++        
+         $or->setAllowedValues('group', function ($value) {
+             if (is_null($value)) {
+                 return true;
+
+
+11) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:14    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+     public function configureEditableOptions(OptionsResolver $or) : void
+     {
+         $or->setDefault('group', null);
+-        $or->setAllowedValues('group', function ($value) {
+-            if (is_null($value)) {
+-                return true;
+-            }
+-            return preg_match('/[_a-z]+/i', $value);
+-        });
++        
+     }
+     public function supportsEditable(string $editableName, array $config) : bool
+     {
+
+
+12) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:17    [M] TrueValue
+
+--- Original
++++ New
+@@ @@
+         $or->setDefault('group', null);
+         $or->setAllowedValues('group', function ($value) {
+             if (is_null($value)) {
+-                return true;
++                return false;
+             }
+             return preg_match('/[_a-z]+/i', $value);
+         });
+
+
+13) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:19    [M] FunctionCall
+
+--- Original
++++ New
+@@ @@
+             if (is_null($value)) {
+                 return true;
+             }
+-            return preg_match('/[_a-z]+/i', $value);
++            preg_match('/[_a-z]+/i', $value);
++            return null;
+         });
+     }
+     public function supportsEditable(string $editableName, array $config) : bool
+
+
+14) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:53    [M] Continue_
+
+--- Original
++++ New
+@@ @@
+         $editables = $brick['editables'];
+         foreach ($editables as $name => $editable) {
+             if (!isset($editable['group'])) {
+-                continue;
++                break;
+             }
+             if (!isset($groups[$editable['group']])) {
+                 throw new \InvalidArgumentException("Group with name {$editable['group']} does not exist.");
+
+
+15) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:57    [M] Throw_
+
+--- Original
++++ New
+@@ @@
+                 continue;
+             }
+             if (!isset($groups[$editable['group']])) {
+-                throw new \InvalidArgumentException("Group with name {$editable['group']} does not exist.");
++                new \InvalidArgumentException("Group with name {$editable['group']} does not exist.");
+             }
+             $groupConfig = $groups[$editable['group']];
+             $editable = array_merge($editable, $groupConfig);
+
+
+16) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:88    [M] Continue_
+
+--- Original
++++ New
+@@ @@
+         $groupArguments = [];
+         foreach ($config['editables'] as $name => $config) {
+             if (!in_array($config['group'], $groups)) {
+-                continue;
++                break;
+             }
+             if (!$renderer->has($name)) {
+                 continue;
+
+
+17) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:91    [M] Continue_
+
+--- Original
++++ New
+@@ @@
+                 continue;
+             }
+             if (!$renderer->has($name)) {
+-                continue;
++                break;
+             }
+             $groupName = $config['group'];
+             if (!isset($groupArguments[$groupName])) {
+
+
+18) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:102    [M] Foreach_
+
+--- Original
++++ New
+@@ @@
+             $renderArg = $renderer->get($name);
+             if ($renderArg->getType() === 'collection') {
+                 $values = $renderArg->getValue();
+-                foreach ($values as $key => $data) {
++                foreach (array() as $key => $data) {
+                     $referenceId = $name . '_' . $key;
+                     $groupArguments[$groupName][$key][$name] = new RenderArgument('reference', $name, $referenceId);
+                 }
+
+
+19) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:56    [M] IncrementInteger
+
+--- Original
++++ New
+@@ @@
+     }
+     public function configureEditableOptions(OptionsResolver $or) : void
+     {
+-        $or->setDefault('instances', 1);
++        $or->setDefault('instances', 2);
+         $or->setAllowedTypes('instances', ['int', 'string']);
+     }
+ }
+
+
+20) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:56    [M] OneZeroInteger
+
+--- Original
++++ New
+@@ @@
+     }
+     public function configureEditableOptions(OptionsResolver $or) : void
+     {
+-        $or->setDefault('instances', 1);
++        $or->setDefault('instances', 0);
+         $or->setAllowedTypes('instances', ['int', 'string']);
+     }
+ }
+
+
+21) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:56    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+     }
+     public function configureEditableOptions(OptionsResolver $or) : void
+     {
+-        $or->setDefault('instances', 1);
++        
+         $or->setAllowedTypes('instances', ['int', 'string']);
+     }
+ }
+
+
+22) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:57    [M] ArrayItemRemoval
+
+--- Original
++++ New
+@@ @@
+     public function configureEditableOptions(OptionsResolver $or) : void
+     {
+         $or->setDefault('instances', 1);
+-        $or->setAllowedTypes('instances', ['int', 'string']);
++        $or->setAllowedTypes('instances', ['string']);
+     }
+ }
+
+
+23) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:57    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+     public function configureEditableOptions(OptionsResolver $or) : void
+     {
+         $or->setDefault('instances', 1);
+-        $or->setAllowedTypes('instances', ['int', 'string']);
++        
+     }
+ }
+
+
+24) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/MapConfigurator.php:13    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+ {
+     public function configureEditableOptions(OptionsResolver $or) : void
+     {
+-        $or->setDefault('map', []);
++        
+     }
+     public function supportsEditable(string $editableName, array $config) : bool
+     {
+
+
+25) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:30    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+          * @var ArrayNodeDefinition $rootNode  
+         */
+         $rootNode = $treeBuilder->root('pimcore_rad_brick');
+-        $this->addDatasourcesSection($rootNode);
++        
+         $this->addAreabrickSection($rootNode);
+         return $treeBuilder;
+     }
+
+
+26) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:31    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+         */
+         $rootNode = $treeBuilder->root('pimcore_rad_brick');
+         $this->addDatasourcesSection($rootNode);
+-        $this->addAreabrickSection($rootNode);
++        
+         return $treeBuilder;
+     }
+     protected function addCommonAreabrick(NodeBuilder $builder) : void
+
+
+27) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:38    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+     }
+     protected function addCommonAreabrick(NodeBuilder $builder) : void
+     {
+-        $builder->scalarNode('class')->info('Use a predefined service instead of a newly created one.')->end();
++        
+         $builder->scalarNode('label')->info('Specify a label for the admin UI.')->end();
+         $builder->scalarNode('icon')->info('Specify an icon for the admin UI.')->end();
+         $builder->scalarNode('open')->info('Set HTML prepended to the brick\'s contents.')->defaultValue('')->end();
+
+
+28) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:42    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+     protected function addCommonAreabrick(NodeBuilder $builder) : void
+     {
+         $builder->scalarNode('class')->info('Use a predefined service instead of a newly created one.')->end();
+-        $builder->scalarNode('label')->info('Specify a label for the admin UI.')->end();
++        
+         $builder->scalarNode('icon')->info('Specify an icon for the admin UI.')->end();
+         $builder->scalarNode('open')->info('Set HTML prepended to the brick\'s contents.')->defaultValue('')->end();
+         $builder->scalarNode('close')->info('Set HTML appended to the brick\'s contents.')->defaultValue('')->end();
+
+
+29) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:46    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+     {
+         $builder->scalarNode('class')->info('Use a predefined service instead of a newly created one.')->end();
+         $builder->scalarNode('label')->info('Specify a label for the admin UI.')->end();
+-        $builder->scalarNode('icon')->info('Specify an icon for the admin UI.')->end();
++        
+         $builder->scalarNode('open')->info('Set HTML prepended to the brick\'s contents.')->defaultValue('')->end();
+         $builder->scalarNode('close')->info('Set HTML appended to the brick\'s contents.')->defaultValue('')->end();
+         $builder->booleanNode('use_edit')->info('Use a separate edit template.')->defaultValue(false)->end();
+
+
+30) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:50    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+         $builder->scalarNode('class')->info('Use a predefined service instead of a newly created one.')->end();
+         $builder->scalarNode('label')->info('Specify a label for the admin UI.')->end();
+         $builder->scalarNode('icon')->info('Specify an icon for the admin UI.')->end();
+-        $builder->scalarNode('open')->info('Set HTML prepended to the brick\'s contents.')->defaultValue('')->end();
++        
+         $builder->scalarNode('close')->info('Set HTML appended to the brick\'s contents.')->defaultValue('')->end();
+         $builder->booleanNode('use_edit')->info('Use a separate edit template.')->defaultValue(false)->end();
+     }
+
+
+31) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:55    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+         $builder->scalarNode('label')->info('Specify a label for the admin UI.')->end();
+         $builder->scalarNode('icon')->info('Specify an icon for the admin UI.')->end();
+         $builder->scalarNode('open')->info('Set HTML prepended to the brick\'s contents.')->defaultValue('')->end();
+-        $builder->scalarNode('close')->info('Set HTML appended to the brick\'s contents.')->defaultValue('')->end();
++        
+         $builder->booleanNode('use_edit')->info('Use a separate edit template.')->defaultValue(false)->end();
+     }
+     protected function addGroupsAreabrick(NodeBuilder $builder) : void
+
+
+32) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:60    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+         $builder->scalarNode('icon')->info('Specify an icon for the admin UI.')->end();
+         $builder->scalarNode('open')->info('Set HTML prepended to the brick\'s contents.')->defaultValue('')->end();
+         $builder->scalarNode('close')->info('Set HTML appended to the brick\'s contents.')->defaultValue('')->end();
+-        $builder->booleanNode('use_edit')->info('Use a separate edit template.')->defaultValue(false)->end();
++        
+     }
+     protected function addGroupsAreabrick(NodeBuilder $builder) : void
+     {
+
+
+33) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:63    [M] FalseValue
+
+--- Original
++++ New
+@@ @@
+         $builder->scalarNode('icon')->info('Specify an icon for the admin UI.')->end();
+         $builder->scalarNode('open')->info('Set HTML prepended to the brick\'s contents.')->defaultValue('')->end();
+         $builder->scalarNode('close')->info('Set HTML appended to the brick\'s contents.')->defaultValue('')->end();
+-        $builder->booleanNode('use_edit')->info('Use a separate edit template.')->defaultValue(false)->end();
++        $builder->booleanNode('use_edit')->info('Use a separate edit template.')->defaultValue(true)->end();
+     }
+     protected function addGroupsAreabrick(NodeBuilder $builder) : void
+     {
+
+
+34) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:69    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+     }
+     protected function addGroupsAreabrick(NodeBuilder $builder) : void
+     {
+-        $builder->variableNode('groups')->info('Define groups for areabrick.')->defaultValue([])->end();
++        
+     }
+     protected function addDatasourcesAreabrick(NodeBuilder $builder) : void
+     {
+
+
+35) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:78    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+     }
+     protected function addDatasourcesAreabrick(NodeBuilder $builder) : void
+     {
+-        $builder->arrayNode('datasources')->info('Configure datasources to use  in view template')->useAttributeAsKey('name')->arrayPrototype()->children()->scalarNode('id')->info('Provide the id of the datasource to use')->end()->arrayNode('args')->info('Configure arguments to pass to method call')->useAttributeAsKey('name')->variablePrototype()->end()->end()->end()->end();
++        
+     }
+     protected function addEditableAreabrick(NodeBuilder $builder) : void
+     {
+
+
+36) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:99    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+     }
+     protected function addEditableAreabrick(NodeBuilder $builder) : void
+     {
+-        $builder->arrayNode('editables')->info('Define editables available in templates.')->requiresAtLeastOneElement()->useAttributeAsKey('name')->arrayPrototype()->children()->scalarNode('type')->info('Editable type')->isRequired()->cannotBeEmpty()->end()->variableNode('options')->info('Editable options')->defaultValue([])->end()->scalarNode('instances')->info('Provide the number of instances.')->end()->scalarNode('group')->info('Specify the name of the group this editable belongs to.')->end()->arrayNode('map')->info('Map data from other editables')->arrayPrototype()->children()->scalarNode('source')->info('Expression to get the value')->isRequired()->cannotBeEmpty()->end()->scalarNode('target')->info('Path to property to be updated')->isRequired()->cannotBeEmpty()->end()->end()->end()->end()->arrayNode('datasource')->info('Bind editable to a datasource')->children()->scalarNode('name')->info('The name of the datasource')->end()->scalarNode('id')->info('The id to use for each item (uses expression language)')->end()->end()->end();
++        
+     }
+     protected function addAreabrickSection(ArrayNodeDefinition $node) : void
+     {
+
+
+37) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:160    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+     protected function addAreabrickSection(ArrayNodeDefinition $node) : void
+     {
+         $prototype = $node->children()->arrayNode('areabricks')->useAttributeAsKey('name')->arrayPrototype()->children();
+-        $this->addCommonAreabrick($prototype);
++        
+         $this->addGroupsAreabrick($prototype);
+         $this->addDatasourcesAreabrick($prototype);
+         $this->addEditableAreabrick($prototype);
+
+
+38) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:161    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+     {
+         $prototype = $node->children()->arrayNode('areabricks')->useAttributeAsKey('name')->arrayPrototype()->children();
+         $this->addCommonAreabrick($prototype);
+-        $this->addGroupsAreabrick($prototype);
++        
+         $this->addDatasourcesAreabrick($prototype);
+         $this->addEditableAreabrick($prototype);
+         $prototype->end()->end()->end();
+
+
+39) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:162    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+         $prototype = $node->children()->arrayNode('areabricks')->useAttributeAsKey('name')->arrayPrototype()->children();
+         $this->addCommonAreabrick($prototype);
+         $this->addGroupsAreabrick($prototype);
+-        $this->addDatasourcesAreabrick($prototype);
++        
+         $this->addEditableAreabrick($prototype);
+         $prototype->end()->end()->end();
+     }
+
+
+40) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:163    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+         $this->addCommonAreabrick($prototype);
+         $this->addGroupsAreabrick($prototype);
+         $this->addDatasourcesAreabrick($prototype);
+-        $this->addEditableAreabrick($prototype);
++        
+         $prototype->end()->end()->end();
+     }
+     protected function addDatasourcesSection(ArrayNodeDefinition $node) : void
+
+
+41) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:165    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+         $this->addGroupsAreabrick($prototype);
+         $this->addDatasourcesAreabrick($prototype);
+         $this->addEditableAreabrick($prototype);
+-        $prototype->end()->end()->end();
++        
+     }
+     protected function addDatasourcesSection(ArrayNodeDefinition $node) : void
+     {
+
+
+42) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:170    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+     }
+     protected function addDatasourcesSection(ArrayNodeDefinition $node) : void
+     {
+-        $node->children()->arrayNode('datasources')->info('Define datasource available in areabricks.')->useAttributeAsKey('name')->arrayPrototype()->children()->scalarNode('service_id')->info('Provide a Symfony service id')->isRequired()->cannotBeEmpty()->end()->scalarNode('method')->info('Method to be called on service')->isRequired()->cannotBeEmpty()->end()->arrayNode('args')->variablePrototype()->info('Method arguments. Expressions can be used here')->end()->end()->end()->end()->end()->end();
++        
+     }
+ }
+
+
+43) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:24    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+     public function load(array $configs, ContainerBuilder $container)
+     {
+         $loader = new YamlFileLoader($container, new FileLocator(dirname(__DIR__) . '/Resources/config'));
+-        $loader->load('services.yml');
++        
+         $configuration = new Configuration();
+         $config = $this->processConfiguration($configuration, $configs);
+         $configurators = [];
+
+
+44) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:31    [M] Foreach_
+
+--- Original
++++ New
+@@ @@
+         $config = $this->processConfiguration($configuration, $configs);
+         $configurators = [];
+         $ids = $container->findTaggedServiceIds('radbrick.configurator');
+-        foreach ($ids as $id => $tags) {
++        foreach (array() as $id => $tags) {
+             $configurators[] = new Reference($id);
+         }
+         $datasources = $config['datasources'];
+
+
+45) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:36    [M] Foreach_
+
+--- Original
++++ New
+@@ @@
+             $configurators[] = new Reference($id);
+         }
+         $datasources = $config['datasources'];
+-        foreach ($datasources as $key => $datasource) {
++        foreach (array() as $key => $datasource) {
+             $datasources[$key]['service_id'] = new Reference($datasource['service_id']);
+         }
+         $config['datasources'] = $datasources;
+
+
+46) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:42    [M] ArrayItemRemoval
+
+--- Original
++++ New
+@@ @@
+             $datasources[$key]['service_id'] = new Reference($datasource['service_id']);
+         }
+         $config['datasources'] = $datasources;
+-        $configurator = new Definition(AreabrickConfigurator::class, [$config, $configurators]);
++        $configurator = new Definition(AreabrickConfigurator::class, [$configurators]);
+         $container->setDefinition(AreabrickConfigurator::class, $configurator);
+         $areabricks = $config['areabricks'];
+         foreach ($areabricks as $id => $aconfig) {
+
+
+47) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:47    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+         }
+         $config['datasources'] = $datasources;
+         $configurator = new Definition(AreabrickConfigurator::class, [$config, $configurators]);
+-        $container->setDefinition(AreabrickConfigurator::class, $configurator);
++        
+         $areabricks = $config['areabricks'];
+         foreach ($areabricks as $id => $aconfig) {
+             $target = null;
+
+
+48) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:50    [M] Foreach_
+
+--- Original
++++ New
+@@ @@
+         $configurator = new Definition(AreabrickConfigurator::class, [$config, $configurators]);
+         $container->setDefinition(AreabrickConfigurator::class, $configurator);
+         $areabricks = $config['areabricks'];
+-        foreach ($areabricks as $id => $aconfig) {
++        foreach (array() as $id => $aconfig) {
+             $target = null;
+             $definitionId = 'radbrick.' . $id;
+             if ($class = $aconfig['class']) {
+
+
+49) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:58    [M] LogicalNot
+
+--- Original
++++ New
+@@ @@
+                 $definitionId = $class;
+                 $target = $container->getDefinition($class);
+             }
+-            if (!$target) {
++            if ($target) {
+                 $target = new Definition(SimpleBrick::class, [$id, new Reference('pimcore.templating.tag_renderer'), new Reference(AreabrickConfigurator::class)]);
+             }
+             if (!$target->hasTag('pimcore.area.brick')) {
+
+
+50) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:60    [M] ArrayItemRemoval
+
+--- Original
++++ New
+@@ @@
+                 $target = $container->getDefinition($class);
+             }
+             if (!$target) {
+-                $target = new Definition(SimpleBrick::class, [$id, new Reference('pimcore.templating.tag_renderer'), new Reference(AreabrickConfigurator::class)]);
++                $target = new Definition(SimpleBrick::class, [new Reference('pimcore.templating.tag_renderer'), new Reference(AreabrickConfigurator::class)]);
+             }
+             if (!$target->hasTag('pimcore.area.brick')) {
+                 $target->addTag('pimcore.area.brick', ['id' => $id]);
+
+
+51) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:68    [M] LogicalNot
+
+--- Original
++++ New
+@@ @@
+             if (!$target) {
+                 $target = new Definition(SimpleBrick::class, [$id, new Reference('pimcore.templating.tag_renderer'), new Reference(AreabrickConfigurator::class)]);
+             }
+-            if (!$target->hasTag('pimcore.area.brick')) {
++            if ($target->hasTag('pimcore.area.brick')) {
+                 $target->addTag('pimcore.area.brick', ['id' => $id]);
+             }
+             $container->setDefinition($definitionId, $target);
+
+
+52) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:69    [M] ArrayItemRemoval
+
+--- Original
++++ New
+@@ @@
+                 $target = new Definition(SimpleBrick::class, [$id, new Reference('pimcore.templating.tag_renderer'), new Reference(AreabrickConfigurator::class)]);
+             }
+             if (!$target->hasTag('pimcore.area.brick')) {
+-                $target->addTag('pimcore.area.brick', ['id' => $id]);
++                $target->addTag('pimcore.area.brick', []);
+             }
+             $container->setDefinition($definitionId, $target);
+         }
+     }
+ }
+
+
+53) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:69    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+                 $target = new Definition(SimpleBrick::class, [$id, new Reference('pimcore.templating.tag_renderer'), new Reference(AreabrickConfigurator::class)]);
+             }
+             if (!$target->hasTag('pimcore.area.brick')) {
+-                $target->addTag('pimcore.area.brick', ['id' => $id]);
++                
+             }
+             $container->setDefinition($definitionId, $target);
+         }
+     }
+ }
+
+
+54) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:72    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+             if (!$target->hasTag('pimcore.area.brick')) {
+                 $target->addTag('pimcore.area.brick', ['id' => $id]);
+             }
+-            $container->setDefinition($definitionId, $target);
++            
+         }
+     }
+ }
+
+
+55) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/ExpressionLanguage/ExpressionWrapper.php:64    [M] Throw_
+
+--- Original
++++ New
+@@ @@
+                 $context = $context->toArray();
+             }
+             if (!is_array($context)) {
+-                throw new InvalidArgumentException(sprintf("Context for evaluation needs to be array or of type %s. %s given", Context::class, gettype($context)));
++                new InvalidArgumentException(sprintf("Context for evaluation needs to be array or of type %s. %s given", Context::class, gettype($context)));
+             }
+         }
+         foreach ($attributes as $attributePath) {

@@ -9,12 +9,12 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 class AreabrickConfigurator
 {
     /**
-     * @var array<mixed>  
+     * @var array<mixed>
      */
     private $config = [];
 
     /**
-     * @var IConfigurator[] 
+     * @var IConfigurator[]
      */
     private $configurators = [];
 
@@ -50,27 +50,18 @@ class AreabrickConfigurator
      *
      * @return \Generator<RenderArgument>
      */
-    public function compileAreaBrick(string $name, array $context): \Generator
+    public function compileAreaBrick(string $name, Context $context): \Generator
     {
-        $or = new OptionsResolver();
-        $or->setRequired(['view', 'request']);
-        $or->setDefault('datasources', []);
-
-        $context = $or->resolve($context);
         $data = new \ArrayObject();
         $data['config'] = $this->resolveAreaBrickConfig($name);
         $data['context'] = $context;
 
-        /**
- * @var IConfigurator $configurator 
-*/
+        /** @var IConfigurator $configurator */
         foreach ($this->configurators as $configurator) {
-            $newContext = $configurator->preCreateEditables($name, $data);
-            $data['context'] = array_merge($data['context'], $newContext);
+            $configurator->preCreateEditables($name, $data);
         }
 
         $this->config = $data['config'];
-
         return $this->createEditables($name, $data['context']);
     }
 
@@ -92,6 +83,7 @@ class AreabrickConfigurator
 
     /**
      * @return array<array>
+     * @codeCoverageIgnore
      */
     protected function getDatasourceConfig(string $name): array
     {
@@ -157,21 +149,17 @@ class AreabrickConfigurator
     }
 
     /**
-     * @param array<mixed> $context
-     *
      * @return \Generator<RenderArgument>
      */
     public function createEditables(
         string $areabrick,
-        array $context = []
+        ?Context $context = null
     ): \Generator {
         $editablesConfig = $this->compileEditablesConfig($this->config['areabricks'][$areabrick]);
         $areaBrickConfig = $this->getAreabrickConfig($areabrick);
-        $renderer = new Renderer();
+        $emitter = new RenderArgumentEmitter();
 
-        /**
- * @var string $editableName 
-*/
+        /** @var string $editableName */
         foreach ($editablesConfig as $editableName => $editableConfig) {
             $argument = new RenderArgument(
                 'editable',
@@ -179,28 +167,28 @@ class AreabrickConfigurator
                 ['type' => $editableConfig['type'], 'options' => $editableConfig['options']]
             );
 
-            $renderer->emitArgument($argument);
+            $emitter->emitArgument($argument);
 
             foreach ($this->configurators as $configurator) {
                 if ($configurator->supportsEditable($editableName, $editableConfig)) {
                     $configurator->createEditables(
-                        $renderer,
+                        $emitter,
                         $editableName,
                         ['editable' => $editableConfig, 'context' => $context]
                     );
                 }
             }
 
-            yield from $renderer->emit();
+            yield from $emitter->emit();
         }
 
         /**
- * @var IConfigurator $configurator 
-*/
+         * @var IConfigurator $configurator
+        */
         foreach ($this->configurators as $configurator) {
-            $configurator->postCreateEditables($areabrick, $areaBrickConfig, $renderer);
+            $configurator->postCreateEditables($areabrick, $areaBrickConfig, $emitter);
         }
 
-        yield from $renderer->emit();
+        yield from $emitter->emit();
     }
 }

@@ -2,6 +2,8 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\ExpressionLanguage;
 
+use InvalidArgumentException;
+use Khusseini\PimcoreRadBrickBundle\Context;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\PropertyAccess\Exception\AccessException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -10,12 +12,12 @@ use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 class ExpressionWrapper
 {
     /**
-     * @var ExpressionLanguage 
+     * @var ExpressionLanguage
      */
     private $expressionLanguage;
 
     /**
-     * @var PropertyAccessorInterface 
+     * @var PropertyAccessorInterface
      */
     private $propAccess;
 
@@ -54,6 +56,13 @@ class ExpressionWrapper
         $context = $data;
         if ($contextPath) {
             $context = $this->getPropertyValue($data, $contextPath);
+            if ($context instanceof Context) {
+                $context = $context->toArray();
+            }
+
+            if (!is_array($context)) {
+                throw new InvalidArgumentException(sprintf("Context for evaluation needs to be array or of type %s. %s given", Context::class, gettype($context)));
+            }
         }
 
         foreach ($attributes as $attributePath) {

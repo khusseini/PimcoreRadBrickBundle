@@ -5,7 +5,7 @@ namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\DatasourceConfigurator;
 use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
-use Khusseini\PimcoreRadBrickBundle\Renderer;
+use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
 
 class DatasourceConfiguratorTest extends TestCase
@@ -99,11 +99,11 @@ class DatasourceConfiguratorTest extends TestCase
             ]
         );
 
-        $renderer = new Renderer();
-        $renderer->set($argument);
+        $emitter = new RenderArgumentEmitter();
+        $emitter->set($argument);
 
-        $instance->doCreateEditables($renderer, 'test', $config);
-        $actual = iterator_to_array($renderer->emit());
+        $instance->doCreateEditables($emitter, 'test', $config);
+        $actual = iterator_to_array($emitter->emit());
 
         $this->assertCount(2, $actual);
 

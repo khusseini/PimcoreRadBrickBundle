@@ -5,7 +5,7 @@ namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 use ArrayObject;
 use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
-use Khusseini\PimcoreRadBrickBundle\Renderer;
+use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class DatasourceConfigurator extends AbstractConfigurator
@@ -59,30 +59,30 @@ class DatasourceConfigurator extends AbstractConfigurator
         return $value;
     }
 
-    public function generateDatasources(Renderer $renderer, $data): void
+    public function generateDatasources(RenderArgumentEmitter $emitter, $data): void
     {
         foreach ($data['context']['datasources']->executeAll() as $name => $value) {
             $argument = new RenderArgument('data', $name, $value);
-            $renderer->emitArgument($argument);
+            $emitter->emitArgument($argument);
         }
     }
 
-    public function doCreateEditables(Renderer $renderer, string $name, array $data): void
+    public function doCreateEditables(RenderArgumentEmitter $emitter, string $name, array $data): void
     {
-        $argument = $renderer->get($name);
+        $argument = $emitter->get($name);
         if (!$data['context']['datasources']) {
             $argument = new RenderArgument('null', $argument->getName());
-            $renderer->emitArgument($argument);
+            $emitter->emitArgument($argument);
             return;
         }
 
-        $this->generateDatasources($renderer, $data);
+        $this->generateDatasources($emitter, $data);
 
         $editable = $data['editable'];
         if (isset($editable['datasource']['name'])) {
             $datasourceName = $editable['datasource']['name'];
             $datasourceIdExpression = @$editable['datasource']['id'];
-            $dataArgument = $renderer->get($datasourceName);
+            $dataArgument = $emitter->get($datasourceName);
 
             unset($editable['datasource']);
             $items = new ArrayObject();
@@ -105,7 +105,7 @@ class DatasourceConfigurator extends AbstractConfigurator
             );
         }
 
-        $renderer->emitArgument($argument);
+        $emitter->emitArgument($argument);
     }
 
     public function supportsEditable(string $editableName, array $config): bool

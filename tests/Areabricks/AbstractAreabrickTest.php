@@ -49,6 +49,7 @@ class AbstractAreabrickTest extends TestCase
 
         $brick = new class('testbrick', $tagRenderer->reveal(), $configurator) extends AbstractAreabrick {
         };
+
         $brick->action($info->reveal());
 
         $this->assertTrue($view->has('testedit'));

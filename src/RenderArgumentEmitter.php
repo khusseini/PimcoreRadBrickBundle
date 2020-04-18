@@ -2,9 +2,7 @@
 
 namespace Khusseini\PimcoreRadBrickBundle;
 
-use InvalidArgumentException;
-
-class Renderer
+class RenderArgumentEmitter
 {
     /**
      * @var array<RenderArgument>

@@ -3,10 +3,10 @@
 namespace Tests\Khusseini\PimcoreRadBrickBundle;
 
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
-use Khusseini\PimcoreRadBrickBundle\Renderer;
+use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
 
-class RendererTest extends TestCase
+class RenderArgumentEmitterTest extends TestCase
 {
     public function testCanEmit()
     {
@@ -18,12 +18,12 @@ class RendererTest extends TestCase
         $firstArgument = new RenderArgument('type', 'first', $expected['first']);
         $secondArgument = new RenderArgument('type', 'second', $expected['second']);
 
-        $renderer = $this->getInstance();
+        $emitter = $this->getInstance();
 
-        $renderer->emitArgument($firstArgument);
-        $renderer->emitArgument($secondArgument);
+        $emitter->emitArgument($firstArgument);
+        $emitter->emitArgument($secondArgument);
 
-        $generator = $renderer->emit();
+        $generator = $emitter->emit();
 
         self::assertInstanceOf(\Generator::class, $generator);
         $renderArguments = iterator_to_array($generator);
@@ -71,7 +71,29 @@ class RendererTest extends TestCase
 
     public function getInstance()
     {
-        $renderer = new Renderer();
-        return $renderer;
+        $emitter = new RenderArgumentEmitter();
+        return $emitter;
+    }
+
+    private function ignore()
+    {
+        $expected = [
+            'first' => 'hello',
+            'second' => 'world',
+        ];
+        $firstArgument = new RenderArgument('type', 'first', $expected['first']);
+        $secondArgument = new RenderArgument('type', 'second', $expected['second']);
+
+        $instance = $this->getInstance();
+        $instance->emitArgument($firstArgument);
+        $instance->emitArgument($secondArgument);
+
+        $renderCallback = function (RenderArgument $renderArgument) use ($expected) {
+            $name = $renderArgument->getName();
+            self::assertEquals($expected[$name], $renderArgument->getValue());
+            self::assertEquals('type', $renderArgument->getType());
+        };
+
+        //$instance->render($renderCallback);
     }
 }

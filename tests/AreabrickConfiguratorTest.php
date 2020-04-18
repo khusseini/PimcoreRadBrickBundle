@@ -5,10 +5,12 @@ namespace Tests\Khusseini\PimcoreRadBrickBundle;
 use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\AbstractConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\IConfigurator;
-use Khusseini\PimcoreRadBrickBundle\Renderer;
+use Khusseini\PimcoreRadBrickBundle\Context;
+use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
 use Pimcore\Templating\Model\ViewModel;
 use Prophecy\Argument;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AreabrickConfiguratorTest extends TestCase
@@ -35,10 +37,8 @@ class AreabrickConfiguratorTest extends TestCase
         ];
 
         $view = new ViewModel();
-        $context = [
-            'view' => $view,
-            'request' => [],
-        ];
+        $request = $this->prophesize(Request::class);
+        $context = new Context($view, $request->reveal());
         $configurator = $this->createConfigurator($config);
         $editables = $configurator->compileAreaBrick('test_brick', $context);
 
@@ -94,6 +94,76 @@ class AreabrickConfiguratorTest extends TestCase
             $editables = $configurator->createEditables($areabrick);
             $tests($areabrick, $editables);
         }
+    }
+
+    public function testCanPreCreateEditables()
+    {
+        $config = [
+            'areabricks' => [
+                'testbrick' => [
+                    'editables' => [
+                        'testeditable' => [
+                            'type' => 'input',
+                            'options' => [],
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $dummy = $this->createDummyWithPreCreate();
+
+        $configurator = $this->createConfigurator($config);
+        $configurator->setConfigurators([$dummy]);
+
+        $areabrick = 'testbrick';
+        $request = $this->prophesize(Request::class);
+        $context = new Context(new ViewModel(), $request->reveal());
+        $editables = $configurator->compileAreaBrick($areabrick, $context);
+        $editables = iterator_to_array($editables);
+
+        self::assertArrayHasKey('testeditable', $editables);
+        $testEditable = $editables['testeditable'];
+        $value = $testEditable->getValue();
+
+        self::assertEquals('tampered', $value['type']);
+    }
+
+    private function createDummyWithPreCreate(): AbstractConfigurator
+    {
+
+        $dummy = new class() extends AbstractConfigurator {
+            public function configureEditableOptions(OptionsResolver $or): void
+            {
+                return ;
+            }
+
+            public function supportsEditable(string $editableName, array $config): bool
+            {
+                return true;
+            }
+
+            public function preCreateEditables(string $brickName, \ArrayObject $data): array
+            {
+               $data['config']['areabricks'][$brickName]['editables']['testeditable']['type'] = 'tampered';
+               return [];
+            }
+
+            public function getEditablesExpressionAttributes(): array
+            {
+                return ['[editable][options][placeholder]'];
+            }
+
+            public function doCreateEditables(
+                RenderArgumentEmitter $emitter,
+                string $name,
+                array $data
+            ): void {
+                $argument = $emitter->get($name);
+                $emitter->emitArgument($argument);
+            }
+        };
+
+        return $dummy;
     }
 
     public function getIConfiguratorIntegrationData($supports = true)
@@ -176,20 +246,22 @@ class AreabrickConfiguratorTest extends TestCase
             }
 
             public function doCreateEditables(
-                Renderer $renderer,
+                RenderArgumentEmitter $emitter,
                 string $name,
                 array $data
             ): void {
-                $argument = $renderer->get($name);
-                $renderer->emitArgument($argument);
+                $argument = $emitter->get($name);
+                $emitter->emitArgument($argument);
             }
         };
 
         $configurator = $this->createConfigurator($config);
         $configurator->setConfigurators([$dummy]);
         $view = new ViewModel([]);
+        $request = $this->prophesize(Request::class);
+        $context = new Context($view, $request->reveal());
 
-        $renderArguments = $configurator->createEditables('testbrick', ['view' => $view]);
+        $renderArguments = $configurator->createEditables('testbrick', $context);
 
         $actual = [];
         $argumentCalled = 0;

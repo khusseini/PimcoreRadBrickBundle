@@ -4,7 +4,7 @@ namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\Configurator\GroupConfigurator;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
-use Khusseini\PimcoreRadBrickBundle\Renderer;
+use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
 
 class GroupConfiguratorTest extends TestCase
@@ -33,12 +33,12 @@ class GroupConfiguratorTest extends TestCase
         $editable = $brick['editables']['test'];
         $this->assertArrayHasKey('prop', $editable);
         $argument = new RenderArgument('editable', 'test', []);
-        $renderer = new Renderer();
-        $renderer->set($argument);
-        $configurator->doCreateEditables($renderer, 'test', $editable);
-        $renderArguments = iterator_to_array($renderer->emit());
-        $configurator->postCreateEditables('test', $brick, $renderer);
-        $renderArguments = iterator_to_array($renderer->emit());
+        $emitter = new RenderArgumentEmitter();
+        $emitter->set($argument);
+        $configurator->doCreateEditables($emitter, 'test', $editable);
+        $renderArguments = iterator_to_array($emitter->emit());
+        $configurator->postCreateEditables('test', $brick, $emitter);
+        $renderArguments = iterator_to_array($emitter->emit());
         $this->assertArrayHasKey('boxes', $renderArguments);
         $boxes = $renderArguments['boxes'];
         $this->assertEquals('collection', $boxes->getType());

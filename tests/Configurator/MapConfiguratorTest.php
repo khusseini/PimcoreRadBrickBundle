@@ -3,9 +3,8 @@
 namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\Configurator\MapConfigurator;
-use Khusseini\PimcoreRadBrickBundle\RenderArgs;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
-use Khusseini\PimcoreRadBrickBundle\Renderer;
+use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
 
 class MapConfiguratorTest extends TestCase
@@ -29,18 +28,17 @@ class MapConfiguratorTest extends TestCase
         ];
 
         $mapConfig = new MapConfigurator();
-
         $arguments = new RenderArgument(
             'editable',
             'test',
             ['overwrite' => 'me']
         );
 
-        $renderer = new Renderer();
-        $renderer->set($arguments);
+        $emitter = new RenderArgumentEmitter();
+        $emitter->set($arguments);
 
         $mapConfig->createEditables(
-            $renderer,
+            $emitter,
             'test',
             [
                 'context' => ['source' => $source],
@@ -48,7 +46,7 @@ class MapConfiguratorTest extends TestCase
             ]
         );
 
-        $actual = iterator_to_array($renderer->emit());
+        $actual = iterator_to_array($emitter->emit());
         $this->assertCount(1, $actual);
         $actual = $actual['test'];
 

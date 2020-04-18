@@ -4,13 +4,13 @@ namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\ExpressionLanguage\ExpressionWrapper;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
-use Khusseini\PimcoreRadBrickBundle\Renderer;
+use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 abstract class AbstractConfigurator implements IConfigurator
 {
     /**
-     * @var ExpressionWrapper 
+     * @var ExpressionWrapper
      */
     private $expressionWrapper;
 
@@ -28,7 +28,7 @@ abstract class AbstractConfigurator implements IConfigurator
      * @param array<array> $data
      */
     abstract public function doCreateEditables(
-        Renderer $rednerer,
+        RenderArgumentEmitter $emitter,
         string $name,
         array $data
     ): void;
@@ -56,11 +56,11 @@ abstract class AbstractConfigurator implements IConfigurator
     }
 
     public function createEditables(
-        Renderer $renderer,
+        RenderArgumentEmitter $emitter,
         string $name,
         array $data
     ): void {
-        $argument = $renderer->get($name);
+        $argument = $emitter->get($name);
         $data = $this->resolveDataOptions($data);
         $attributes = $this->getEditablesExpressionAttributes();
         $data = $this->evaluateExpressions($data, $attributes);
@@ -71,10 +71,10 @@ abstract class AbstractConfigurator implements IConfigurator
             $data['editable']
         );
 
-        $renderer->set($argument);
+        $emitter->set($argument);
 
         $this->doCreateEditables(
-            $renderer,
+            $emitter,
             $name,
             $data
         );
@@ -85,7 +85,7 @@ abstract class AbstractConfigurator implements IConfigurator
         return [];
     }
 
-    public function postCreateEditables(string $brickName, array $config, Renderer $renderer): void
+    public function postCreateEditables(string $brickName, array $config, RenderArgumentEmitter $emitter): void
     {
     }
 
