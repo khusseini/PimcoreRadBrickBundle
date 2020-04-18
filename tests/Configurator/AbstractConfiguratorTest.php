@@ -25,9 +25,9 @@ class AbstractConfiguratorTest extends TestCase
                 ];
             }
 
-            public function doCreateEditables(Renderer $renderer, string $name, array $data): \Generator
+            public function doCreateEditables(Renderer $renderer, string $name, array $data): void
             {
-                yield $name => $renderer->get($name);
+                $renderer->emitArgument($renderer->get($name));
             }
 
             public function configureEditableOptions(OptionsResolver $or): void
@@ -48,9 +48,11 @@ class AbstractConfiguratorTest extends TestCase
     public function testCanEvaluateExpressions()
     {
         $c = $this->getInstance();
-        $argument = new RenderArgument('editable', 'testedit', [
+        $argument = new RenderArgument(
+            'editable', 'testedit', [
             'options' => ['prop' => 'some["context"]'],
-        ]);
+            ]
+        );
         $cases = [
             [
                 'context' => ['some' => ['context' => 'says hello']],
@@ -65,12 +67,16 @@ class AbstractConfiguratorTest extends TestCase
         $renderer->set($argument);
 
         foreach ($cases as $case) {
-            $actual = $c->createEditables($renderer, 'testedit', [
+            $c->createEditables(
+                $renderer, 'testedit', [
                 'editable' => $argument->getValue(),
                 'context' => $case['context'],
-            ]);
+                ]
+            );
 
+            $actual = $renderer->emit();
             $actual = iterator_to_array($actual);
+
             $this->assertCount(1, $actual);
             $this->assertArrayHasKey('testedit', $actual);
             $actual = $actual['testedit'];

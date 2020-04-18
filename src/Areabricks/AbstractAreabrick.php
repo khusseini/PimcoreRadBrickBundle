@@ -16,21 +16,37 @@ use Symfony\Component\HttpFoundation\Response;
 
 abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 {
-    /** @var AreabrickConfigurator */
+    /**
+     * @var AreabrickConfigurator 
+     */
     private $areabrickConfigurator;
-    /** @var string */
+    /**
+     * @var string 
+     */
     private $name;
-    /** @var string */
+    /**
+     * @var string 
+     */
     private $icon;
-    /** @var string */
+    /**
+     * @var string 
+     */
     private $label;
-    /** @var string */
+    /**
+     * @var string 
+     */
     private $openTag = '';
-    /** @var string */
+    /**
+     * @var string 
+     */
     private $closeTag = '';
-    /** @var bool */
+    /**
+     * @var bool 
+     */
     private $useEdit = false;
-    /** @var TagRenderer */
+    /**
+     * @var TagRenderer 
+     */
     private $tagRenderer;
 
     public function __construct(
@@ -108,8 +124,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
         $renderArguments = $this
             ->areabrickConfigurator
-            ->compileAreaBrick($this->name, $context)
-        ;
+            ->compileAreaBrick($this->name, $context);
 
         $this->processRenderArguments(
             $renderArguments,
@@ -122,7 +137,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
     /**
      * @param ArrayAccess<string,mixed> $container
-     * @param Iterator<RenderArgument> $renderArguments
+     * @param Iterator<RenderArgument>  $renderArguments
      */
     private function processRenderArguments(
         Iterator $renderArguments,
@@ -142,6 +157,14 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
         foreach ($renderArguments as $name => $renderArgument) {
             $referenceId = $parentName ? $parentName.'_'.$name : $name;
 
+            if (!$renderArgument instanceof RenderArgument) {
+                continue;
+            }
+
+            if ($renderArgument->getType() === 'null') {
+                continue;
+            }
+
             if ($renderArgument->getType() === 'collection') {
                 $tag = new ArrayObject();
                 $this->processRenderArguments(
@@ -155,8 +178,8 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
             } elseif ($renderArgument->getType() === 'editable') {
                 $tag = $render($referenceId, $renderArgument->getValue());
             } elseif ($renderArgument->getType() === 'reference') {
-                  $reference = $renderArgument->getValue();
-                  $tag = $referencesContainer[$reference];
+                $reference = $renderArgument->getValue();
+                $tag = $referencesContainer[$reference];
             } else {
                 $tag = $renderArgument->getValue();
             }

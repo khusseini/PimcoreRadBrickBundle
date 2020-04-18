@@ -1,0 +1,22 @@
+datasources: []
+areabricks:
+  teaser: # Simple Example
+    label: Teaser
+    editables:
+      title:
+        type: text
+      body:
+        type: wysiwyg
+      columns:
+        type: text
+        instances: 1 # request/view/datasources
+  image: # Mapping Example
+    label: Image
+    editables:
+      image_thumbnail:
+        type: input
+      image_content:
+        type: image
+        map:
+        - source: 'view["image_thumbnail"].getData()' # request/view/datasources
+          target: '[options][thumbnail]'

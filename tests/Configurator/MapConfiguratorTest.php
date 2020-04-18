@@ -39,7 +39,7 @@ class MapConfiguratorTest extends TestCase
         $renderer = new Renderer();
         $renderer->set($arguments);
 
-        $actual = $mapConfig->createEditables(
+        $mapConfig->createEditables(
             $renderer,
             'test',
             [
@@ -48,7 +48,7 @@ class MapConfiguratorTest extends TestCase
             ]
         );
 
-        $actual = iterator_to_array($actual);
+        $actual = iterator_to_array($renderer->emit());
         $this->assertCount(1, $actual);
         $actual = $actual['test'];
 

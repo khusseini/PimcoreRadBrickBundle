@@ -7,10 +7,14 @@ use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 
 class DatasourceRegistry
 {
-    /** @var ExpressionLanguage */
+    /**
+     * @var ExpressionLanguage 
+     */
     private $expressionLangauge;
 
-    /** @var object */
+    /**
+     * @var object 
+     */
     private $datasources = null;
 
     public function __construct(

@@ -11,12 +11,14 @@ class GroupConfigurator extends AbstractConfigurator
     public function configureEditableOptions(OptionsResolver $or): void
     {
         $or->setDefault('group', null);
-        $or->setAllowedValues('group', function ($value) {
-            if (is_null($value)) {
-                return true;
+        $or->setAllowedValues(
+            'group', function ($value) {
+                if (is_null($value)) {
+                    return true;
+                }
+                return preg_match('/[_a-z]+/i', $value);
             }
-            return preg_match('/[_a-z]+/i', $value);
-        });
+        );
     }
 
     public function supportsEditable(string $editableName, array $config): bool
@@ -25,7 +27,7 @@ class GroupConfigurator extends AbstractConfigurator
     }
 
     /**
-     * @param array<string,mixed> $config
+     * @param  array<string,mixed> $config
      * @return array<string,mixed>
      */
     protected function resolveBrickConfig(array $config): array
@@ -66,17 +68,15 @@ class GroupConfigurator extends AbstractConfigurator
         return [];
     }
 
-    public function doCreateEditables(Renderer $renderer, string $name, array $data): \Generator
+    public function doCreateEditables(Renderer $renderer, string $name, array $data): void
     {
-        $argument = $renderer->get($name);
-        yield $name => $argument;
+        return;
     }
 
-    public function postCreateEditables(string $brickName, array $config, Renderer $renderer): \Generator
+    public function postCreateEditables(string $brickName, array $config, Renderer $renderer): void
     {
         if (!$config['groups']) {
             return;
-            yield;
         };
 
         $groups = array_keys($config['groups']);
@@ -112,8 +112,7 @@ class GroupConfigurator extends AbstractConfigurator
                         'reference',
                         $renderArg->getName(),
                         $renderArg->getName()
-                    )
-                ;
+                    );
             }
         }
 
@@ -123,7 +122,8 @@ class GroupConfigurator extends AbstractConfigurator
                 $argumentValue[$key] = new RenderArgument('collection', $key, $value);
             }
 
-            yield $name => new RenderArgument('collection', $name, $argumentValue);
+            $argument = new RenderArgument('collection', $name, $argumentValue);
+            $renderer->emitArgument($argument);
         }
     }
 }

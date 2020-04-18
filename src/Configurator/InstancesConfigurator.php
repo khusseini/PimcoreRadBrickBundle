@@ -26,7 +26,7 @@ class InstancesConfigurator extends AbstractConfigurator
         Renderer $renderer,
         string $name,
         array $data
-    ): \Generator {
+    ): void {
         $argument = $renderer->get($name);
         $config = $data['editable'];
         $instances = $config['instances'];
@@ -48,8 +48,7 @@ class InstancesConfigurator extends AbstractConfigurator
             $argument = new RenderArgument('collection', $name, $editables);
         }
 
-        $renderer->set($argument);
-        yield $name => $argument;
+        $renderer->emitArgument($argument);
     }
 
     public function configureEditableOptions(OptionsResolver $or): void

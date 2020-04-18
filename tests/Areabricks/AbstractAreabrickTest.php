@@ -33,10 +33,11 @@ class AbstractAreabrickTest extends TestCase
         $tagRenderer = $this->prophesize(TagRenderer::class);
         $tagRenderer
             ->render(Argument::any(), Argument::cetera())
-            ->will(function ($args) {
-                return $args;
-            })
-        ;
+            ->will(
+                function ($args) {
+                    return $args;
+                }
+            );
 
         $view = new ViewModel();
         $doc = $this->prophesize(PageSnippet::class);

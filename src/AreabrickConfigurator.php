@@ -8,14 +8,18 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AreabrickConfigurator
 {
-    /** @var array<mixed>  */
+    /**
+     * @var array<mixed>  
+     */
     private $config = [];
 
-    /** @var IConfigurator[] */
+    /**
+     * @var IConfigurator[] 
+     */
     private $configurators = [];
 
     /**
-     * @param array<mixed> $config
+     * @param array<mixed>    $config
      * @param IConfigurator[] $configurators
      */
     public function __construct(
@@ -23,10 +27,12 @@ class AreabrickConfigurator
         array $configurators = []
     ) {
         $or = new OptionsResolver();
-        $or->setDefaults([
+        $or->setDefaults(
+            [
             'areabricks' => [],
             'datasources' => [],
-        ]);
+            ]
+        );
         $this->config = $or->resolve($config);
         $this->configurators = $configurators;
     }
@@ -55,7 +61,9 @@ class AreabrickConfigurator
         $data['config'] = $this->resolveAreaBrickConfig($name);
         $data['context'] = $context;
 
-        /** @var IConfigurator $configurator */
+        /**
+ * @var IConfigurator $configurator 
+*/
         foreach ($this->configurators as $configurator) {
             $newContext = $configurator->preCreateEditables($name, $data);
             $data['context'] = array_merge($data['context'], $newContext);
@@ -96,13 +104,15 @@ class AreabrickConfigurator
     public function resolveAreaBrickConfig(string $name): array
     {
         $or = new OptionsResolver();
-        $or->setDefaults([
+        $or->setDefaults(
+            [
             'icon' => null,
             'label' => null,
             'open' => '',
             'close' => '',
             'use_edit' => false,
-        ]);
+            ]
+        );
 
         $config = $this->getAreabrickConfig($name);
         $or->setDefined(array_keys($config));
@@ -115,27 +125,35 @@ class AreabrickConfigurator
     /**
      * @param array<array> $config
      *
-     * @return \Generator<array>
+     * @return array<array>
      */
-    protected function compileEditablesConfig(array $config): \Generator
+    protected function compileEditablesConfig(array $config): array
     {
         $editablesConfig = $config['editables'];
         $or = new OptionsResolver();
-        $or->setDefaults([
+        $or->setDefaults(
+            [
             'options' => [],
-        ]);
-        $or->setRequired([
+            ]
+        );
+        $or->setRequired(
+            [
             'type'
-        ]);
+            ]
+        );
 
         foreach ($this->configurators as $configurator) {
             $configurator->configureEditableOptions($or);
         }
 
+        $return = [];
+
         foreach ($editablesConfig as $name => $econfig) {
             $econfig = $or->resolve($econfig);
-            yield $name => $econfig;
+            $return[$name] = $econfig;
         }
+
+        return $return;
     }
 
     /**
@@ -148,35 +166,41 @@ class AreabrickConfigurator
         array $context = []
     ): \Generator {
         $editablesConfig = $this->compileEditablesConfig($this->config['areabricks'][$areabrick]);
-        $editablesConfig = iterator_to_array($editablesConfig);
         $areaBrickConfig = $this->getAreabrickConfig($areabrick);
         $renderer = new Renderer();
 
-        /** @var string $editableName */
+        /**
+ * @var string $editableName 
+*/
         foreach ($editablesConfig as $editableName => $editableConfig) {
             $argument = new RenderArgument(
                 'editable',
                 $editableName,
                 ['type' => $editableConfig['type'], 'options' => $editableConfig['options']]
             );
-            $renderer->set($argument);
 
-            yield $argument->getName() => $argument;
+            $renderer->emitArgument($argument);
 
             foreach ($this->configurators as $configurator) {
                 if ($configurator->supportsEditable($editableName, $editableConfig)) {
-                    yield from $configurator->createEditables(
+                    $configurator->createEditables(
                         $renderer,
                         $editableName,
                         ['editable' => $editableConfig, 'context' => $context]
                     );
                 }
             }
+
+            yield from $renderer->emit();
         }
 
-        /** @var IConfigurator $configurator */
+        /**
+ * @var IConfigurator $configurator 
+*/
         foreach ($this->configurators as $configurator) {
-            yield from $configurator->postCreateEditables($areabrick, $areaBrickConfig, $renderer);
+            $configurator->postCreateEditables($areabrick, $areaBrickConfig, $renderer);
         }
+
+        yield from $renderer->emit();
     }
 }

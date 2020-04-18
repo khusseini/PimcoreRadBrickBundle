@@ -47,8 +47,7 @@ class DatasourceConfigurator extends AbstractConfigurator
         if (is_string($value)) {
             return $this
                 ->getExpressionWrapper()
-                ->evaluateExpression($value, $context)
-            ;
+                ->evaluateExpression($value, $context);
         }
 
         if (is_array($value)) {
@@ -60,26 +59,27 @@ class DatasourceConfigurator extends AbstractConfigurator
         return $value;
     }
 
-    public function generateDatasources(Renderer $renderer, $data): \Generator
+    public function generateDatasources(Renderer $renderer, $data): void
     {
         foreach ($data['context']['datasources']->executeAll() as $name => $value) {
             $argument = new RenderArgument('data', $name, $value);
-            $renderer->set($argument);
-            yield $argument->getName() => $argument;
+            $renderer->emitArgument($argument);
         }
     }
 
-    public function doCreateEditables(Renderer $renderer, string $name, array $data): \Generator
+    public function doCreateEditables(Renderer $renderer, string $name, array $data): void
     {
         $argument = $renderer->get($name);
         if (!$data['context']['datasources']) {
+            $argument = new RenderArgument('null', $argument->getName());
+            $renderer->emitArgument($argument);
             return;
         }
 
-        yield from $this->generateDatasources($renderer, $data);
+        $this->generateDatasources($renderer, $data);
 
         $editable = $data['editable'];
-        if (@$editable['datasource']['name']) {
+        if (isset($editable['datasource']['name'])) {
             $datasourceName = $editable['datasource']['name'];
             $datasourceIdExpression = @$editable['datasource']['id'];
             $dataArgument = $renderer->get($datasourceName);
@@ -91,8 +91,7 @@ class DatasourceConfigurator extends AbstractConfigurator
                 if ($datasourceIdExpression) {
                     $i = $this
                         ->getExpressionWrapper()
-                        ->evaluateExpression($datasourceIdExpression, ['item'=>$item])
-                    ;
+                        ->evaluateExpression($datasourceIdExpression, ['item'=>$item]);
                 }
 
                 $itemArgument = new RenderArgument('editable', $i, $editable);
@@ -106,8 +105,7 @@ class DatasourceConfigurator extends AbstractConfigurator
             );
         }
 
-        $renderer->set($argument);
-        yield $name => $argument;
+        $renderer->emitArgument($argument);
     }
 
     public function supportsEditable(string $editableName, array $config): bool

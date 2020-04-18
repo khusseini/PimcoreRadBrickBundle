@@ -35,10 +35,10 @@ class GroupConfiguratorTest extends TestCase
         $argument = new RenderArgument('editable', 'test', []);
         $renderer = new Renderer();
         $renderer->set($argument);
-        $renderArguments = $configurator->doCreateEditables($renderer, 'test', $editable);
-        $renderArguments = iterator_to_array($renderArguments);
-        $renderArguments = $configurator->postCreateEditables('test', $brick, $renderer);
-        $renderArguments = iterator_to_array($renderArguments);
+        $configurator->doCreateEditables($renderer, 'test', $editable);
+        $renderArguments = iterator_to_array($renderer->emit());
+        $configurator->postCreateEditables('test', $brick, $renderer);
+        $renderArguments = iterator_to_array($renderer->emit());
         $this->assertArrayHasKey('boxes', $renderArguments);
         $boxes = $renderArguments['boxes'];
         $this->assertEquals('collection', $boxes->getType());

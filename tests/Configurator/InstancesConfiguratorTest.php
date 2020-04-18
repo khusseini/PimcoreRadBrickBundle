@@ -2,7 +2,6 @@
 
 namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 
-use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\InstancesConfigurator;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Khusseini\PimcoreRadBrickBundle\Renderer;
@@ -53,7 +52,9 @@ class InstancesConfiguratorTest extends TestCase
         ];
     }
 
-    /** @dataProvider canCreateEditableProvider */
+    /**
+     * @dataProvider canCreateEditableProvider 
+     */
     public function testCanCreateEditable($config, $assert)
     {
         $configurator = new InstancesConfigurator();
@@ -61,20 +62,19 @@ class InstancesConfiguratorTest extends TestCase
             foreach ($areabrickConfig['editables'] as $editableName => $editableConfig) {
                 $actualSupports = $configurator->supportsEditable($editableName, $editableConfig);
                 $expectedSupports =
-                    isset($editableConfig['instances'])
-                ;
+                    isset($editableConfig['instances']);
                 $this->assertEquals($expectedSupports, $actualSupports);
                 $renderArgs = new RenderArgument('editable', $editableName, $editableConfig);
                 $renderer = new Renderer();
                 $renderer->set($renderArgs);
 
-                $renderArgs = $configurator->createEditables(
+                $configurator->createEditables(
                     $renderer,
                     $editableName,
                     ['context' => [], 'editable'=> $editableConfig]
                 );
 
-                $assert($name, $renderArgs);
+                $assert($name, $renderer->emit());
             }
         }
     }

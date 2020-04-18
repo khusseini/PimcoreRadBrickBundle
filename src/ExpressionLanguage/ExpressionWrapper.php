@@ -9,10 +9,14 @@ use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 class ExpressionWrapper
 {
-    /** @var ExpressionLanguage */
+    /**
+     * @var ExpressionLanguage 
+     */
     private $expressionLanguage;
 
-    /** @var PropertyAccessorInterface */
+    /**
+     * @var PropertyAccessorInterface 
+     */
     private $propAccess;
 
     private function getExpressionLanguage(): ExpressionLanguage
@@ -29,8 +33,7 @@ class ExpressionWrapper
         if (is_null($this->propAccess)) {
             $this->propAccess = PropertyAccess::createPropertyAccessorBuilder()
                 ->enableExceptionOnInvalidIndex()
-                ->getPropertyAccessor()
-            ;
+                ->getPropertyAccessor();
         }
 
         return $this->propAccess;
@@ -38,7 +41,7 @@ class ExpressionWrapper
 
 
     /**
-     * @param array<mixed> $data
+     * @param array<mixed>  $data
      * @param array<string> $attributes
      *
      * @return array<mixed>
@@ -76,14 +79,13 @@ class ExpressionWrapper
     {
         return $this
             ->getPropertyAccess()
-            ->getValue($objectOrArray, $propertyPath)
-        ;
+            ->getValue($objectOrArray, $propertyPath);
     }
 
     /**
      * @param array<array>|object $objectOrArray
-     * @param string $propertyPath
-     * @param mixed $value
+     * @param string              $propertyPath
+     * @param mixed               $value
      *
      * @return array<array>|object
      */
@@ -94,8 +96,8 @@ class ExpressionWrapper
     }
 
     /**
-     * @param string $value
-     * @param array<array> $context
+     * @param  string       $value
+     * @param  array<array> $context
      * @return mixed
      */
     public function evaluateExpression(string $value, array $context)

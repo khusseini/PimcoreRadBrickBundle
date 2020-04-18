@@ -19,7 +19,7 @@ class MapConfigurator extends AbstractConfigurator
     }
 
     /**
-     * @param array<array> $options
+     * @param  array<array> $options
      * @return array<array>
      */
     private function resolveMapOptions(array $options): array
@@ -29,19 +29,20 @@ class MapConfigurator extends AbstractConfigurator
         return $or->resolve($options);
     }
 
-    public function doCreateEditables(Renderer $renderer, string $name, array $data): \Generator
+    public function doCreateEditables(Renderer $renderer, string $name, array $data): void
     {
         $argument = $renderer->get($name);
         if ($this->supportsEditable($name, $data['editable'])) {
             $maps = $data['editable']['map'];
             foreach ($maps as $map) {
-                /** @var array<string> $map */
+                /**
+ * @var array<string> $map 
+*/
                 $map = $this->resolveMapOptions($map);
                 $source = $this->getExpressionWrapper()->evaluateExpression($map['source'], $data['context']);
                 $data['editable'] = $this
                     ->getExpressionWrapper()
-                    ->setPropertyValue($data['editable'], $map['target'], $source)
-                ;
+                    ->setPropertyValue($data['editable'], $map['target'], $source);
             }
 
             $argument = new RenderArgument(
@@ -51,7 +52,6 @@ class MapConfigurator extends AbstractConfigurator
             );
         }
 
-        $renderer->set($argument);
-        yield $name => $argument;
+        $renderer->emitArgument($argument);
     }
 }

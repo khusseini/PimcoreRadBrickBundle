@@ -9,7 +9,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 abstract class AbstractConfigurator implements IConfigurator
 {
-    /** @var ExpressionWrapper */
+    /**
+     * @var ExpressionWrapper 
+     */
     private $expressionWrapper;
 
 
@@ -24,13 +26,12 @@ abstract class AbstractConfigurator implements IConfigurator
 
     /**
      * @param array<array> $data
-     * @return \Generator<RenderArgument>
      */
     abstract public function doCreateEditables(
         Renderer $rednerer,
         string $name,
         array $data
-    ): \Generator;
+    ): void;
 
     /**
      * @return array<string>
@@ -50,8 +51,7 @@ abstract class AbstractConfigurator implements IConfigurator
         $or = new OptionsResolver();
         $or
             ->setDefault('editable', [])
-            ->setDefault('context', [])
-        ;
+            ->setDefault('context', []);
         return $or->resolve($options);
     }
 
@@ -59,11 +59,12 @@ abstract class AbstractConfigurator implements IConfigurator
         Renderer $renderer,
         string $name,
         array $data
-    ): \Generator {
+    ): void {
         $argument = $renderer->get($name);
         $data = $this->resolveDataOptions($data);
         $attributes = $this->getEditablesExpressionAttributes();
         $data = $this->evaluateExpressions($data, $attributes);
+
         $argument = new RenderArgument(
             $argument->getType(),
             $argument->getName(),
@@ -72,7 +73,7 @@ abstract class AbstractConfigurator implements IConfigurator
 
         $renderer->set($argument);
 
-        yield from $this->doCreateEditables(
+        $this->doCreateEditables(
             $renderer,
             $name,
             $data
@@ -84,14 +85,12 @@ abstract class AbstractConfigurator implements IConfigurator
         return [];
     }
 
-    public function postCreateEditables(string $brickName, array $config, Renderer $renderer): \Generator
+    public function postCreateEditables(string $brickName, array $config, Renderer $renderer): void
     {
-        return;
-        yield;
     }
 
     /**
-     * @param array<mixed> $data
+     * @param array<mixed>  $data
      * @param array<string> $attributes
      *
      * @return array<mixed>

@@ -71,9 +71,11 @@ class DatasourceConfiguratorTest extends TestCase
             $items[] = $createItem($i+1);
         }
 
-        $registry->add('test_source', function () use ($items) {
-            return $items;
-        });
+        $registry->add(
+            'test_source', function () use ($items) {
+                return $items;
+            }
+        );
 
         $instance = new DatasourceConfigurator();
         $config = [
@@ -91,15 +93,17 @@ class DatasourceConfiguratorTest extends TestCase
             ]
         ];
 
-        $argument = new RenderArgument('editable', 'test', [
+        $argument = new RenderArgument(
+            'editable', 'test', [
             'options' => ['bla' => '']
-        ]);
+            ]
+        );
 
         $renderer = new Renderer();
         $renderer->set($argument);
 
-        $actualGenerator = $instance->doCreateEditables($renderer, 'test', $config);
-        $actual = iterator_to_array($actualGenerator);
+        $instance->doCreateEditables($renderer, 'test', $config);
+        $actual = iterator_to_array($renderer->emit());
 
         $this->assertCount(2, $actual);
 

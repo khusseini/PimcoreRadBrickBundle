@@ -1,11 +1,10 @@
 <?php
 
-namespace Tests\Khusseini\PimcoreRadBrickBundle\Tests;
+namespace Tests\Khusseini\PimcoreRadBrickBundle;
 
 use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\AbstractConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\IConfigurator;
-use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Khusseini\PimcoreRadBrickBundle\Renderer;
 use PHPUnit\Framework\TestCase;
 use Pimcore\Templating\Model\ViewModel;
@@ -97,32 +96,8 @@ class AreabrickConfiguratorTest extends TestCase
         }
     }
 
-    private function createIConfig($supports = true)
-    {
-        $configuratorInterface = $this->prophesize(IConfigurator::class);
-        $configuratorInterface
-            ->supportsEditable(Argument::Any(), Argument::cetera())
-            ->willReturn($supports)
-        ;
-        $configuratorInterface
-            ->configureEditableOptions(Argument::any())
-        ;
-        $emptyGenerator = function () {
-            return;
-            yield;
-        };
-
-        $configuratorInterface
-            ->postCreateEditables(Argument::any(), Argument::cetera())
-            ->willReturn($emptyGenerator())
-        ;
-
-        return $configuratorInterface;
-    }
-
     public function getIConfiguratorIntegrationData($supports = true)
     {
-        $configuratorInterface = $this->createIConfig($supports);
         $name = 'testeditable'. (!$supports ? '': '_tampered');
         $expected = [
             $name => [
@@ -148,20 +123,6 @@ class AreabrickConfiguratorTest extends TestCase
             ]
         ];
 
-        $generatedArgument = new RenderArgument('editable', $name, [
-            'type' => 'input',
-            'options' => [],
-        ]);
-
-        $generator = function () use ($name, $generatedArgument) {
-            yield $name => $generatedArgument;
-        };
-
-        $configuratorInterface
-            ->createEditables(Argument::any(), Argument::cetera())
-            ->willReturn($generator())
-        ;
-
         $assert = function ($areabrick, $editables) use ($expected) {
             foreach ($editables as $name => $args) {
                 $this->assertArrayHasKey($name, $expected);
@@ -169,8 +130,8 @@ class AreabrickConfiguratorTest extends TestCase
                 $this->assertSame($expectedConfig, $args->getValue());
             }
         };
-        $ci = $configuratorInterface->reveal();
-        return [$config, $assert, [$ci]];
+
+        return [$config, $assert, []];
     }
 
     public function testDeferredProcessing()
@@ -218,9 +179,9 @@ class AreabrickConfiguratorTest extends TestCase
                 Renderer $renderer,
                 string $name,
                 array $data
-            ): \Generator {
+            ): void {
                 $argument = $renderer->get($name);
-                yield $name => $argument;
+                $renderer->emitArgument($argument);
             }
         };
 
