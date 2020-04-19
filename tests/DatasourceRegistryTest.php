@@ -1,17 +1,20 @@
 <?php
 
-
 namespace Tests\Khusseini\PimcoreRadBrickBundle;
 
 use InvalidArgumentException;
 use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class DatasourceRegistryTest extends TestCase
 {
+    use ProphecyTrait;
+
     protected function getInstance()
     {
         $instance = new DatasourceRegistry();
+
         return $instance;
     }
 
@@ -56,22 +59,23 @@ class DatasourceRegistryTest extends TestCase
     public function canCreateMethodCallProvider()
     {
         $stdObject = new \stdClass();
+
         return [
             [    // Simple case
                 ['arg1', 'arg2'],
                 ['arg1' => 'hello', 'arg2' => 'world'],
-                ['hello', 'world']
+                ['hello', 'world'],
             ], [ // Nested case
                 [['arg' => [
                     'nested' => [
-                        'arg1'
-                    ]
+                        'arg1',
+                    ],
                 ]]],
                 ['arg1' => 'hello'],
                 [['arg' => [
                     'nested' => [
-                        'hello'
-                    ]
+                        'hello',
+                    ],
                 ]]],
             ], [ // Nested case with mixed content
                 [['arg' => [

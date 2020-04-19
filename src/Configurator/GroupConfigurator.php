@@ -11,14 +11,18 @@ class GroupConfigurator extends AbstractConfigurator
     public function configureEditableOptions(OptionsResolver $or): void
     {
         $or->setDefault('group', null);
+        // @codeCoverageIgnoreStart
         $or->setAllowedValues(
-            'group', function ($value) {
+            'group',
+            function ($value) {
                 if (is_null($value)) {
                     return true;
                 }
+
                 return preg_match('/[_a-z]+/i', $value);
             }
         );
+        // @codeCoverageIgnoreEnd
     }
 
     public function supportsEditable(string $editableName, array $config): bool
@@ -27,7 +31,8 @@ class GroupConfigurator extends AbstractConfigurator
     }
 
     /**
-     * @param  array<string,mixed> $config
+     * @param array<string,mixed> $config
+     *
      * @return array<string,mixed>
      */
     protected function resolveBrickConfig(array $config): array
@@ -36,6 +41,7 @@ class GroupConfigurator extends AbstractConfigurator
         $or->setDefined(array_keys($config));
         $or->setDefault('groups', []);
         $or->setDefault('editables', []);
+
         return $or->resolve($config);
     }
 
@@ -66,6 +72,9 @@ class GroupConfigurator extends AbstractConfigurator
         $data->setConfig($config);
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function doCreateEditables(RenderArgumentEmitter $emitter, string $name, ConfiguratorData $data): void
     {
         return;
@@ -73,28 +82,29 @@ class GroupConfigurator extends AbstractConfigurator
 
     public function postCreateEditables(string $brickName, array $config, RenderArgumentEmitter $emitter): void
     {
-        if (!$config['groups']) {
+        if (!isset($config['groups'])) {
             return;
-        };
+        }
 
         $groups = array_keys($config['groups']);
 
         $groupArguments = [];
 
         foreach ($config['editables'] as $name => $config) {
-            if (!in_array($config['group'], $groups)) {
+            if (
+                !isset($config['group'])
+                || !in_array($config['group'], $groups)
+            ) {
                 continue;
             }
-            if (!$emitter->has($name)) {
-                continue;
-            }
+
             $groupName = $config['group'];
             if (!isset($groupArguments[$groupName])) {
                 $groupArguments[$groupName] = [];
             }
             $renderArg = $emitter->get($name);
 
-            if ($renderArg->getType() === 'collection') {
+            if ('collection' === $renderArg->getType()) {
                 $values = $renderArg->getValue();
 
                 foreach ($values as $key => $data) {

@@ -8,9 +8,12 @@ use Khusseini\PimcoreRadBrickBundle\ContextInterface;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class InstancesConfiguratorTest extends TestCase
 {
+    use ProphecyTrait;
+
     private function createNumberOfInstancesTestsData($instances)
     {
         $config = [
@@ -19,10 +22,10 @@ class InstancesConfiguratorTest extends TestCase
                     'editables' => [
                         'testeditable' => [
                             'instances' => $instances,
-                        ]
-                    ]
-                ]
-            ]
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         return [
@@ -34,14 +37,14 @@ class InstancesConfiguratorTest extends TestCase
                 if ($instances < 1) {
                     $this->assertSame('null', $actual->getType());
                 }
-                if ($instances === 1) {
+                if (1 === $instances) {
                     $this->assertSame('editable', $actual->getType());
                 }
                 if ($instances > 1) {
                     $this->assertSame('collection', $actual->getType());
                     $this->assertCount($instances, $actual->getValue());
                 }
-            }
+            },
         ];
     }
 

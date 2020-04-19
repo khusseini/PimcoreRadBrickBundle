@@ -5,7 +5,6 @@ namespace Test\Khusseini\PimcoreRadBrickBundle\Areabricks;
 use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
 use Khusseini\PimcoreRadBrickBundle\AreabrickRenderer;
 use Khusseini\PimcoreRadBrickBundle\Areabricks\AbstractAreabrick;
-use PHPUnit\Framework\TestCase;
 use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Document\Tag\Area\Info;
 use Pimcore\Model\Element\Tag;
@@ -13,8 +12,9 @@ use Pimcore\Templating\Model\ViewModel;
 use Pimcore\Templating\Renderer\TagRenderer;
 use Prophecy\Argument;
 use Symfony\Component\HttpFoundation\Request;
+use Tests\Khusseini\PimcoreRadBrickBundle\AbstractTestCase;
 
-class AbstractAreabrickTest extends TestCase
+class AbstractAreabrickTest extends AbstractTestCase
 {
     public function testAddsEditablesToView()
     {
@@ -23,11 +23,11 @@ class AbstractAreabrickTest extends TestCase
                 'testbrick' => [
                     'editables' => [
                         'testedit' => [
-                            'type' => 'input'
-                        ]
-                    ]
-                ]
-            ]
+                            'type' => 'input',
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         $configurator = new AreabrickConfigurator($config);
@@ -59,5 +59,4 @@ class AbstractAreabrickTest extends TestCase
 
         $this->assertTrue($view->has('testedit'));
     }
-
 }

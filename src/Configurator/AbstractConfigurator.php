@@ -5,7 +5,6 @@ namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 use Khusseini\PimcoreRadBrickBundle\ExpressionLanguage\ExpressionWrapper;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 
 abstract class AbstractConfigurator implements IConfigurator
 {
@@ -13,7 +12,6 @@ abstract class AbstractConfigurator implements IConfigurator
      * @var ExpressionWrapper
      */
     private $expressionWrapper;
-
 
     public function __construct(ExpressionWrapper $expressionWrapper = null)
     {
@@ -34,7 +32,7 @@ abstract class AbstractConfigurator implements IConfigurator
     ): void;
 
     /**
-     * @return             array<string>
+     * @return array<string>
      * @codeCoverageIgnore
      */
     public function getEditablesExpressionAttributes(): array
@@ -89,6 +87,7 @@ abstract class AbstractConfigurator implements IConfigurator
 
         $config = $this->getExpressionWrapper()->evaluateExpressions($input, $attributes, '[context]');
         $data->setConfig($config['editable']);
+
         return $data;
     }
 

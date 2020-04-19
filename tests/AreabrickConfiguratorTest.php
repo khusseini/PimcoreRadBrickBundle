@@ -5,18 +5,19 @@ namespace Tests\Khusseini\PimcoreRadBrickBundle;
 use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\AbstractConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\ConfiguratorData;
-use Khusseini\PimcoreRadBrickBundle\Configurator\IConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Context;
 use Khusseini\PimcoreRadBrickBundle\ContextInterface;
 use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
 use Pimcore\Templating\Model\ViewModel;
-use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AreabrickConfiguratorTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testCanCompileAreabrick()
     {
         $config = [
@@ -24,18 +25,18 @@ class AreabrickConfiguratorTest extends TestCase
                 'test_brick' => [
                     'editables' => [
                         'test_edit' => [
-                            'type' => 'input'
-                        ]
+                            'type' => 'input',
+                        ],
                     ],
-                ]
-            ]
+                ],
+            ],
         ];
 
         $expected = [
             'test_edit' => [
                 'type' => 'input',
                 'options' => [],
-            ]
+            ],
         ];
 
         $context = $this->prophesize(ContextInterface::class);
@@ -52,15 +53,15 @@ class AreabrickConfiguratorTest extends TestCase
         $expected = [
             'wysiwyg_content' => [
                 'type' => 'wysiwyg',
-                'options' => ['random' => 'option']
-            ]
+                'options' => ['random' => 'option'],
+            ],
         ];
 
         return [
             ['areabricks' => [
                 'wysiwyg' => [
-                    'editables' => $expected
-                ]
+                    'editables' => $expected,
+                ],
             ]],
             function ($areabrick, $editables) use ($expected) {
                 $this->assertEquals('wysiwyg', $areabrick);
@@ -106,10 +107,10 @@ class AreabrickConfiguratorTest extends TestCase
                         'testeditable' => [
                             'type' => 'input',
                             'options' => [],
-                        ]
-                    ]
-                ]
-            ]
+                        ],
+                    ],
+                ],
+            ],
         ];
         $dummy = $this->createDummyWithPreCreate();
 
@@ -131,11 +132,10 @@ class AreabrickConfiguratorTest extends TestCase
 
     private function createDummyWithPreCreate(): AbstractConfigurator
     {
-
         $dummy = new class() extends AbstractConfigurator {
             public function configureEditableOptions(OptionsResolver $or): void
             {
-                return ;
+                return;
             }
 
             public function supportsEditable(string $editableName, array $config): bool
@@ -176,12 +176,12 @@ class AreabrickConfiguratorTest extends TestCase
 
     public function getIConfiguratorIntegrationData($supports = true)
     {
-        $name = 'testeditable'. (!$supports ? '': '_tampered');
+        $name = 'testeditable'.(!$supports ? '' : '_tampered');
         $expected = [
             $name => [
                 'type' => 'input',
                 'options' => [],
-            ]
+            ],
         ];
 
         if ($supports) {
@@ -195,10 +195,10 @@ class AreabrickConfiguratorTest extends TestCase
                         'testeditable' => [
                             'type' => 'input',
                             'options' => [],
-                        ]
-                    ]
-                ]
-            ]
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         $assert = function ($areabrick, $editables) use ($expected) {
@@ -218,29 +218,29 @@ class AreabrickConfiguratorTest extends TestCase
             'dummy' => [
                 'type' => 'input',
                 'options' => [
-                    'content' => 'hello world'
+                    'content' => 'hello world',
                 ],
             ],
             'testeditable' => [
                 'type' => 'input',
                 'options' => [
-                    'placeholder' => 'view.get("dummy")["options"]["content"]'
-                ]
-            ]
+                    'placeholder' => 'view.get("dummy")["options"]["content"]',
+                ],
+            ],
         ];
 
         $config = [
             'areabricks' => [
                 'testbrick' => [
-                    'editables' => $editables
-                ]
-            ]
+                    'editables' => $editables,
+                ],
+            ],
         ];
 
         $dummy = new class() extends AbstractConfigurator {
             public function configureEditableOptions(OptionsResolver $or): void
             {
-                return ;
+                return;
             }
 
             public function supportsEditable(string $editableName, array $config): bool
@@ -277,9 +277,9 @@ class AreabrickConfiguratorTest extends TestCase
             $view[$name] = $argument->getValue();
             $this->assertArrayHasKey($name, $editables);
 
-            if ($name === 'testeditable') {
+            if ('testeditable' === $name) {
                 ++$argumentCalled;
-                if ($argumentCalled == 2) {
+                if (2 == $argumentCalled) {
                     $actual = $argument->getValue()['options'];
                     $this->assertEquals('hello world', $actual['placeholder']);
                 }

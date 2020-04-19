@@ -8,9 +8,12 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
+/**
+ * @codeCoverageIgnore
+ */
 class PimcoreRadBrickExtension extends Extension
 {
     /**
@@ -39,9 +42,10 @@ class PimcoreRadBrickExtension extends Extension
         $config['datasources'] = $datasources;
 
         $configurator = new Definition(
-            AreabrickConfigurator::class, [
+            AreabrickConfigurator::class,
+            [
             $config,
-            $configurators
+            $configurators,
             ]
         );
         $container->setDefinition(AreabrickConfigurator::class, $configurator);
@@ -57,7 +61,8 @@ class PimcoreRadBrickExtension extends Extension
 
             if (!$target) {
                 $target = new Definition(
-                    SimpleBrick::class, [
+                    SimpleBrick::class,
+                    [
                     $id,
                     new Reference('pimcore.templating.tag_renderer'),
                     new Reference(AreabrickConfigurator::class),

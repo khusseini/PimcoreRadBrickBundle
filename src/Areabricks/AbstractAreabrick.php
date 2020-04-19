@@ -54,7 +54,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     }
 
     /**
-     * @return             string
+     * @return string
      * @codeCoverageIgnore
      */
     public function getIcon()
@@ -63,7 +63,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     }
 
     /**
-     * @return             string
+     * @return string
      * @codeCoverageIgnore
      */
     public function getName()
@@ -72,7 +72,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     }
 
     /**
-     * @return             bool
+     * @return bool
      * @codeCoverageIgnore
      */
     public function hasEditTemplate()
@@ -81,7 +81,8 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
+     *
      * @codeCoverageIgnore
      */
     public function getTemplateLocation()
@@ -90,7 +91,8 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
+     *
      * @codeCoverageIgnore
      */
     public function getTemplateSuffix()
@@ -99,11 +101,12 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     }
 
     /**
-     * @return null|Response
+     * @return Response|null
      */
     public function action(Info $info)
     {
         $this->areabrickRenderer->render($this->name, $info);
+
         return $this->doAction($info);
     }
 

@@ -4,7 +4,6 @@ namespace Khusseini\PimcoreRadBrickBundle;
 
 use Khusseini\PimcoreRadBrickBundle\Configurator\ConfiguratorData;
 use Khusseini\PimcoreRadBrickBundle\Configurator\IConfigurator;
-use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AreabrickConfigurator
@@ -57,13 +56,14 @@ class AreabrickConfigurator
         $data->setConfig($this->resolveAreaBrickConfig($name));
 
         /**
- * @var IConfigurator $configurator
-*/
+         * @var IConfigurator
+         */
         foreach ($this->configurators as $configurator) {
             $configurator->preCreateEditables($name, $data);
         }
 
         $this->config = $data->getConfig();
+
         return $this->createEditables($name, $context);
     }
 
@@ -77,7 +77,7 @@ class AreabrickConfigurator
 
     public function hasAreabrickConfig(string $name): bool
     {
-        return (bool)$this->getAreabrickConfig($name);
+        return (bool) $this->getAreabrickConfig($name);
     }
 
     /**
@@ -89,7 +89,7 @@ class AreabrickConfigurator
     }
 
     /**
-     * @return             array<array>
+     * @return array<array>
      * @codeCoverageIgnore
      */
     protected function getDatasourceConfig(string $name): array
@@ -137,7 +137,7 @@ class AreabrickConfigurator
         );
         $or->setRequired(
             [
-            'type'
+            'type',
             ]
         );
 
@@ -167,8 +167,8 @@ class AreabrickConfigurator
         $emitter = new RenderArgumentEmitter();
 
         /**
- * @var string $editableName
-*/
+         * @var string
+         */
         foreach ($editablesConfig as $editableName => $editableConfig) {
             $argument = new RenderArgument(
                 'editable',
@@ -191,8 +191,8 @@ class AreabrickConfigurator
         }
 
         /**
-         * @var IConfigurator $configurator
-        */
+         * @var IConfigurator
+         */
         foreach ($this->configurators as $configurator) {
             $configurator->postCreateEditables($areabrick, $areaBrickConfig, $emitter);
         }

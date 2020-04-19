@@ -36,7 +36,7 @@ class DatasourceRegistry
      */
     public function execute(string $name, array $args = [])
     {
-        if (! property_exists($this->datasources, $name)) {
+        if (!property_exists($this->datasources, $name)) {
             throw new InvalidArgumentException(sprintf('Datasource \'%s\' not found.', $name));
         }
 
@@ -47,7 +47,7 @@ class DatasourceRegistry
 
     public function executeAll(): \Generator
     {
-        $ds = (array)$this->datasources;
+        $ds = (array) $this->datasources;
         foreach ($ds as $name => $callback) {
             yield $name => $callback();
         }

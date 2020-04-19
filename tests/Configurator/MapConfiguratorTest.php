@@ -8,12 +8,15 @@ use Khusseini\PimcoreRadBrickBundle\ContextInterface;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class MapConfiguratorTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testCanMap()
     {
-        $source = (object)[
+        $source = (object) [
             'data' => 'hello world',
         ];
 
@@ -23,10 +26,10 @@ class MapConfiguratorTest extends TestCase
                 'map' => [
                     [
                         'source' => 'source.data',
-                        'target' => '[options][overwrite]'
-                    ]
-                ]
-            ]
+                        'target' => '[options][overwrite]',
+                    ],
+                ],
+            ],
         ];
 
         $mapConfig = new MapConfigurator();

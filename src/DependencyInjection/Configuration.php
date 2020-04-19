@@ -2,8 +2,6 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\DependencyInjection;
 
-use SebastianBergmann\Type\VoidType;
-use Symfony\Component\Config\Definition\ArrayNode;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeBuilder;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -13,6 +11,8 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
  * This is the class that validates and merges configuration from your app/config files.
  *
  * To learn more see {@link http://symfony.com/doc/current/cookbook/bundles/configuration.html}
+ *
+ * @codeCoverageIgnore
  */
 class Configuration implements ConfigurationInterface
 {
@@ -23,8 +23,8 @@ class Configuration implements ConfigurationInterface
     {
         $treeBuilder = new TreeBuilder();
         /**
- * @var ArrayNodeDefinition $rootNode  
-*/
+         * @var ArrayNodeDefinition
+         */
         $rootNode = $treeBuilder->root('pimcore_rad_brick');
 
         $this->addDatasourcesSection($rootNode);

@@ -5,9 +5,12 @@ namespace Tests\Khusseini\PimcoreRadBrickBundle;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class RenderArgumentEmitterTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testCanEmit()
     {
         $expected = [
@@ -72,6 +75,7 @@ class RenderArgumentEmitterTest extends TestCase
     public function getInstance()
     {
         $emitter = new RenderArgumentEmitter();
+
         return $emitter;
     }
 

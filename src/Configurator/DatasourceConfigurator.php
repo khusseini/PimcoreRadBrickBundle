@@ -3,7 +3,7 @@
 namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use ArrayObject;
-use Khusseini\PimcoreRadBrickBundle\Context;
+use Khusseini\PimcoreRadBrickBundle\ContextInterface;
 use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
@@ -27,19 +27,24 @@ class DatasourceConfigurator extends AbstractConfigurator
                 $dataSource['args']
             );
 
-            $registry->add(
-                $id,
-                function () use ($context, $dataCall, $datasourceConfig) {
-                    $input = [];
-                    foreach ($datasourceConfig['args'] as $name => $value) {
-                        $input[$name] = $this->recurseExpression($value, $context->toArray());
-                    }
-                    return $dataCall($input);
-                }
-            );
+            $wrappedCall = function () use ($context, $dataCall, $datasourceConfig) {
+                return $this->callDatasource($context, $dataCall, $datasourceConfig);
+            };
+
+            $registry->add($id, $wrappedCall);
         }
 
         $data->getContext()->setDatasources($registry);
+    }
+
+    protected function callDatasource(ContextInterface $context, callable $dataCall, array $config)
+    {
+        $input = [];
+        foreach ($config['args'] as $name => $value) {
+            $input[$name] = $this->recurseExpression($value, $context->toArray());
+        }
+
+        return $dataCall($input);
     }
 
     protected function recurseExpression($value, array $context)
@@ -71,41 +76,43 @@ class DatasourceConfigurator extends AbstractConfigurator
 
     public function doCreateEditables(RenderArgumentEmitter $emitter, string $name, ConfiguratorData $data): void
     {
-        $argument = $emitter->get($name);
         if (!$data->getContext()->getDatasources()) {
-            $argument = new RenderArgument('null', $argument->getName());
-            $emitter->emitArgument($argument);
             return;
         }
 
         $this->generateDatasources($emitter, $data);
 
         $editable = $data->getConfig();
-        if (isset($editable['datasource']['name'])) {
-            $datasourceName = $editable['datasource']['name'];
-            $datasourceIdExpression = @$editable['datasource']['id'];
-            $dataArgument = $emitter->get($datasourceName);
+        if (
+            !isset($editable['datasource'])
+            || !isset($editable['datasource']['name'])
+        ) {
+            return;
+        }
 
-            unset($editable['datasource']);
-            $items = new ArrayObject();
+        $datasourceName = $editable['datasource']['name'];
+        $datasourceIdExpression = @$editable['datasource']['id'];
+        $dataArgument = $emitter->get($datasourceName);
 
-            foreach ($dataArgument->getValue() as $i => $item) {
-                if ($datasourceIdExpression) {
-                    $i = $this
+        unset($editable['datasource']);
+        $items = new ArrayObject();
+
+        foreach ($dataArgument->getValue() as $i => $item) {
+            if ($datasourceIdExpression) {
+                $i = $this
                         ->getExpressionWrapper()
-                        ->evaluateExpression($datasourceIdExpression, ['item'=>$item]);
-                }
-
-                $itemArgument = new RenderArgument('editable', $i, $editable);
-                $items[] = $itemArgument;
+                        ->evaluateExpression($datasourceIdExpression, ['item' => $item]);
             }
 
-            $argument = new RenderArgument(
-                'collection',
-                $argument->getName(),
-                $items
-            );
+            $itemArgument = new RenderArgument('editable', $i, $editable);
+            $items[] = $itemArgument;
         }
+
+        $argument = new RenderArgument(
+            'collection',
+            $name,
+            $items
+        );
 
         $emitter->emitArgument($argument);
     }
@@ -124,12 +131,14 @@ class DatasourceConfigurator extends AbstractConfigurator
      * @param array<mixed> $config
      *
      * @return array<mixed>
+     * @codeCoverageIgnore
      */
     protected function resolveBrickconfig(array $config): array
     {
         $or = new OptionsResolver();
         $or->setDefaults(['datasources' => [], 'editables' => []]);
         $or->setDefined(array_keys($config));
+
         return $or->resolve($config);
     }
 
@@ -137,12 +146,14 @@ class DatasourceConfigurator extends AbstractConfigurator
      * @param array<mixed> $config
      *
      * @return array<mixed>
+     * @codeCoverageIgnore
      */
     protected function resolveConfig(array $config): array
     {
         $or = new OptionsResolver();
         $or->setDefaults(['datasources' => [], 'areabricks' => []]);
         $or->setDefined(array_keys($config));
+
         return $or->resolve($config);
     }
 }

@@ -2,9 +2,7 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\ExpressionLanguage;
 
-use InvalidArgumentException;
 use Khusseini\PimcoreRadBrickBundle\Context;
-use Khusseini\PimcoreRadBrickBundle\ContextInterface;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\PropertyAccess\Exception\AccessException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -41,7 +39,6 @@ class ExpressionWrapper
 
         return $this->propAccess;
     }
-
 
     /**
      * @param array<mixed>  $data
@@ -87,7 +84,6 @@ class ExpressionWrapper
 
     /**
      * @param array<array>|object $objectOrArray
-     * @param string              $propertyPath
      * @param mixed               $value
      *
      * @return array<array>|object
@@ -95,12 +91,13 @@ class ExpressionWrapper
     public function setPropertyValue($objectOrArray, string $propertyPath, $value)
     {
         $this->getPropertyAccess()->setValue($objectOrArray, $propertyPath, $value);
+
         return $objectOrArray;
     }
 
     /**
-     * @param  string       $value
-     * @param  array<array> $context
+     * @param array<array> $context
+     *
      * @return mixed
      */
     public function evaluateExpression(string $value, array $context)

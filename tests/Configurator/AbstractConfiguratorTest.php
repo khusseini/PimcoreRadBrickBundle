@@ -5,14 +5,16 @@ namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\AbstractConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\ConfiguratorData;
 use Khusseini\PimcoreRadBrickBundle\ContextInterface;
-use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AbstractConfiguratorTest extends TestCase
 {
+    use ProphecyTrait;
+
     protected function getInstance()
     {
         $configurator = new class() extends AbstractConfigurator {
@@ -24,7 +26,7 @@ class AbstractConfiguratorTest extends TestCase
             public function getEditablesExpressionAttributes(): array
             {
                 return [
-                    '[editable][options][prop]'
+                    '[editable][options][prop]',
                 ];
             }
 
@@ -52,7 +54,9 @@ class AbstractConfiguratorTest extends TestCase
     {
         $c = $this->getInstance();
         $argument = new RenderArgument(
-            'editable', 'testedit', [
+            'editable',
+            'testedit',
+            [
             'options' => ['prop' => 'some["context"]'],
             ]
         );
@@ -80,7 +84,9 @@ class AbstractConfiguratorTest extends TestCase
             $data = new ConfiguratorData($context->reveal());
             $data->setConfig($argument->getValue());
             $c->createEditables(
-                $emitter, 'testedit', $data
+                $emitter,
+                'testedit',
+                $data
             );
 
             $actual = $emitter->emit();

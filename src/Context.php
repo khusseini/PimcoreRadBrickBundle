@@ -11,15 +11,15 @@ use Symfony\Component\HttpFoundation\Request as RequestInterface;
 class Context implements ContextInterface
 {
     /**
-     * @var ViewModelInterface 
+     * @var ViewModelInterface
      */
     private $view;
     /**
-     * @var DatasourceRegistry 
+     * @var DatasourceRegistry
      */
     private $datasources = [];
     /**
-     * @var RequestInterface 
+     * @var RequestInterface
      */
     private $request = null;
 
