@@ -12,7 +12,8 @@ class GroupConfigurator extends AbstractConfigurator
     {
         $or->setDefault('group', null);
         $or->setAllowedValues(
-            'group', function ($value) {
+            'group',
+            function ($value) {
                 if (is_null($value)) {
                     return true;
                 }

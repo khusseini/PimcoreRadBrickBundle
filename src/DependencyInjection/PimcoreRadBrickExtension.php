@@ -39,7 +39,8 @@ class PimcoreRadBrickExtension extends Extension
         $config['datasources'] = $datasources;
 
         $configurator = new Definition(
-            AreabrickConfigurator::class, [
+            AreabrickConfigurator::class,
+            [
             $config,
             $configurators
             ]
@@ -57,7 +58,8 @@ class PimcoreRadBrickExtension extends Extension
 
             if (!$target) {
                 $target = new Definition(
-                    SimpleBrick::class, [
+                    SimpleBrick::class,
+                    [
                     $id,
                     new Reference('pimcore.templating.tag_renderer'),
                     new Reference(AreabrickConfigurator::class),

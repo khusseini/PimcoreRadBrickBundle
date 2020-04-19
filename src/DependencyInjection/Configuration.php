@@ -23,7 +23,7 @@ class Configuration implements ConfigurationInterface
     {
         $treeBuilder = new TreeBuilder();
         /**
- * @var ArrayNodeDefinition $rootNode  
+ * @var ArrayNodeDefinition $rootNode
 */
         $rootNode = $treeBuilder->root('pimcore_rad_brick');
 

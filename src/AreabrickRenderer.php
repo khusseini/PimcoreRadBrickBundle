@@ -60,7 +60,6 @@ class AreabrickRenderer
         \ArrayAccess $referencesContainer = null,
         string $parentName = ''
     ): void {
-
         if (!$container) {
             $container = $info->getView();
         }
@@ -86,10 +85,8 @@ class AreabrickRenderer
                     $referenceId
                 );
                 $tag = (array)$tag;
-
             } elseif ($renderArgument->getType() === 'editable') {
                 $tag = $this->renderArgument($info, $renderArgument, $referenceId);
-
             } elseif ($renderArgument->getType() === 'reference') {
                 $reference = $renderArgument->getValue();
                 $tag = $referencesContainer[$reference];

@@ -5,7 +5,6 @@ namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\AbstractConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\ConfiguratorData;
 use Khusseini\PimcoreRadBrickBundle\ContextInterface;
-use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
@@ -55,7 +54,9 @@ class AbstractConfiguratorTest extends TestCase
     {
         $c = $this->getInstance();
         $argument = new RenderArgument(
-            'editable', 'testedit', [
+            'editable',
+            'testedit',
+            [
             'options' => ['prop' => 'some["context"]'],
             ]
         );
@@ -83,7 +84,9 @@ class AbstractConfiguratorTest extends TestCase
             $data = new ConfiguratorData($context->reveal());
             $data->setConfig($argument->getValue());
             $c->createEditables(
-                $emitter, 'testedit', $data
+                $emitter,
+                'testedit',
+                $data
             );
 
             $actual = $emitter->emit();

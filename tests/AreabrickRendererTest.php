@@ -35,7 +35,9 @@ class AreabrickRendererTest extends TestCase
                     yield 'testeditable'            => new RenderArgument('editable', 'testeditable', ['type' => 'text']);
                     yield 'null'                    => new RenderArgument('null', 'nope');
                     yield 'testeditable_collection' => new RenderArgument(
-                        'collection', 'testeditable_collection', [
+                        'collection',
+                        'testeditable_collection',
+                        [
                         new RenderArgument('editable', 'collection_item', ['type' => 'text']),
                         ]
                     );

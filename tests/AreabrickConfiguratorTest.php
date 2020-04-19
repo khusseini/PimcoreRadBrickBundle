@@ -134,7 +134,6 @@ class AreabrickConfiguratorTest extends TestCase
 
     private function createDummyWithPreCreate(): AbstractConfigurator
     {
-
         $dummy = new class() extends AbstractConfigurator {
             public function configureEditableOptions(OptionsResolver $or): void
             {
