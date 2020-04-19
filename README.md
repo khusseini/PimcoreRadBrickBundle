@@ -1,13 +1,20 @@
+
+[![Build Status](https://travis-ci.com/khusseini/PimcoreRadBrickBundle.svg?branch=1.x)](https://travis-ci.com/khusseini/PimcoreRadBrickBundle)
+[![Coverage Status](https://coveralls.io/repos/github/khusseini/PimcoreRadBrickBundle/badge.svg?branch=1.x)](https://coveralls.io/github/khusseini/PimcoreRadBrickBundle?branch=1.x)
+[![License](https://poser.pugx.org/khusseini/pimcore-radbrick/license)](https://packagist.org/packages/khusseini/pimcore-radbrick)
+
 # PimcoreRadBrickBundle
+
 A RAD way to create Areabricks in Pimcore
 
-[![Coverage Status](https://coveralls.io/repos/github/khusseini/PimcoreRadBrickBundle/badge.svg?branch=1.x)](https://coveralls.io/github/khusseini/PimcoreRadBrickBundle?branch=1.x)
 
 ## Purpose
 
 Configure data and editables available in Pimcore Areabricks view and edit templates.
 
+
 ## Installation
+
 ```
 composer require khusseini/pimcore-radbrick
 ```
