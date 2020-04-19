@@ -54,7 +54,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     }
 
     /**
-     * @return string
+     * @return             string
      * @codeCoverageIgnore
      */
     public function getIcon()
@@ -63,7 +63,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     }
 
     /**
-     * @return string
+     * @return             string
      * @codeCoverageIgnore
      */
     public function getName()
@@ -72,7 +72,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     }
 
     /**
-     * @return bool
+     * @return             bool
      * @codeCoverageIgnore
      */
     public function hasEditTemplate()
@@ -114,6 +114,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
     /**
      * {@inheritdoc}
+     *
      * @codeCoverageIgnore
      */
     public function postRenderAction(Info $info)
@@ -123,6 +124,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
     /**
      * {@inheritdoc}
+     *
      * @codeCoverageIgnore
      */
     public function getHtmlTagOpen(Info $info)
@@ -132,6 +134,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
     /**
      * {@inheritdoc}
+     *
      * @codeCoverageIgnore
      */
     public function getHtmlTagClose(Info $info)

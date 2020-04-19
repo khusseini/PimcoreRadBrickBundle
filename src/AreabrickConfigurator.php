@@ -56,7 +56,9 @@ class AreabrickConfigurator
         $data = new ConfiguratorData($context);
         $data->setConfig($this->resolveAreaBrickConfig($name));
 
-        /** @var IConfigurator $configurator */
+        /**
+ * @var IConfigurator $configurator 
+*/
         foreach ($this->configurators as $configurator) {
             $configurator->preCreateEditables($name, $data);
         }
@@ -87,7 +89,7 @@ class AreabrickConfigurator
     }
 
     /**
-     * @return array<array>
+     * @return             array<array>
      * @codeCoverageIgnore
      */
     protected function getDatasourceConfig(string $name): array
@@ -164,7 +166,9 @@ class AreabrickConfigurator
         $areaBrickConfig = $this->getAreabrickConfig($areabrick);
         $emitter = new RenderArgumentEmitter();
 
-        /** @var string $editableName */
+        /**
+ * @var string $editableName 
+*/
         foreach ($editablesConfig as $editableName => $editableConfig) {
             $argument = new RenderArgument(
                 'editable',

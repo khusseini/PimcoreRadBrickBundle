@@ -17,7 +17,7 @@ class DatasourceRegistryTest extends TestCase
 
     public function testExecuteByName()
     {
-        $datasource = function(...$args) {
+        $datasource = function (...$args) {
             return join(' ', $args);
         };
 
@@ -36,11 +36,11 @@ class DatasourceRegistryTest extends TestCase
 
     public function testExecuteAll()
     {
-        $datasource = function(...$args) {
+        $datasource = function (...$args) {
             return join(' ', $args);
         };
 
-        $dsWrapper = function() use ($datasource) {
+        $dsWrapper = function () use ($datasource) {
             return $datasource('hello', 'world');
         };
 

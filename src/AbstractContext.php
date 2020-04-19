@@ -10,11 +10,17 @@ use Symfony\Component\HttpFoundation\Request as RequestInterface;
  */
 class Context implements ContextInterface
 {
-    /** @var ViewModelInterface */
+    /**
+     * @var ViewModelInterface 
+     */
     private $view;
-    /** @var DatasourceRegistry */
+    /**
+     * @var DatasourceRegistry 
+     */
     private $datasources = [];
-    /** @var RequestInterface */
+    /**
+     * @var RequestInterface 
+     */
     private $request = null;
 
     public function __construct(
@@ -22,9 +28,9 @@ class Context implements ContextInterface
         RequestInterface $request,
         ?DatasourceRegistry $datasourceRegistry = null
     ) {
-       $this->view = $view;
-       $this->request = $request;
-       $this->datasources = $datasourceRegistry;
+        $this->view = $view;
+        $this->request = $request;
+        $this->datasources = $datasourceRegistry;
     }
 
     public function getView(): ViewModelInterface

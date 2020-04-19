@@ -34,7 +34,7 @@ abstract class AbstractConfigurator implements IConfigurator
     ): void;
 
     /**
-     * @return array<string>
+     * @return             array<string>
      * @codeCoverageIgnore
      */
     public function getEditablesExpressionAttributes(): array

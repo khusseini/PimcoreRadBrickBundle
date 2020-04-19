@@ -42,8 +42,7 @@ class AreabrickRenderer
 
         $renderArguments = $this
             ->getConfigurator()
-            ->compileAreaBrick($name, $context)
-        ;
+            ->compileAreaBrick($name, $context);
 
         $this->processRenderArguments(
             $info,
@@ -52,7 +51,7 @@ class AreabrickRenderer
     }
 
     /**
-     * @param Iterator<RenderArgument>  $renderArguments
+     * @param Iterator<RenderArgument> $renderArguments
      */
     public function processRenderArguments(
         Info $info,
@@ -106,8 +105,7 @@ class AreabrickRenderer
     {
         $config = $renderArgument->getValue();
 
-        if (
-            !is_array($config)
+        if (!is_array($config)
             || !isset($config['type'])
         ) {
             return null;

@@ -37,7 +37,7 @@ class AbstractAreabrickTest extends TestCase
         $tagRenderer
             ->render(Argument::any(), Argument::cetera())
             ->will(
-                function ($args) use($tag) {
+                function ($args) use ($tag) {
                     return $tag->reveal();
                 }
             );

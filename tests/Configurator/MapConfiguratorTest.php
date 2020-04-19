@@ -42,8 +42,7 @@ class MapConfiguratorTest extends TestCase
         $context = $this->prophesize(ContextInterface::class);
         $context
             ->toArray()
-            ->willReturn(['source' => $source])
-        ;
+            ->willReturn(['source' => $source]);
 
         $data = new ConfiguratorData($context->reveal());
         $data->setConfig($editables['test']);

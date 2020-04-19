@@ -70,9 +70,11 @@ class AbstractConfiguratorTest extends TestCase
 
         foreach ($cases as $case) {
             $context->toArray()
-                ->will(function() use($case) {
-                    return $case['context'];
-            });
+                ->will(
+                    function () use ($case) {
+                        return $case['context'];
+                    }
+                );
             $emitter = new RenderArgumentEmitter();
             $emitter->set($argument);
             $data = new ConfiguratorData($context->reveal());

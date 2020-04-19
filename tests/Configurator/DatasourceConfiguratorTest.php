@@ -59,9 +59,11 @@ class DatasourceConfiguratorTest extends TestCase
         $context = $this->prophesize(ContextInterface::class);
         $context->toArray()->willReturn([]);
         $context->setDatasources(Argument::any())
-        ->will(function($args) use($container) {
-            $container['datasources'] = $args[0];
-        });
+            ->will(
+                function ($args) use ($container) {
+                    $container['datasources'] = $args[0];
+                }
+            );
 
         $data = new ConfiguratorData($context->reveal());
         $data->setConfig($config);
