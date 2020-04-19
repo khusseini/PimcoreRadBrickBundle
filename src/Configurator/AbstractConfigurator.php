@@ -13,7 +13,6 @@ abstract class AbstractConfigurator implements IConfigurator
      */
     private $expressionWrapper;
 
-
     public function __construct(ExpressionWrapper $expressionWrapper = null)
     {
         if (!$expressionWrapper) {
@@ -33,7 +32,7 @@ abstract class AbstractConfigurator implements IConfigurator
     ): void;
 
     /**
-     * @return             array<string>
+     * @return array<string>
      * @codeCoverageIgnore
      */
     public function getEditablesExpressionAttributes(): array
@@ -88,6 +87,7 @@ abstract class AbstractConfigurator implements IConfigurator
 
         $config = $this->getExpressionWrapper()->evaluateExpressions($input, $attributes, '[context]');
         $data->setConfig($config['editable']);
+
         return $data;
     }
 

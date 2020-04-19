@@ -35,13 +35,14 @@ datasources:
         first: first
         second: second
 YAML;
+
         return [
             [
                 $simpleConfig,
                 function (string $first, string $second) {
                     $this->assertEquals('hello', $first);
                     $this->assertEquals('world', $second);
-                }
+                },
             ], [
                 $recursiveConfig,
                 function (array $first) {
@@ -51,11 +52,10 @@ YAML;
                     $this->assertArrayHasKey('second', $sub);
                     $this->assertEquals('hello', $sub['first']);
                     $this->assertEquals('world', $sub['second']);
-                }
-            ]
+                },
+            ],
         ];
     }
-
 
     /**
      * @dataProvider canPreCreateData
@@ -66,20 +66,23 @@ YAML;
 
         $service = new class($assert) {
             private $tester;
+
             public function __construct($tester)
             {
                 $this->tester = $tester;
             }
+
             public function getData(...$args): array
             {
                 $tester = $this->tester;
                 $tester(...$args);
+
                 return  [0, 1, 2, 3];
             }
         };
 
         foreach ($config['datasources'] as $name => $dsconfig) {
-            if ($dsconfig['service_id'] === 'service_object') {
+            if ('service_object' === $dsconfig['service_id']) {
                 $dsconfig['service_id'] = $service;
                 $config['datasources'][$name] = $dsconfig;
             }
@@ -118,7 +121,6 @@ YAML;
         self::assertTrue(isset($container['datasources']));
         self::assertInstanceOf(DatasourceRegistry::class, $container['datasources']);
     }
-
 
     public function canGenerateDatasourcesData()
     {
@@ -159,9 +161,10 @@ areabricks:
             this:
               goes: dummy
 YAML;
+
         return [
             [$simpleconfig],
-            [$recursiveconfig]
+            [$recursiveconfig],
         ];
     }
 
@@ -179,17 +182,16 @@ YAML;
 
         $config = $this->parseYaml($config);
         foreach ($config['datasources'] as $name => $dsconfig) {
-            if ($dsconfig['service_id'] === 'service_object') {
+            if ('service_object' === $dsconfig['service_id']) {
                 $dsconfig['service_id'] = $service;
                 $config['datasources'][$name] = $dsconfig;
             }
         }
 
-
         $container = new \ArrayObject();
         $context = $this->prophesize(ContextInterface::class);
         $context->toArray()->willReturn([
-            'dummy' => 'hello world'
+            'dummy' => 'hello world',
         ]);
         $context->setDatasources(Argument::any())
             ->will(
@@ -220,11 +222,11 @@ YAML;
     {
         $items = [];
         $createItem = function ($id) {
-            return (object)['id' => $id];
+            return (object) ['id' => $id];
         };
 
         for ($i = 0; $i < $itemCount; ++$i) {
-            $items[] = $createItem($i+1);
+            $items[] = $createItem($i + 1);
         }
 
         $registry = new DatasourceRegistry();
@@ -275,7 +277,7 @@ YAML;
         $collectionContent = [];
         foreach ($actual as $actualArgument) {
             $types[] = $actualArgument->getType();
-            if ($actualArgument->getType() === 'collection') {
+            if ('collection' === $actualArgument->getType()) {
                 $collectionContent = $actualArgument->getValue();
             }
         }
@@ -288,7 +290,7 @@ YAML;
     public function skipCreateEditablesData()
     {
         return [
-            [true], [false]
+            [true], [false],
         ];
     }
 

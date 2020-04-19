@@ -2,7 +2,7 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
-use \ArrayObject;
+use ArrayObject;
 use Khusseini\PimcoreRadBrickBundle\ContextInterface;
 use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
@@ -101,7 +101,7 @@ class DatasourceConfigurator extends AbstractConfigurator
             if ($datasourceIdExpression) {
                 $i = $this
                         ->getExpressionWrapper()
-                        ->evaluateExpression($datasourceIdExpression, ['item'=>$item]);
+                        ->evaluateExpression($datasourceIdExpression, ['item' => $item]);
             }
 
             $itemArgument = new RenderArgument('editable', $i, $editable);
@@ -138,6 +138,7 @@ class DatasourceConfigurator extends AbstractConfigurator
         $or = new OptionsResolver();
         $or->setDefaults(['datasources' => [], 'editables' => []]);
         $or->setDefined(array_keys($config));
+
         return $or->resolve($config);
     }
 
@@ -152,6 +153,7 @@ class DatasourceConfigurator extends AbstractConfigurator
         $or = new OptionsResolver();
         $or->setDefaults(['datasources' => [], 'areabricks' => []]);
         $or->setDefined(array_keys($config));
+
         return $or->resolve($config);
     }
 }

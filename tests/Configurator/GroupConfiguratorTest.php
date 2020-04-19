@@ -31,8 +31,8 @@ class GroupConfiguratorTest extends BaseConfiguratorTestCase
                 'type: input',
                 function (bool $acutal) {
                     self::assertFalse($acutal);
-                }
-            ]
+                },
+            ],
         ];
     }
 
@@ -94,15 +94,15 @@ YAML;
                 'test',
                 function () {
                 },
-                InvalidArgumentException::class
-            ]
+                InvalidArgumentException::class,
+            ],
         ];
     }
 
     public function getDoCreateEditablesData(): array
     {
-        return [['skip','','',function () {
-        },'',true]];
+        return [['skip', '', '', function () {
+        }, '', true]];
     }
 
     public function getPostCreateEditablesData(): array
@@ -150,6 +150,7 @@ areabricks:
         group: boxes
         prop: value
 YAML;
+
         return [
             [
                 'single_editable',
@@ -170,7 +171,7 @@ YAML;
                     self::assertEquals('collection', $box->getType());
                     self::assertCount(1, $boxValue);
                     self::assertArrayHasKey('test', $boxValue);
-                }
+                },
             ], [
                 'no_editable',
                 $noEditable,
@@ -178,7 +179,7 @@ YAML;
                 function (RenderArgumentEmitter $emitter) {
                     $renderArguments = iterator_to_array($emitter->emit());
                     self::assertCount(0, $renderArguments);
-                }
+                },
             ], [
                 'skip_editables',
                 $skipEditable,
@@ -186,7 +187,7 @@ YAML;
                 function (RenderArgumentEmitter $emitter) {
                     $renderArguments = iterator_to_array($emitter->emit());
                     self::assertCount(1, $renderArguments);
-                }
+                },
             ], [
                 'multiple_editables',
                 $multipleEditables,
@@ -212,21 +213,21 @@ YAML;
                         self::assertEquals('test_'.$name, $testEditable->getValue());
                         self::assertEquals('reference', $testEditable->getType());
                     }
-                }
-            ]
+                },
+            ],
         ];
     }
 
     protected function setPostCreateEditablesArguments(string $case, RenderArgumentEmitter $emitter): void
     {
-        if ($case !== 'multiple_editables') {
+        if ('multiple_editables' !== $case) {
             return;
         }
 
         $items = [];
         for ($i = 0; $i < 5; ++$i) {
             $config = ['group' => 'boxes', 'prop' => 'value'];
-            $items[] = new RenderArgument('editable', (string)$i, $config);
+            $items[] = new RenderArgument('editable', (string) $i, $config);
         }
 
         $collection = new RenderArgument('collection', 'test', $items);

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\Configurator\AbstractConfigurator;
@@ -26,8 +25,8 @@ abstract class BaseConfiguratorTestCase extends AbstractTestCase
 
     public function getCreateEditablesData(): array
     {
-        return [['skip','','',function () {
-        },null,true]];
+        return [['skip', '', '', function () {
+        }, null, true]];
     }
 
     abstract public function getPostCreateEditablesData(): array;
@@ -228,11 +227,11 @@ abstract class BaseConfiguratorTestCase extends AbstractTestCase
     {
     }
 
-
     protected function getContext(string $case)
     {
         $view = new ViewModel();
         $request = $this->prophesize(Request::class);
+
         return new Context($view, $request->reveal());
     }
 }

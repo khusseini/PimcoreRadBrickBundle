@@ -13,12 +13,12 @@ class ExpressionWrapperTest extends TestCase
     public function testCanProcessExpressions()
     {
         $data = [
-            'entry' => ['some_data' => 'static value',],
+            'entry' => ['some_data' => 'static value'],
             'another_entry' => 'entry["some_data"]',
         ];
 
         $expected = [
-            'entry' => ['some_data'=> 'static value',],
+            'entry' => ['some_data' => 'static value'],
             'another_entry' => 'static value',
         ];
 

@@ -16,7 +16,7 @@ class MapConfiguratorTest extends TestCase
 
     public function testCanMap()
     {
-        $source = (object)[
+        $source = (object) [
             'data' => 'hello world',
         ];
 
@@ -26,10 +26,10 @@ class MapConfiguratorTest extends TestCase
                 'map' => [
                     [
                         'source' => 'source.data',
-                        'target' => '[options][overwrite]'
-                    ]
-                ]
-            ]
+                        'target' => '[options][overwrite]',
+                    ],
+                ],
+            ],
         ];
 
         $mapConfig = new MapConfigurator();

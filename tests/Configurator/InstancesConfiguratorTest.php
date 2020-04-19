@@ -22,10 +22,10 @@ class InstancesConfiguratorTest extends TestCase
                     'editables' => [
                         'testeditable' => [
                             'instances' => $instances,
-                        ]
-                    ]
-                ]
-            ]
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         return [
@@ -37,14 +37,14 @@ class InstancesConfiguratorTest extends TestCase
                 if ($instances < 1) {
                     $this->assertSame('null', $actual->getType());
                 }
-                if ($instances === 1) {
+                if (1 === $instances) {
                     $this->assertSame('editable', $actual->getType());
                 }
                 if ($instances > 1) {
                     $this->assertSame('collection', $actual->getType());
                     $this->assertCount($instances, $actual->getValue());
                 }
-            }
+            },
         ];
     }
 

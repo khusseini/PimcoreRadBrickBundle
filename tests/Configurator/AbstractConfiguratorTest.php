@@ -26,7 +26,7 @@ class AbstractConfiguratorTest extends TestCase
             public function getEditablesExpressionAttributes(): array
             {
                 return [
-                    '[editable][options][prop]'
+                    '[editable][options][prop]',
                 ];
             }
 

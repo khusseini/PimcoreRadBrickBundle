@@ -18,6 +18,7 @@ class GroupConfigurator extends AbstractConfigurator
                 if (is_null($value)) {
                     return true;
                 }
+
                 return preg_match('/[_a-z]+/i', $value);
             }
         );
@@ -30,7 +31,8 @@ class GroupConfigurator extends AbstractConfigurator
     }
 
     /**
-     * @param  array<string,mixed> $config
+     * @param array<string,mixed> $config
+     *
      * @return array<string,mixed>
      */
     protected function resolveBrickConfig(array $config): array
@@ -39,6 +41,7 @@ class GroupConfigurator extends AbstractConfigurator
         $or->setDefined(array_keys($config));
         $or->setDefault('groups', []);
         $or->setDefault('editables', []);
+
         return $or->resolve($config);
     }
 
@@ -81,7 +84,7 @@ class GroupConfigurator extends AbstractConfigurator
     {
         if (!isset($config['groups'])) {
             return;
-        };
+        }
 
         $groups = array_keys($config['groups']);
 
@@ -101,7 +104,7 @@ class GroupConfigurator extends AbstractConfigurator
             }
             $renderArg = $emitter->get($name);
 
-            if ($renderArg->getType() === 'collection') {
+            if ('collection' === $renderArg->getType()) {
                 $values = $renderArg->getValue();
 
                 foreach ($values as $key => $data) {

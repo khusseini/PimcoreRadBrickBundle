@@ -22,13 +22,15 @@ class MapConfigurator extends AbstractConfigurator
     }
 
     /**
-     * @param  array<array> $options
+     * @param array<array> $options
+     *
      * @return array<array>
      */
     private function resolveMapOptions(array $options): array
     {
         $or = new OptionsResolver();
         $or->setRequired(['source', 'target']);
+
         return $or->resolve($options);
     }
 
@@ -40,7 +42,7 @@ class MapConfigurator extends AbstractConfigurator
             $maps = $config['map'];
             foreach ($maps as $map) {
                 /**
-                 * @var array<string> $map
+                 * @var array<string>
                  */
                 $map = $this->resolveMapOptions($map);
                 $source = $this->getExpressionWrapper()->evaluateExpression($map['source'], $data->getContext()->toArray());

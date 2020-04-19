@@ -71,11 +71,11 @@ class AreabrickRenderer
         foreach ($renderArguments as $name => $renderArgument) {
             $referenceId = $parentName ? $parentName.'_'.$name : $name;
 
-            if ($renderArgument->getType() === 'null') {
+            if ('null' === $renderArgument->getType()) {
                 continue;
             }
 
-            if ($renderArgument->getType() === 'collection') {
+            if ('collection' === $renderArgument->getType()) {
                 $tag = new \ArrayObject();
                 $this->processRenderArguments(
                     $info,
@@ -84,10 +84,10 @@ class AreabrickRenderer
                     $referencesContainer,
                     $referenceId
                 );
-                $tag = (array)$tag;
-            } elseif ($renderArgument->getType() === 'editable') {
+                $tag = (array) $tag;
+            } elseif ('editable' === $renderArgument->getType()) {
                 $tag = $this->renderArgument($info, $renderArgument, $referenceId);
-            } elseif ($renderArgument->getType() === 'reference') {
+            } elseif ('reference' === $renderArgument->getType()) {
                 $reference = $renderArgument->getValue();
                 $tag = $referencesContainer[$reference];
             } else {
@@ -126,6 +126,7 @@ class AreabrickRenderer
     {
         $configurator = $this->getConfigurator();
         $configurator->resolveAreaBrickConfig($name);
+
         return $configurator->getAreabrickConfig($name);
     }
 }

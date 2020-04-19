@@ -8,6 +8,7 @@ class ConfiguratorData
 {
     private $context;
     private $config = [];
+
     public function __construct(ContextInterface $context)
     {
         $this->context = $context;

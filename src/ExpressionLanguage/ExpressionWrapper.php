@@ -40,7 +40,6 @@ class ExpressionWrapper
         return $this->propAccess;
     }
 
-
     /**
      * @param array<mixed>  $data
      * @param array<string> $attributes
@@ -85,7 +84,6 @@ class ExpressionWrapper
 
     /**
      * @param array<array>|object $objectOrArray
-     * @param string              $propertyPath
      * @param mixed               $value
      *
      * @return array<array>|object
@@ -93,12 +91,13 @@ class ExpressionWrapper
     public function setPropertyValue($objectOrArray, string $propertyPath, $value)
     {
         $this->getPropertyAccess()->setValue($objectOrArray, $propertyPath, $value);
+
         return $objectOrArray;
     }
 
     /**
-     * @param  string       $value
-     * @param  array<array> $context
+     * @param array<array> $context
+     *
      * @return mixed
      */
     public function evaluateExpression(string $value, array $context)

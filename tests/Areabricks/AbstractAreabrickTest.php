@@ -23,11 +23,11 @@ class AbstractAreabrickTest extends AbstractTestCase
                 'testbrick' => [
                     'editables' => [
                         'testedit' => [
-                            'type' => 'input'
-                        ]
-                    ]
-                ]
-            ]
+                            'type' => 'input',
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         $configurator = new AreabrickConfigurator($config);

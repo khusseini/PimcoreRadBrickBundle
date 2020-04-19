@@ -75,6 +75,7 @@ class RenderArgumentEmitterTest extends TestCase
     public function getInstance()
     {
         $emitter = new RenderArgumentEmitter();
+
         return $emitter;
     }
 

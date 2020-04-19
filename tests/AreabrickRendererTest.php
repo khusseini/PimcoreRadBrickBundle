@@ -30,8 +30,8 @@ class AreabrickRendererTest extends TestCase
             ->compileAreaBrick(Argument::any(), Argument::cetera())
             ->will(
                 function (...$args) {
-                    yield 'testeditable'            => new RenderArgument('editable', 'testeditable', ['type' => 'text']);
-                    yield 'null'                    => new RenderArgument('null', 'nope');
+                    yield 'testeditable' => new RenderArgument('editable', 'testeditable', ['type' => 'text']);
+                    yield 'null' => new RenderArgument('null', 'nope');
                     yield 'testeditable_collection' => new RenderArgument(
                         'collection',
                         'testeditable_collection',
@@ -39,10 +39,10 @@ class AreabrickRendererTest extends TestCase
                         new RenderArgument('editable', 'collection_item', ['type' => 'text']),
                         ]
                     );
-                    yield 'testreference'           => new RenderArgument('reference', 'testreference', 'testeditable');
-                    yield 'some_data'               => new RenderArgument('data', 'some_data', ['hello' => 'world']);
-                    yield 'shouldnot_be_here'       => new RenderArgument('editable', 'shouldnot_be_here', null);
-                    yield 'shouldnot_be_here2'       => new RenderArgument('editable', 'shouldnot_be_here', []);
+                    yield 'testreference' => new RenderArgument('reference', 'testreference', 'testeditable');
+                    yield 'some_data' => new RenderArgument('data', 'some_data', ['hello' => 'world']);
+                    yield 'shouldnot_be_here' => new RenderArgument('editable', 'shouldnot_be_here', null);
+                    yield 'shouldnot_be_here2' => new RenderArgument('editable', 'shouldnot_be_here', []);
                 }
             );
 
@@ -68,11 +68,11 @@ class AreabrickRendererTest extends TestCase
                 'testbrick' => [
                     'editables' => [
                         'testedit' => [
-                            'type' => 'input'
-                        ]
-                    ]
-                ]
-            ]
+                            'type' => 'input',
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         $configurator = new AreabrickConfigurator($config);
