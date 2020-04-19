@@ -57,13 +57,6 @@ class ExpressionWrapper
         $context = $data;
         if ($contextPath) {
             $context = $this->getPropertyValue($data, $contextPath);
-            if ($context instanceof ContextInterface) {
-                $context = $context->toArray();
-            }
-
-            if (!is_array($context)) {
-                throw new InvalidArgumentException(sprintf("Context for evaluation needs to be array or of type %s. %s given", Context::class, gettype($context)));
-            }
         }
 
         foreach ($attributes as $attributePath) {

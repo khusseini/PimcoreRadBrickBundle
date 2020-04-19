@@ -8,6 +8,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class MapConfigurator extends AbstractConfigurator
 {
+    /**
+     * @codeCoverageIgnore
+     */
     public function configureEditableOptions(OptionsResolver $or): void
     {
         $or->setDefault('map', []);

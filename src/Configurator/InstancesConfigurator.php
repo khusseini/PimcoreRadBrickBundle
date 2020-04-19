@@ -51,6 +51,9 @@ class InstancesConfigurator extends AbstractConfigurator
         $emitter->emitArgument($argument);
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function configureEditableOptions(OptionsResolver $or): void
     {
         $or->setDefault('instances', 1);
