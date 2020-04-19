@@ -15,7 +15,7 @@ interface IConfigurator
     /**
      * @param array<array> $config
      */
-    public function createEditables(RenderArgumentEmitter $emitter, string $name, array $config): void;
+    public function createEditables(RenderArgumentEmitter $emitter, string $name, ConfiguratorData $data): void;
 
     public function configureEditableOptions(OptionsResolver $or): void;
 
@@ -24,7 +24,7 @@ interface IConfigurator
      *
      * @return array<string,mixed>
      */
-    public function preCreateEditables(string $brickName, \ArrayObject $data): array;
+    public function preCreateEditables(string $brickName, ConfiguratorData $data): void;
 
     /**
      * @param array<string,mixed> $config

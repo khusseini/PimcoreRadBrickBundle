@@ -2,7 +2,9 @@
 
 namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 
+use Khusseini\PimcoreRadBrickBundle\Configurator\ConfiguratorData;
 use Khusseini\PimcoreRadBrickBundle\Configurator\InstancesConfigurator;
+use Khusseini\PimcoreRadBrickBundle\ContextInterface;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
@@ -61,19 +63,20 @@ class InstancesConfiguratorTest extends TestCase
         foreach ($config['areabricks'] as $name => $areabrickConfig) {
             foreach ($areabrickConfig['editables'] as $editableName => $editableConfig) {
                 $actualSupports = $configurator->supportsEditable($editableName, $editableConfig);
-                $expectedSupports =
-                    isset($editableConfig['instances']);
+                $expectedSupports = isset($editableConfig['instances']);
+
                 $this->assertEquals($expectedSupports, $actualSupports);
+
                 $renderArgs = new RenderArgument('editable', $editableName, $editableConfig);
                 $emitter = new RenderArgumentEmitter();
                 $emitter->set($renderArgs);
 
-                $configurator->createEditables(
-                    $emitter,
-                    $editableName,
-                    ['context' => [], 'editable'=> $editableConfig]
-                );
+                $context = $this->prophesize(ContextInterface::class);
+                $context->toArray()->willReturn([]);
+                $data = new ConfiguratorData($context->reveal());
+                $data->setConfig($editableConfig);
 
+                $configurator->createEditables($emitter, $editableName, $data);
                 $assert($name, $emitter->emit());
             }
         }

@@ -3,6 +3,9 @@
 namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\Configurator\AbstractConfigurator;
+use Khusseini\PimcoreRadBrickBundle\Configurator\ConfiguratorData;
+use Khusseini\PimcoreRadBrickBundle\ContextInterface;
+use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
@@ -25,7 +28,7 @@ class AbstractConfiguratorTest extends TestCase
                 ];
             }
 
-            public function doCreateEditables(RenderArgumentEmitter $emitter, string $name, array $data): void
+            public function doCreateEditables(RenderArgumentEmitter $emitter, string $name, ConfiguratorData $data): void
             {
                 $emitter->emitArgument($emitter->get($name));
             }
@@ -63,15 +66,19 @@ class AbstractConfiguratorTest extends TestCase
             ],
         ];
 
+        $context = $this->prophesize(ContextInterface::class);
 
         foreach ($cases as $case) {
+            $context->toArray()
+                ->will(function() use($case) {
+                    return $case['context'];
+            });
             $emitter = new RenderArgumentEmitter();
             $emitter->set($argument);
+            $data = new ConfiguratorData($context->reveal());
+            $data->setConfig($argument->getValue());
             $c->createEditables(
-                $emitter, 'testedit', [
-                'editable' => $argument->getValue(),
-                'context' => $case['context'],
-                ]
+                $emitter, 'testedit', $data
             );
 
             $actual = $emitter->emit();

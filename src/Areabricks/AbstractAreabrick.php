@@ -5,7 +5,6 @@ namespace Khusseini\PimcoreRadBrickBundle\Areabricks;
 use Khusseini\PimcoreRadBrickBundle\AreabrickRenderer;
 use Pimcore\Extension\Document\Areabrick\AbstractTemplateAreabrick;
 use Pimcore\Model\Document\Tag\Area\Info;
-use Pimcore\Templating\Renderer\TagRenderer;
 use Symfony\Component\HttpFoundation\Response;
 
 abstract class AbstractAreabrick extends AbstractTemplateAreabrick
@@ -56,6 +55,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
     /**
      * @return string
+     * @codeCoverageIgnore
      */
     public function getIcon()
     {
@@ -64,19 +64,16 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
     /**
      * @return string
+     * @codeCoverageIgnore
      */
     public function getName()
     {
         return $this->label ?: parent::getName();
     }
 
-    protected function getTagRenderer(): TagRenderer
-    {
-        return $this->tagRenderer;
-    }
-
     /**
      * @return bool
+     * @codeCoverageIgnore
      */
     public function hasEditTemplate()
     {
@@ -85,6 +82,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
     /**
      * @inheritDoc
+     * @codeCoverageIgnore
      */
     public function getTemplateLocation()
     {
@@ -93,6 +91,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
     /**
      * @inheritDoc
+     * @codeCoverageIgnore
      */
     public function getTemplateSuffix()
     {
@@ -115,6 +114,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
     /**
      * {@inheritdoc}
+     * @codeCoverageIgnore
      */
     public function postRenderAction(Info $info)
     {
@@ -123,6 +123,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
     /**
      * {@inheritdoc}
+     * @codeCoverageIgnore
      */
     public function getHtmlTagOpen(Info $info)
     {
@@ -131,6 +132,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
     /**
      * {@inheritdoc}
+     * @codeCoverageIgnore
      */
     public function getHtmlTagClose(Info $info)
     {

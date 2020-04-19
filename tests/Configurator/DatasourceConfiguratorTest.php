@@ -2,11 +2,14 @@
 
 namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 
+use Khusseini\PimcoreRadBrickBundle\Configurator\ConfiguratorData;
 use Khusseini\PimcoreRadBrickBundle\Configurator\DatasourceConfigurator;
+use Khusseini\PimcoreRadBrickBundle\ContextInterface;
 use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
+use Prophecy\Argument;
 
 class DatasourceConfiguratorTest extends TestCase
 {
@@ -52,9 +55,21 @@ class DatasourceConfiguratorTest extends TestCase
         ];
 
         $instance = new DatasourceConfigurator();
-        $data = new \ArrayObject(['config' => $config, 'context' => []]);
-        $context = $instance->preCreateEditables('testbrick', $data);
-        $context['datasources']->execute('testsource');
+        $container = new \ArrayObject();
+        $context = $this->prophesize(ContextInterface::class);
+        $context->toArray()->willReturn([]);
+        $context->setDatasources(Argument::any())
+        ->will(function($args) use($container) {
+            $container['datasources'] = $args[0];
+        });
+
+        $data = new ConfiguratorData($context->reveal());
+        $data->setConfig($config);
+        $instance->preCreateEditables('testbrick', $data);
+        $context = $data->getContext();
+
+        self::assertTrue(isset($container['datasources']));
+        self::assertInstanceOf(DatasourceRegistry::class, $container['datasources']);
     }
 
     public function testCanCreateEditable()
@@ -102,7 +117,14 @@ class DatasourceConfiguratorTest extends TestCase
         $emitter = new RenderArgumentEmitter();
         $emitter->set($argument);
 
-        $instance->doCreateEditables($emitter, 'test', $config);
+
+        $context = $this->prophesize(ContextInterface::class);
+        $context->toArray()->willReturn($config['context']);
+        $context->getDatasources()->willReturn($config['context']['datasources']);
+        $data = new ConfiguratorData($context->reveal());
+        $data->setConfig($config['editable']);
+
+        $instance->doCreateEditables($emitter, 'test', $data);
         $actual = iterator_to_array($emitter->emit());
 
         $this->assertCount(2, $actual);
@@ -120,4 +142,6 @@ class DatasourceConfiguratorTest extends TestCase
         $this->assertSame($expectedTypes, $types);
         $this->assertCount($itemCount, $collectionContent);
     }
+
+
 }

@@ -2,6 +2,7 @@
 
 namespace Khusseini\PimcoreRadBrickBundle;
 
+use Khusseini\PimcoreRadBrickBundle\Configurator\ConfiguratorData;
 use Khusseini\PimcoreRadBrickBundle\Configurator\IConfigurator;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -50,19 +51,18 @@ class AreabrickConfigurator
      *
      * @return \Generator<RenderArgument>
      */
-    public function compileAreaBrick(string $name, Context $context): \Generator
+    public function compileAreaBrick(string $name, ContextInterface $context): \Generator
     {
-        $data = new \ArrayObject();
-        $data['config'] = $this->resolveAreaBrickConfig($name);
-        $data['context'] = $context;
+        $data = new ConfiguratorData($context);
+        $data->setConfig($this->resolveAreaBrickConfig($name));
 
         /** @var IConfigurator $configurator */
         foreach ($this->configurators as $configurator) {
             $configurator->preCreateEditables($name, $data);
         }
 
-        $this->config = $data['config'];
-        return $this->createEditables($name, $data['context']);
+        $this->config = $data->getConfig();
+        return $this->createEditables($name, $context);
     }
 
     /**
@@ -158,7 +158,7 @@ class AreabrickConfigurator
      */
     public function createEditables(
         string $areabrick,
-        ?Context $context = null
+        ContextInterface $context
     ): \Generator {
         $editablesConfig = $this->compileEditablesConfig($this->config['areabricks'][$areabrick]);
         $areaBrickConfig = $this->getAreabrickConfig($areabrick);
@@ -174,13 +174,12 @@ class AreabrickConfigurator
 
             $emitter->emitArgument($argument);
 
+            $data = new ConfiguratorData($context);
+            $data->setConfig($editableConfig);
+
             foreach ($this->configurators as $configurator) {
                 if ($configurator->supportsEditable($editableName, $editableConfig)) {
-                    $configurator->createEditables(
-                        $emitter,
-                        $editableName,
-                        ['editable' => $editableConfig, 'context' => $context]
-                    );
+                    $configurator->createEditables($emitter, $editableName, $data);
                 }
             }
 

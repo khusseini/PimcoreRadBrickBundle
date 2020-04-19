@@ -39,9 +39,9 @@ class GroupConfigurator extends AbstractConfigurator
         return $or->resolve($config);
     }
 
-    public function preCreateEditables(string $brickName, \ArrayObject $data): array
+    public function preCreateEditables(string $brickName, ConfiguratorData $data): void
     {
-        $config = $data['config'];
+        $config = $data->getConfig();
         $brick = $this->resolveBrickConfig($config['areabricks'][$brickName]);
 
         $groups = $brick['groups'];
@@ -63,12 +63,10 @@ class GroupConfigurator extends AbstractConfigurator
 
         $brick['editables'] = $editables;
         $config['areabricks'][$brickName] = $brick;
-        $data['config'] = $config;
-
-        return [];
+        $data->setConfig($config);
     }
 
-    public function doCreateEditables(RenderArgumentEmitter $emitter, string $name, array $data): void
+    public function doCreateEditables(RenderArgumentEmitter $emitter, string $name, ConfiguratorData $data): void
     {
         return;
     }

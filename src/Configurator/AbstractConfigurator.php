@@ -30,74 +30,66 @@ abstract class AbstractConfigurator implements IConfigurator
     abstract public function doCreateEditables(
         RenderArgumentEmitter $emitter,
         string $name,
-        array $data
+        ConfiguratorData $data
     ): void;
 
     /**
      * @return array<string>
+     * @codeCoverageIgnore
      */
     public function getEditablesExpressionAttributes(): array
     {
         return [];
     }
 
-    /**
-     * @param array<mixed> $options
-     *
-     * @return array<mixed>
-     */
-    protected function resolveDataOptions(array $options): array
-    {
-        $or = new OptionsResolver();
-        $or
-            ->setDefault('editable', [])
-            ->setDefault('context', []);
-        return $or->resolve($options);
-    }
-
     public function createEditables(
         RenderArgumentEmitter $emitter,
         string $name,
-        array $data
+        ConfiguratorData $data
     ): void {
         $argument = $emitter->get($name);
-        $data = $this->resolveDataOptions($data);
         $attributes = $this->getEditablesExpressionAttributes();
         $data = $this->evaluateExpressions($data, $attributes);
 
         $argument = new RenderArgument(
             $argument->getType(),
             $argument->getName(),
-            $data['editable']
+            $data->getConfig()
         );
 
         $emitter->set($argument);
-
-        $this->doCreateEditables(
-            $emitter,
-            $name,
-            $data
-        );
-    }
-
-    public function preCreateEditables(string $brickName, \ArrayObject $data): array
-    {
-        return [];
-    }
-
-    public function postCreateEditables(string $brickName, array $config, RenderArgumentEmitter $emitter): void
-    {
+        $this->doCreateEditables($emitter, $name, $data);
     }
 
     /**
-     * @param array<mixed>  $data
-     * @param array<string> $attributes
-     *
-     * @return array<mixed>
+     * @codeCoverageIgnore
      */
-    protected function evaluateExpressions(array $data, array $attributes)
+    public function preCreateEditables(string $brickName, ConfiguratorData $data): void
     {
-        return $this->getExpressionWrapper()->evaluateExpressions($data, $attributes, '[context]');
+        return;
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    public function postCreateEditables(string $brickName, array $config, RenderArgumentEmitter $emitter): void
+    {
+        return;
+    }
+
+    /**
+     * @param array<string> $attributes
+     */
+    protected function evaluateExpressions(ConfiguratorData $data, array $attributes): ConfiguratorData
+    {
+        $input = [
+            'editable' => $data->getConfig(),
+            'context' => $data->getContext()->toArray(),
+        ];
+
+        $config = $this->getExpressionWrapper()->evaluateExpressions($input, $attributes, '[context]');
+        $data->setConfig($config['editable']);
+        return $data;
     }
 
     protected function getExpressionWrapper(): ExpressionWrapper

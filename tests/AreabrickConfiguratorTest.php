@@ -4,8 +4,10 @@ namespace Tests\Khusseini\PimcoreRadBrickBundle;
 
 use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\AbstractConfigurator;
+use Khusseini\PimcoreRadBrickBundle\Configurator\ConfiguratorData;
 use Khusseini\PimcoreRadBrickBundle\Configurator\IConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Context;
+use Khusseini\PimcoreRadBrickBundle\ContextInterface;
 use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
 use Pimcore\Templating\Model\ViewModel;
@@ -36,11 +38,9 @@ class AreabrickConfiguratorTest extends TestCase
             ]
         ];
 
-        $view = new ViewModel();
-        $request = $this->prophesize(Request::class);
-        $context = new Context($view, $request->reveal());
+        $context = $this->prophesize(ContextInterface::class);
         $configurator = $this->createConfigurator($config);
-        $editables = $configurator->compileAreaBrick('test_brick', $context);
+        $editables = $configurator->compileAreaBrick('test_brick', $context->reveal());
 
         foreach ($editables as $name => $editable) {
             $this->assertSame($expected[$name], $editable->getValue());
@@ -90,8 +90,9 @@ class AreabrickConfiguratorTest extends TestCase
         $configurator = $this->createConfigurator($config);
         $configurator->setConfigurators($configurators);
         $areabricks = $config['areabricks'];
+        $context = $this->prophesize(ContextInterface::class);
         foreach ($areabricks as $areabrick => $aconfig) {
-            $editables = $configurator->createEditables($areabrick);
+            $editables = $configurator->createEditables($areabrick, $context->reveal());
             $tests($areabrick, $editables);
         }
     }
@@ -142,10 +143,17 @@ class AreabrickConfiguratorTest extends TestCase
                 return true;
             }
 
-            public function preCreateEditables(string $brickName, \ArrayObject $data): array
+            public function preCreateEditables(string $brickName, ConfiguratorData $data): void
             {
-               $data['config']['areabricks'][$brickName]['editables']['testeditable']['type'] = 'tampered';
-               return [];
+                $config = $data->getConfig();
+                $brick = $config['areabricks'][$brickName];
+                $editable = $brick['editables']['testeditable'];
+                $editable['type'] = 'tampered';
+
+                $brick['editables']['testeditable'] = $editable;
+                $config['areabricks'][$brickName] = $brick;
+
+                $data->setConfig($config);
             }
 
             public function getEditablesExpressionAttributes(): array
@@ -156,7 +164,7 @@ class AreabrickConfiguratorTest extends TestCase
             public function doCreateEditables(
                 RenderArgumentEmitter $emitter,
                 string $name,
-                array $data
+                ConfiguratorData $data
             ): void {
                 $argument = $emitter->get($name);
                 $emitter->emitArgument($argument);
@@ -248,7 +256,7 @@ class AreabrickConfiguratorTest extends TestCase
             public function doCreateEditables(
                 RenderArgumentEmitter $emitter,
                 string $name,
-                array $data
+                ConfiguratorData $data
             ): void {
                 $argument = $emitter->get($name);
                 $emitter->emitArgument($argument);

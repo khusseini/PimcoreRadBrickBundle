@@ -25,10 +25,10 @@ class InstancesConfigurator extends AbstractConfigurator
     public function doCreateEditables(
         RenderArgumentEmitter $emitter,
         string $name,
-        array $data
+        ConfiguratorData $data
     ): void {
         $argument = $emitter->get($name);
-        $config = $data['editable'];
+        $config = $data->getConfig();
         $instances = $config['instances'];
 
         if ($instances < 1) {

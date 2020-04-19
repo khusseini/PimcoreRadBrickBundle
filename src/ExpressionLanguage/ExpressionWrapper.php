@@ -4,6 +4,7 @@ namespace Khusseini\PimcoreRadBrickBundle\ExpressionLanguage;
 
 use InvalidArgumentException;
 use Khusseini\PimcoreRadBrickBundle\Context;
+use Khusseini\PimcoreRadBrickBundle\ContextInterface;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\PropertyAccess\Exception\AccessException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -56,7 +57,7 @@ class ExpressionWrapper
         $context = $data;
         if ($contextPath) {
             $context = $this->getPropertyValue($data, $contextPath);
-            if ($context instanceof Context) {
+            if ($context instanceof ContextInterface) {
                 $context = $context->toArray();
             }
 
