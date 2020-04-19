@@ -51,3 +51,7 @@
 
 /.phpunit
 /.php_cs.cache
+/.phpunit.xml
+./infection.json
+/.infection.log
+/build

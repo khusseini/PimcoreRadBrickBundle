@@ -2,5 +2,12 @@ language: php
 php:
 - 7.3
 before_script:
-- COMPOSER_MEMORY_LIMIT=-1 travis_retry composer install --prefer-dist --no-interaction --dev
 script: vendor/bin/phpunit
+
+install:
+- COMPOSER_MEMORY_LIMIT=-1 travis_retry composer install --prefer-dist --no-interaction --dev
+script:
+- vendor/bin/phpunit
+
+after_success:
+  - travis_retry php vendor/bin/php-coveralls
