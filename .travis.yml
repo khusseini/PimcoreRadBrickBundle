@@ -2,5 +2,5 @@ language: php
 php:
 - 7.3
 before_script:
-- php -d "xdebug.remote_enable=false" -d "xdebug.profiler_enable=false" -d "xdebug.default_enable=false" $(which composer) install --prefer-dist --no-interaction --dev
+- COMPOSER_MEMORY_LIMIT=-1 travis_retry composer install --prefer-dist --no-interaction --dev
 script: vendor/bin/phpunit
