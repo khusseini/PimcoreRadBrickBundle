@@ -11,6 +11,7 @@ class GroupConfigurator extends AbstractConfigurator
     public function configureEditableOptions(OptionsResolver $or): void
     {
         $or->setDefault('group', null);
+        // @codeCoverageIgnoreStart
         $or->setAllowedValues(
             'group',
             function ($value) {
@@ -20,6 +21,7 @@ class GroupConfigurator extends AbstractConfigurator
                 return preg_match('/[_a-z]+/i', $value);
             }
         );
+        // @codeCoverageIgnoreEnd
     }
 
     public function supportsEditable(string $editableName, array $config): bool
@@ -67,6 +69,9 @@ class GroupConfigurator extends AbstractConfigurator
         $data->setConfig($config);
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function doCreateEditables(RenderArgumentEmitter $emitter, string $name, ConfiguratorData $data): void
     {
         return;
@@ -74,7 +79,7 @@ class GroupConfigurator extends AbstractConfigurator
 
     public function postCreateEditables(string $brickName, array $config, RenderArgumentEmitter $emitter): void
     {
-        if (!$config['groups']) {
+        if (!isset($config['groups'])) {
             return;
         };
 
@@ -83,12 +88,13 @@ class GroupConfigurator extends AbstractConfigurator
         $groupArguments = [];
 
         foreach ($config['editables'] as $name => $config) {
-            if (!in_array($config['group'], $groups)) {
+            if (
+                !isset($config['group'])
+                || !in_array($config['group'], $groups)
+            ) {
                 continue;
             }
-            if (!$emitter->has($name)) {
-                continue;
-            }
+
             $groupName = $config['group'];
             if (!isset($groupArguments[$groupName])) {
                 $groupArguments[$groupName] = [];
