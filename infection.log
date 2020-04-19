@@ -1,7 +1,7 @@
 Escaped mutants:
 ================
 
-1) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:105    [M] FalseValue
+1) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:110    [M] FalseValue
 
 --- Original
 +++ New
@@ -16,7 +16,7 @@ Escaped mutants:
          $this->setAreabrickConfig($name, $or->resolve($config));
 
 
-2) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:137    [M] Foreach_
+2) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:142    [M] Foreach_
 
 --- Original
 +++ New
@@ -31,7 +31,7 @@ Escaped mutants:
          $return = [];
 
 
-3) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:138    [M] MethodCallRemoval
+3) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:143    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -46,7 +46,7 @@ Escaped mutants:
          foreach ($editablesConfig as $name => $econfig) {
 
 
-4) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:148    [M] ArrayOneItem
+4) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:153    [M] ArrayOneItem
 
 --- Original
 +++ New
@@ -61,131 +61,166 @@ Escaped mutants:
       * @return \Generator<RenderArgument>
 
 
-5) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:172    [M] Foreach_
+5) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:180    [M] Foreach_
 
 --- Original
 +++ New
 @@ @@
-         foreach ($editablesConfig as $editableName => $editableConfig) {
-             $argument = new RenderArgument('editable', $editableName, ['type' => $editableConfig['type'], 'options' => $editableConfig['options']]);
-             $renderer->emitArgument($argument);
+             $emitter->emitArgument($argument);
+             $data = new ConfiguratorData($context);
+             $data->setConfig($editableConfig);
 -            foreach ($this->configurators as $configurator) {
 +            foreach (array() as $configurator) {
                  if ($configurator->supportsEditable($editableName, $editableConfig)) {
-                     $configurator->createEditables($renderer, $editableName, ['editable' => $editableConfig, 'context' => $context]);
+                     $configurator->createEditables($emitter, $editableName, $data);
                  }
 
 
-6) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:174    [M] MethodCallRemoval
+6) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:182    [M] MethodCallRemoval
 
 --- Original
 +++ New
 @@ @@
-             $renderer->emitArgument($argument);
+             $data->setConfig($editableConfig);
              foreach ($this->configurators as $configurator) {
                  if ($configurator->supportsEditable($editableName, $editableConfig)) {
--                    $configurator->createEditables($renderer, $editableName, ['editable' => $editableConfig, 'context' => $context]);
+-                    $configurator->createEditables($emitter, $editableName, $data);
 +                    
                  }
              }
-             yield from $renderer->emit();
+             yield from $emitter->emit();
 
 
-7) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:188    [M] Foreach_
+7) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:192    [M] Foreach_
 
 --- Original
 +++ New
 @@ @@
          /**
           * @var IConfigurator $configurator
-         */
+          */
 -        foreach ($this->configurators as $configurator) {
 +        foreach (array() as $configurator) {
-             $configurator->postCreateEditables($areabrick, $areaBrickConfig, $renderer);
+             $configurator->postCreateEditables($areabrick, $areaBrickConfig, $emitter);
          }
-         yield from $renderer->emit();
+         yield from $emitter->emit();
      }
  }
 
 
-8) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:189    [M] MethodCallRemoval
+8) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickConfigurator.php:193    [M] MethodCallRemoval
 
 --- Original
 +++ New
 @@ @@
           * @var IConfigurator $configurator
-         */
+          */
          foreach ($this->configurators as $configurator) {
--            $configurator->postCreateEditables($areabrick, $areaBrickConfig, $renderer);
+-            $configurator->postCreateEditables($areabrick, $areaBrickConfig, $emitter);
 +            
          }
-         yield from $renderer->emit();
+         yield from $emitter->emit();
      }
  }
 
 
-9) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Areabricks/AbstractAreabrick.php:147    [M] LogicalNot
+9) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickRenderer.php:82    [M] MethodCallRemoval
 
 --- Original
 +++ New
 @@ @@
-      */
-     private function processRenderArguments(Iterator $renderArguments, ArrayAccess $container, PageSnippet $document, ArrayAccess $referencesContainer = null, string $parentName = '') : void
-     {
--        if (!$referencesContainer) {
-+        if ($referencesContainer) {
-             $referencesContainer = new \ArrayObject();
-         }
-         $render = function ($name, $config) use($document) {
-
-
-10) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Areabricks/AbstractAreabrick.php:166    [M] Identical
-
---- Original
-+++ New
-@@ @@
-             if ($renderArgument->getType() === 'null') {
-                 continue;
              }
--            if ($renderArgument->getType() === 'collection') {
-+            if ($renderArgument->getType() !== 'collection') {
-                 $tag = new ArrayObject();
-                 $this->processRenderArguments(new \ArrayIterator($renderArgument->getValue()), $tag, $document, $referencesContainer, $referenceId);
+             if ($renderArgument->getType() === 'collection') {
+                 $tag = new \ArrayObject();
+-                $this->processRenderArguments($info, new \ArrayIterator($renderArgument->getValue()), $tag, $referencesContainer, $referenceId);
++                
                  $tag = (array) $tag;
+             } elseif ($renderArgument->getType() === 'editable') {
+                 $tag = $this->renderArgument($info, $renderArgument, $referenceId);
 
 
-11) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Areabricks/AbstractAreabrick.php:176    [M] Identical
+10) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickRenderer.php:89    [M] CastArray
 
 --- Original
 +++ New
 @@ @@
-                 $tag = new ArrayObject();
-                 $this->processRenderArguments(new \ArrayIterator($renderArgument->getValue()), $tag, $document, $referencesContainer, $referenceId);
+             if ($renderArgument->getType() === 'collection') {
+                 $tag = new \ArrayObject();
+                 $this->processRenderArguments($info, new \ArrayIterator($renderArgument->getValue()), $tag, $referencesContainer, $referenceId);
+-                $tag = (array) $tag;
++                $tag = $tag;
+             } elseif ($renderArgument->getType() === 'editable') {
+                 $tag = $this->renderArgument($info, $renderArgument, $referenceId);
+             } elseif ($renderArgument->getType() === 'reference') {
+
+
+11) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickRenderer.php:91    [M] Identical
+
+--- Original
++++ New
+@@ @@
+                 $tag = new \ArrayObject();
+                 $this->processRenderArguments($info, new \ArrayIterator($renderArgument->getValue()), $tag, $referencesContainer, $referenceId);
                  $tag = (array) $tag;
 -            } elseif ($renderArgument->getType() === 'editable') {
 +            } elseif ($renderArgument->getType() !== 'editable') {
-                 $tag = $render($referenceId, $renderArgument->getValue());
+                 $tag = $this->renderArgument($info, $renderArgument, $referenceId);
              } elseif ($renderArgument->getType() === 'reference') {
                  $reference = $renderArgument->getValue();
 
 
-12) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:37    [M] FunctionCall
+12) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/AreabrickRenderer.php:110    [M] LogicalNot
 
 --- Original
 +++ New
 @@ @@
-                 foreach ($datasourceConfig['args'] as $name => $value) {
-                     $input[$name] = $this->recurseExpression($value, $context);
-                 }
--                return $dataCall($input);
-+                $dataCall($input);
-+                return null;
-             });
+     protected function renderArgument(Info $info, RenderArgument $renderArgument, string $nameOverride = '') : ?Tag
+     {
+         $config = $renderArgument->getValue();
+-        if (!is_array($config) || !isset($config['type'])) {
++        if (is_array($config) || !isset($config['type'])) {
+             return null;
          }
-         return ['datasources' => $registry];
+         if (!isset($config['options'])) {
 
 
-13) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:94    [M] ArrayItemRemoval
+13) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:21    [M] Foreach_
+
+--- Original
++++ New
+@@ @@
+         $context = $data->getContext();
+         $brickConfig = $this->resolveBrickconfig($config['areabricks'][$brickName]);
+         $registry = new DatasourceRegistry();
+-        foreach ($brickConfig['datasources'] as $id => $datasourceConfig) {
++        foreach (array() as $id => $datasourceConfig) {
+             $dsId = $datasourceConfig['id'];
+             $dataSource = $config['datasources'][$dsId];
+             $dataCall = $registry->createMethodCall($dataSource['service_id'], $dataSource['method'], $dataSource['args']);
+
+
+14) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:30    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+             $dsId = $datasourceConfig['id'];
+             $dataSource = $config['datasources'][$dsId];
+             $dataCall = $registry->createMethodCall($dataSource['service_id'], $dataSource['method'], $dataSource['args']);
+-            $registry->add($id, function () use($context, $dataCall, $datasourceConfig) {
+-                $input = [];
+-                foreach ($datasourceConfig['args'] as $name => $value) {
+-                    $input[$name] = $this->recurseExpression($value, $context->toArray());
+-                }
+-                return $dataCall($input);
+-            });
++            
+         }
+         $data->getContext()->setDatasources($registry);
+     }
+
+
+15) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:96    [M] ArrayItemRemoval
 
 --- Original
 +++ New
@@ -200,7 +235,7 @@ Escaped mutants:
                  $items[] = $itemArgument;
 
 
-14) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:129    [M] ArrayItemRemoval
+16) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:131    [M] ArrayItemRemoval
 
 --- Original
 +++ New
@@ -215,7 +250,7 @@ Escaped mutants:
      }
 
 
-15) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:129    [M] MethodCallRemoval
+17) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:131    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -230,7 +265,7 @@ Escaped mutants:
      }
 
 
-16) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:130    [M] MethodCallRemoval
+18) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:132    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -245,7 +280,7 @@ Escaped mutants:
      /**
 
 
-17) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:142    [M] MethodCallRemoval
+19) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:144    [M] ArrayItemRemoval
 
 --- Original
 +++ New
@@ -253,7 +288,23 @@ Escaped mutants:
      protected function resolveConfig(array $config) : array
      {
          $or = new OptionsResolver();
--        $or->setDefaults(['context' => [], 'datasources' => [], 'areabricks' => []]);
+-        $or->setDefaults(['datasources' => [], 'areabricks' => []]);
++        $or->setDefaults(['areabricks' => []]);
+         $or->setDefined(array_keys($config));
+         return $or->resolve($config);
+     }
+ }
+
+
+20) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:144    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+     protected function resolveConfig(array $config) : array
+     {
+         $or = new OptionsResolver();
+-        $or->setDefaults(['datasources' => [], 'areabricks' => []]);
 +        
          $or->setDefined(array_keys($config));
          return $or->resolve($config);
@@ -261,30 +312,14 @@ Escaped mutants:
  }
 
 
-18) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:142    [M] ArrayItemRemoval
-
---- Original
-+++ New
-@@ @@
-     protected function resolveConfig(array $config) : array
-     {
-         $or = new OptionsResolver();
--        $or->setDefaults(['context' => [], 'datasources' => [], 'areabricks' => []]);
-+        $or->setDefaults(['datasources' => [], 'areabricks' => []]);
-         $or->setDefined(array_keys($config));
-         return $or->resolve($config);
-     }
- }
-
-
-19) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:143    [M] MethodCallRemoval
+21) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:145    [M] MethodCallRemoval
 
 --- Original
 +++ New
 @@ @@
      {
          $or = new OptionsResolver();
-         $or->setDefaults(['context' => [], 'datasources' => [], 'areabricks' => []]);
+         $or->setDefaults(['datasources' => [], 'areabricks' => []]);
 -        $or->setDefined(array_keys($config));
 +        
          return $or->resolve($config);
@@ -292,7 +327,7 @@ Escaped mutants:
  }
 
 
-20) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:36    [M] MethodCallRemoval
+22) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:36    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -307,7 +342,7 @@ Escaped mutants:
          return $or->resolve($config);
 
 
-21) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:37    [M] MethodCallRemoval
+23) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:37    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -322,7 +357,7 @@ Escaped mutants:
      }
 
 
-22) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:38    [M] MethodCallRemoval
+24) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:38    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -334,10 +369,10 @@ Escaped mutants:
 +        
          return $or->resolve($config);
      }
-     public function preCreateEditables(string $brickName, \ArrayObject $data) : array
+     public function preCreateEditables(string $brickName, ConfiguratorData $data) : void
 
 
-23) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:94    [M] LogicalNot
+25) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:92    [M] LogicalNot
 
 --- Original
 +++ New
@@ -349,10 +384,10 @@ Escaped mutants:
 +            if (isset($groupArguments[$groupName])) {
                  $groupArguments[$groupName] = [];
              }
-             $renderArg = $renderer->get($name);
+             $renderArg = $emitter->get($name);
 
 
-24) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:107    [M] OneZeroInteger
+26) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:105    [M] OneZeroInteger
 
 --- Original
 +++ New
@@ -367,22 +402,7 @@ Escaped mutants:
                  $groupArguments[$groupName][0][$renderArg->getName()] = new RenderArgument('reference', $renderArg->getName(), $renderArg->getName());
 
 
-25) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:107    [M] DecrementInteger
-
---- Original
-+++ New
-@@ @@
-                     $groupArguments[$groupName][$key][$name] = new RenderArgument('reference', $name, $referenceId);
-                 }
-             } else {
--                if (!isset($groupArguments[$groupName][0])) {
-+                if (!isset($groupArguments[$groupName][-1])) {
-                     $groupArguments[$groupName][0] = [];
-                 }
-                 $groupArguments[$groupName][0][$renderArg->getName()] = new RenderArgument('reference', $renderArg->getName(), $renderArg->getName());
-
-
-26) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:107    [M] LogicalNot
+27) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:105    [M] LogicalNot
 
 --- Original
 +++ New
@@ -397,22 +417,22 @@ Escaped mutants:
                  $groupArguments[$groupName][0][$renderArg->getName()] = new RenderArgument('reference', $renderArg->getName(), $renderArg->getName());
 
 
-27) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:19    [M] UnwrapArrayMerge
+28) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:105    [M] DecrementInteger
 
 --- Original
 +++ New
 @@ @@
-     }
-     public function getEditablesExpressionAttributes() : array
-     {
--        return array_merge(parent::getEditablesExpressionAttributes(), ['[editable][instances]']);
-+        return parent::getEditablesExpressionAttributes();
-     }
-     public function doCreateEditables(Renderer $renderer, string $name, array $data) : void
-     {
+                     $groupArguments[$groupName][$key][$name] = new RenderArgument('reference', $name, $referenceId);
+                 }
+             } else {
+-                if (!isset($groupArguments[$groupName][0])) {
++                if (!isset($groupArguments[$groupName][-1])) {
+                     $groupArguments[$groupName][0] = [];
+                 }
+                 $groupArguments[$groupName][0][$renderArg->getName()] = new RenderArgument('reference', $renderArg->getName(), $renderArg->getName());
 
 
-28) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:19    [M] UnwrapArrayMerge
+29) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:19    [M] UnwrapArrayMerge
 
 --- Original
 +++ New
@@ -423,11 +443,26 @@ Escaped mutants:
 -        return array_merge(parent::getEditablesExpressionAttributes(), ['[editable][instances]']);
 +        return ['[editable][instances]'];
      }
-     public function doCreateEditables(Renderer $renderer, string $name, array $data) : void
+     public function doCreateEditables(RenderArgumentEmitter $emitter, string $name, ConfiguratorData $data) : void
      {
 
 
-29) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:21    [M] ArrayItemRemoval
+30) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:19    [M] UnwrapArrayMerge
+
+--- Original
++++ New
+@@ @@
+     }
+     public function getEditablesExpressionAttributes() : array
+     {
+-        return array_merge(parent::getEditablesExpressionAttributes(), ['[editable][instances]']);
++        return parent::getEditablesExpressionAttributes();
+     }
+     public function doCreateEditables(RenderArgumentEmitter $emitter, string $name, ConfiguratorData $data) : void
+     {
+
+
+31) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:21    [M] ArrayItemRemoval
 
 --- Original
 +++ New
@@ -438,11 +473,11 @@ Escaped mutants:
 -        return array_merge(parent::getEditablesExpressionAttributes(), ['[editable][instances]']);
 +        return array_merge(parent::getEditablesExpressionAttributes(), []);
      }
-     public function doCreateEditables(Renderer $renderer, string $name, array $data) : void
+     public function doCreateEditables(RenderArgumentEmitter $emitter, string $name, ConfiguratorData $data) : void
      {
 
 
-30) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:43    [M] CastString
+32) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:43    [M] CastString
 
 --- Original
 +++ New
@@ -457,7 +492,7 @@ Escaped mutants:
          }
 
 
-31) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/MapConfigurator.php:18    [M] CastBool
+33) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/MapConfigurator.php:18    [M] CastBool
 
 --- Original
 +++ New
@@ -472,7 +507,7 @@ Escaped mutants:
       * @param  array<array> $options
 
 
-32) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/ExpressionLanguage/ExpressionWrapper.php:72    [M] Continue_
+34) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/ExpressionLanguage/ExpressionWrapper.php:73    [M] Continue_
 
 --- Original
 +++ New
@@ -493,82 +528,38 @@ Timed Out mutants:
 Not Covered mutants:
 ====================
 
-1) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Areabricks/AbstractAreabrick.php:159    [M] Continue_
+1) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:34    [M] Foreach_
 
 --- Original
 +++ New
 @@ @@
-         foreach ($renderArguments as $name => $renderArgument) {
-             $referenceId = $parentName ? $parentName . '_' . $name : $name;
-             if (!$renderArgument instanceof RenderArgument) {
--                continue;
-+                break;
-             }
-             if ($renderArgument->getType() === 'null') {
-                 continue;
+             $dataCall = $registry->createMethodCall($dataSource['service_id'], $dataSource['method'], $dataSource['args']);
+             $registry->add($id, function () use($context, $dataCall, $datasourceConfig) {
+                 $input = [];
+-                foreach ($datasourceConfig['args'] as $name => $value) {
++                foreach (array() as $name => $value) {
+                     $input[$name] = $this->recurseExpression($value, $context->toArray());
+                 }
+                 return $dataCall($input);
 
 
-2) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Areabricks/AbstractAreabrick.php:163    [M] Continue_
-
---- Original
-+++ New
-@@ @@
-                 continue;
-             }
-             if ($renderArgument->getType() === 'null') {
--                continue;
-+                break;
-             }
-             if ($renderArgument->getType() === 'collection') {
-                 $tag = new ArrayObject();
-
-
-3) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Areabricks/AbstractAreabrick.php:168    [M] MethodCallRemoval
+2) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:37    [M] FunctionCall
 
 --- Original
 +++ New
 @@ @@
-             }
-             if ($renderArgument->getType() === 'collection') {
-                 $tag = new ArrayObject();
--                $this->processRenderArguments(new \ArrayIterator($renderArgument->getValue()), $tag, $document, $referencesContainer, $referenceId);
-+                
-                 $tag = (array) $tag;
-             } elseif ($renderArgument->getType() === 'editable') {
-                 $tag = $render($referenceId, $renderArgument->getValue());
+                 foreach ($datasourceConfig['args'] as $name => $value) {
+                     $input[$name] = $this->recurseExpression($value, $context->toArray());
+                 }
+-                return $dataCall($input);
++                $dataCall($input);
++                return null;
+             });
+         }
+         $data->getContext()->setDatasources($registry);
 
 
-4) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Areabricks/AbstractAreabrick.php:175    [M] CastArray
-
---- Original
-+++ New
-@@ @@
-             if ($renderArgument->getType() === 'collection') {
-                 $tag = new ArrayObject();
-                 $this->processRenderArguments(new \ArrayIterator($renderArgument->getValue()), $tag, $document, $referencesContainer, $referenceId);
--                $tag = (array) $tag;
-+                $tag = $tag;
-             } elseif ($renderArgument->getType() === 'editable') {
-                 $tag = $render($referenceId, $renderArgument->getValue());
-             } elseif ($renderArgument->getType() === 'reference') {
-
-
-5) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Areabricks/AbstractAreabrick.php:178    [M] Identical
-
---- Original
-+++ New
-@@ @@
-                 $tag = (array) $tag;
-             } elseif ($renderArgument->getType() === 'editable') {
-                 $tag = $render($referenceId, $renderArgument->getValue());
--            } elseif ($renderArgument->getType() === 'reference') {
-+            } elseif ($renderArgument->getType() !== 'reference') {
-                 $reference = $renderArgument->getValue();
-                 $tag = $referencesContainer[$reference];
-             } else {
-
-
-6) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:54    [M] Foreach_
+3) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:54    [M] Foreach_
 
 --- Original
 +++ New
@@ -583,22 +574,22 @@ Not Covered mutants:
          }
 
 
-7) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:75    [M] MethodCallRemoval
+4) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:77    [M] MethodCallRemoval
 
 --- Original
 +++ New
 @@ @@
-         $argument = $renderer->get($name);
-         if (!$data['context']['datasources']) {
+         $argument = $emitter->get($name);
+         if (!$data->getContext()->getDatasources()) {
              $argument = new RenderArgument('null', $argument->getName());
--            $renderer->emitArgument($argument);
+-            $emitter->emitArgument($argument);
 +            
              return;
          }
-         $this->generateDatasources($renderer, $data);
+         $this->generateDatasources($emitter, $data);
 
 
-8) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:113    [M] TrueValue
+5) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:115    [M] TrueValue
 
 --- Original
 +++ New
@@ -613,7 +604,7 @@ Not Covered mutants:
      {
 
 
-9) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:118    [M] MethodCallRemoval
+6) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/DatasourceConfigurator.php:120    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -628,7 +619,7 @@ Not Covered mutants:
       * @param array<mixed> $config
 
 
-10) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:13    [M] MethodCallRemoval
+7) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:13    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -643,7 +634,7 @@ Not Covered mutants:
                  return true;
 
 
-11) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:14    [M] MethodCallRemoval
+8) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:14    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -663,7 +654,7 @@ Not Covered mutants:
      {
 
 
-12) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:17    [M] TrueValue
+9) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:17    [M] TrueValue
 
 --- Original
 +++ New
@@ -678,7 +669,7 @@ Not Covered mutants:
          });
 
 
-13) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:19    [M] FunctionCall
+10) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:19    [M] FunctionCall
 
 --- Original
 +++ New
@@ -694,7 +685,7 @@ Not Covered mutants:
      public function supportsEditable(string $editableName, array $config) : bool
 
 
-14) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:53    [M] Continue_
+11) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:53    [M] Continue_
 
 --- Original
 +++ New
@@ -709,7 +700,7 @@ Not Covered mutants:
                  throw new \InvalidArgumentException("Group with name {$editable['group']} does not exist.");
 
 
-15) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:57    [M] Throw_
+12) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:57    [M] Throw_
 
 --- Original
 +++ New
@@ -724,7 +715,7 @@ Not Covered mutants:
              $editable = array_merge($editable, $groupConfig);
 
 
-16) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:88    [M] Continue_
+13) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:86    [M] Continue_
 
 --- Original
 +++ New
@@ -735,18 +726,18 @@ Not Covered mutants:
 -                continue;
 +                break;
              }
-             if (!$renderer->has($name)) {
+             if (!$emitter->has($name)) {
                  continue;
 
 
-17) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:91    [M] Continue_
+14) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:89    [M] Continue_
 
 --- Original
 +++ New
 @@ @@
                  continue;
              }
-             if (!$renderer->has($name)) {
+             if (!$emitter->has($name)) {
 -                continue;
 +                break;
              }
@@ -754,12 +745,12 @@ Not Covered mutants:
              if (!isset($groupArguments[$groupName])) {
 
 
-18) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:102    [M] Foreach_
+15) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/GroupConfigurator.php:100    [M] Foreach_
 
 --- Original
 +++ New
 @@ @@
-             $renderArg = $renderer->get($name);
+             $renderArg = $emitter->get($name);
              if ($renderArg->getType() === 'collection') {
                  $values = $renderArg->getValue();
 -                foreach ($values as $key => $data) {
@@ -769,7 +760,7 @@ Not Covered mutants:
                  }
 
 
-19) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:56    [M] IncrementInteger
+16) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:56    [M] IncrementInteger
 
 --- Original
 +++ New
@@ -784,7 +775,7 @@ Not Covered mutants:
  }
 
 
-20) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:56    [M] OneZeroInteger
+17) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:56    [M] OneZeroInteger
 
 --- Original
 +++ New
@@ -799,7 +790,7 @@ Not Covered mutants:
  }
 
 
-21) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:56    [M] MethodCallRemoval
+18) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:56    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -814,7 +805,7 @@ Not Covered mutants:
  }
 
 
-22) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:57    [M] ArrayItemRemoval
+19) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:57    [M] ArrayItemRemoval
 
 --- Original
 +++ New
@@ -828,7 +819,7 @@ Not Covered mutants:
  }
 
 
-23) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:57    [M] MethodCallRemoval
+20) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/InstancesConfigurator.php:57    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -842,7 +833,7 @@ Not Covered mutants:
  }
 
 
-24) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/MapConfigurator.php:13    [M] MethodCallRemoval
+21) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/Configurator/MapConfigurator.php:13    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -857,7 +848,7 @@ Not Covered mutants:
      {
 
 
-25) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:30    [M] MethodCallRemoval
+22) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:30    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -872,7 +863,7 @@ Not Covered mutants:
      }
 
 
-26) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:31    [M] MethodCallRemoval
+23) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:31    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -887,7 +878,7 @@ Not Covered mutants:
      protected function addCommonAreabrick(NodeBuilder $builder) : void
 
 
-27) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:38    [M] MethodCallRemoval
+24) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:38    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -902,7 +893,7 @@ Not Covered mutants:
          $builder->scalarNode('open')->info('Set HTML prepended to the brick\'s contents.')->defaultValue('')->end();
 
 
-28) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:42    [M] MethodCallRemoval
+25) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:42    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -917,7 +908,7 @@ Not Covered mutants:
          $builder->scalarNode('close')->info('Set HTML appended to the brick\'s contents.')->defaultValue('')->end();
 
 
-29) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:46    [M] MethodCallRemoval
+26) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:46    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -932,7 +923,7 @@ Not Covered mutants:
          $builder->booleanNode('use_edit')->info('Use a separate edit template.')->defaultValue(false)->end();
 
 
-30) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:50    [M] MethodCallRemoval
+27) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:50    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -947,7 +938,7 @@ Not Covered mutants:
      }
 
 
-31) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:55    [M] MethodCallRemoval
+28) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:55    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -962,7 +953,7 @@ Not Covered mutants:
      protected function addGroupsAreabrick(NodeBuilder $builder) : void
 
 
-32) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:60    [M] MethodCallRemoval
+29) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:60    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -977,7 +968,7 @@ Not Covered mutants:
      {
 
 
-33) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:63    [M] FalseValue
+30) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:63    [M] FalseValue
 
 --- Original
 +++ New
@@ -992,7 +983,7 @@ Not Covered mutants:
      {
 
 
-34) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:69    [M] MethodCallRemoval
+31) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:69    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1007,7 +998,7 @@ Not Covered mutants:
      {
 
 
-35) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:78    [M] MethodCallRemoval
+32) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:78    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1022,7 +1013,7 @@ Not Covered mutants:
      {
 
 
-36) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:99    [M] MethodCallRemoval
+33) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:99    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1037,7 +1028,7 @@ Not Covered mutants:
      {
 
 
-37) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:160    [M] MethodCallRemoval
+34) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:160    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1052,7 +1043,7 @@ Not Covered mutants:
          $this->addEditableAreabrick($prototype);
 
 
-38) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:161    [M] MethodCallRemoval
+35) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:161    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1067,7 +1058,7 @@ Not Covered mutants:
          $prototype->end()->end()->end();
 
 
-39) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:162    [M] MethodCallRemoval
+36) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:162    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1082,7 +1073,7 @@ Not Covered mutants:
      }
 
 
-40) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:163    [M] MethodCallRemoval
+37) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:163    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1097,7 +1088,7 @@ Not Covered mutants:
      protected function addDatasourcesSection(ArrayNodeDefinition $node) : void
 
 
-41) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:165    [M] MethodCallRemoval
+38) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:165    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1112,7 +1103,7 @@ Not Covered mutants:
      {
 
 
-42) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:170    [M] MethodCallRemoval
+39) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/Configuration.php:170    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1126,7 +1117,7 @@ Not Covered mutants:
  }
 
 
-43) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:24    [M] MethodCallRemoval
+40) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:24    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1141,7 +1132,7 @@ Not Covered mutants:
          $configurators = [];
 
 
-44) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:31    [M] Foreach_
+41) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:31    [M] Foreach_
 
 --- Original
 +++ New
@@ -1156,7 +1147,7 @@ Not Covered mutants:
          $datasources = $config['datasources'];
 
 
-45) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:36    [M] Foreach_
+42) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:36    [M] Foreach_
 
 --- Original
 +++ New
@@ -1171,7 +1162,7 @@ Not Covered mutants:
          $config['datasources'] = $datasources;
 
 
-46) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:42    [M] ArrayItemRemoval
+43) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:42    [M] ArrayItemRemoval
 
 --- Original
 +++ New
@@ -1186,7 +1177,7 @@ Not Covered mutants:
          foreach ($areabricks as $id => $aconfig) {
 
 
-47) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:47    [M] MethodCallRemoval
+44) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:47    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1201,7 +1192,7 @@ Not Covered mutants:
              $target = null;
 
 
-48) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:50    [M] Foreach_
+45) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:50    [M] Foreach_
 
 --- Original
 +++ New
@@ -1216,7 +1207,7 @@ Not Covered mutants:
              if ($class = $aconfig['class']) {
 
 
-49) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:58    [M] LogicalNot
+46) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:58    [M] LogicalNot
 
 --- Original
 +++ New
@@ -1231,7 +1222,7 @@ Not Covered mutants:
              if (!$target->hasTag('pimcore.area.brick')) {
 
 
-50) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:60    [M] ArrayItemRemoval
+47) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:60    [M] ArrayItemRemoval
 
 --- Original
 +++ New
@@ -1246,7 +1237,7 @@ Not Covered mutants:
                  $target->addTag('pimcore.area.brick', ['id' => $id]);
 
 
-51) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:68    [M] LogicalNot
+48) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:68    [M] LogicalNot
 
 --- Original
 +++ New
@@ -1261,7 +1252,7 @@ Not Covered mutants:
              $container->setDefinition($definitionId, $target);
 
 
-52) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:69    [M] ArrayItemRemoval
+49) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:69    [M] ArrayItemRemoval
 
 --- Original
 +++ New
@@ -1278,7 +1269,7 @@ Not Covered mutants:
  }
 
 
-53) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:69    [M] MethodCallRemoval
+50) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:69    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1295,7 +1286,7 @@ Not Covered mutants:
  }
 
 
-54) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:72    [M] MethodCallRemoval
+51) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/DependencyInjection/PimcoreRadBrickExtension.php:72    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1310,7 +1301,7 @@ Not Covered mutants:
  }
 
 
-55) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/ExpressionLanguage/ExpressionWrapper.php:64    [M] Throw_
+52) /home/farty/src/khusseini/PimcoreRadBrickBundle/src/ExpressionLanguage/ExpressionWrapper.php:65    [M] Throw_
 
 --- Original
 +++ New
