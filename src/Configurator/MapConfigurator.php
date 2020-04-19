@@ -3,11 +3,14 @@
 namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
-use Khusseini\PimcoreRadBrickBundle\Renderer;
+use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class MapConfigurator extends AbstractConfigurator
 {
+    /**
+     * @codeCoverageIgnore
+     */
     public function configureEditableOptions(OptionsResolver $or): void
     {
         $or->setDefault('map', []);
@@ -19,7 +22,7 @@ class MapConfigurator extends AbstractConfigurator
     }
 
     /**
-     * @param array<array> $options
+     * @param  array<array> $options
      * @return array<array>
      */
     private function resolveMapOptions(array $options): array
@@ -29,29 +32,30 @@ class MapConfigurator extends AbstractConfigurator
         return $or->resolve($options);
     }
 
-    public function doCreateEditables(Renderer $renderer, string $name, array $data): \Generator
+    public function doCreateEditables(RenderArgumentEmitter $emitter, string $name, ConfiguratorData $data): void
     {
-        $argument = $renderer->get($name);
-        if ($this->supportsEditable($name, $data['editable'])) {
-            $maps = $data['editable']['map'];
+        $argument = $emitter->get($name);
+        $config = $data->getConfig();
+        if ($this->supportsEditable($name, $config)) {
+            $maps = $config['map'];
             foreach ($maps as $map) {
-                /** @var array<string> $map */
+                /**
+                 * @var array<string> $map
+                 */
                 $map = $this->resolveMapOptions($map);
-                $source = $this->getExpressionWrapper()->evaluateExpression($map['source'], $data['context']);
-                $data['editable'] = $this
+                $source = $this->getExpressionWrapper()->evaluateExpression($map['source'], $data->getContext()->toArray());
+                $config = $this
                     ->getExpressionWrapper()
-                    ->setPropertyValue($data['editable'], $map['target'], $source)
-                ;
+                    ->setPropertyValue($config, $map['target'], $source);
             }
 
             $argument = new RenderArgument(
                 $argument->getType(),
                 $argument->getName(),
-                $data['editable']['options']
+                $config['options']
             );
         }
 
-        $renderer->set($argument);
-        yield $name => $argument;
+        $emitter->emitArgument($argument);
     }
 }

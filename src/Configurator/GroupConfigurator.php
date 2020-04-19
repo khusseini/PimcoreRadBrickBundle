@@ -3,7 +3,7 @@
 namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
-use Khusseini\PimcoreRadBrickBundle\Renderer;
+use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class GroupConfigurator extends AbstractConfigurator
@@ -11,12 +11,14 @@ class GroupConfigurator extends AbstractConfigurator
     public function configureEditableOptions(OptionsResolver $or): void
     {
         $or->setDefault('group', null);
-        $or->setAllowedValues('group', function ($value) {
-            if (is_null($value)) {
-                return true;
+        $or->setAllowedValues(
+            'group', function ($value) {
+                if (is_null($value)) {
+                    return true;
+                }
+                return preg_match('/[_a-z]+/i', $value);
             }
-            return preg_match('/[_a-z]+/i', $value);
-        });
+        );
     }
 
     public function supportsEditable(string $editableName, array $config): bool
@@ -25,7 +27,7 @@ class GroupConfigurator extends AbstractConfigurator
     }
 
     /**
-     * @param array<string,mixed> $config
+     * @param  array<string,mixed> $config
      * @return array<string,mixed>
      */
     protected function resolveBrickConfig(array $config): array
@@ -37,9 +39,9 @@ class GroupConfigurator extends AbstractConfigurator
         return $or->resolve($config);
     }
 
-    public function preCreateEditables(string $brickName, \ArrayObject $data): array
+    public function preCreateEditables(string $brickName, ConfiguratorData $data): void
     {
-        $config = $data['config'];
+        $config = $data->getConfig();
         $brick = $this->resolveBrickConfig($config['areabricks'][$brickName]);
 
         $groups = $brick['groups'];
@@ -61,22 +63,18 @@ class GroupConfigurator extends AbstractConfigurator
 
         $brick['editables'] = $editables;
         $config['areabricks'][$brickName] = $brick;
-        $data['config'] = $config;
-
-        return [];
+        $data->setConfig($config);
     }
 
-    public function doCreateEditables(Renderer $renderer, string $name, array $data): \Generator
+    public function doCreateEditables(RenderArgumentEmitter $emitter, string $name, ConfiguratorData $data): void
     {
-        $argument = $renderer->get($name);
-        yield $name => $argument;
+        return;
     }
 
-    public function postCreateEditables(string $brickName, array $config, Renderer $renderer): \Generator
+    public function postCreateEditables(string $brickName, array $config, RenderArgumentEmitter $emitter): void
     {
         if (!$config['groups']) {
             return;
-            yield;
         };
 
         $groups = array_keys($config['groups']);
@@ -87,14 +85,14 @@ class GroupConfigurator extends AbstractConfigurator
             if (!in_array($config['group'], $groups)) {
                 continue;
             }
-            if (!$renderer->has($name)) {
+            if (!$emitter->has($name)) {
                 continue;
             }
             $groupName = $config['group'];
             if (!isset($groupArguments[$groupName])) {
                 $groupArguments[$groupName] = [];
             }
-            $renderArg = $renderer->get($name);
+            $renderArg = $emitter->get($name);
 
             if ($renderArg->getType() === 'collection') {
                 $values = $renderArg->getValue();
@@ -112,8 +110,7 @@ class GroupConfigurator extends AbstractConfigurator
                         'reference',
                         $renderArg->getName(),
                         $renderArg->getName()
-                    )
-                ;
+                    );
             }
         }
 
@@ -123,7 +120,8 @@ class GroupConfigurator extends AbstractConfigurator
                 $argumentValue[$key] = new RenderArgument('collection', $key, $value);
             }
 
-            yield $name => new RenderArgument('collection', $name, $argumentValue);
+            $argument = new RenderArgument('collection', $name, $argumentValue);
+            $emitter->emitArgument($argument);
         }
     }
 }

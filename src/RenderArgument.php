@@ -4,13 +4,19 @@ namespace Khusseini\PimcoreRadBrickBundle;
 
 class RenderArgument
 {
-    /** @var string */
+    /**
+     * @var string 
+     */
     private $type;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     private $name;
 
-    /** @var mixed */
+    /**
+     * @var mixed 
+     */
     private $value;
 
     /**

@@ -3,17 +3,19 @@
 namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use ArrayObject;
+use Khusseini\PimcoreRadBrickBundle\Context;
 use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
-use Khusseini\PimcoreRadBrickBundle\Renderer;
+use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class DatasourceConfigurator extends AbstractConfigurator
 {
-    public function preCreateEditables(string $brickName, \ArrayObject $data): array
+    public function preCreateEditables(string $brickName, ConfiguratorData $data): void
     {
-        $config = $this->resolveConfig($data['config']);
-        $context = $data['context'];
+        $config = $this->resolveConfig($data->getConfig());
+        $context = $data->getContext();
+
         $brickConfig = $this->resolveBrickconfig($config['areabricks'][$brickName]);
         $registry = new DatasourceRegistry();
         foreach ($brickConfig['datasources'] as $id => $datasourceConfig) {
@@ -29,17 +31,15 @@ class DatasourceConfigurator extends AbstractConfigurator
                 $id,
                 function () use ($context, $dataCall, $datasourceConfig) {
                     $input = [];
-
                     foreach ($datasourceConfig['args'] as $name => $value) {
-                        $input[$name] = $this->recurseExpression($value, $context);
+                        $input[$name] = $this->recurseExpression($value, $context->toArray());
                     }
-
                     return $dataCall($input);
                 }
             );
         }
 
-        return ['datasources' => $registry];
+        $data->getContext()->setDatasources($registry);
     }
 
     protected function recurseExpression($value, array $context)
@@ -47,8 +47,7 @@ class DatasourceConfigurator extends AbstractConfigurator
         if (is_string($value)) {
             return $this
                 ->getExpressionWrapper()
-                ->evaluateExpression($value, $context)
-            ;
+                ->evaluateExpression($value, $context);
         }
 
         if (is_array($value)) {
@@ -60,29 +59,32 @@ class DatasourceConfigurator extends AbstractConfigurator
         return $value;
     }
 
-    public function generateDatasources(Renderer $renderer, $data): \Generator
+    public function generateDatasources(RenderArgumentEmitter $emitter, ConfiguratorData $data): void
     {
-        foreach ($data['context']['datasources']->executeAll() as $name => $value) {
+        $datasources = $data->getContext()->getDatasources();
+        $data = $datasources->executeAll();
+        foreach ($data as $name => $value) {
             $argument = new RenderArgument('data', $name, $value);
-            $renderer->set($argument);
-            yield $argument->getName() => $argument;
+            $emitter->emitArgument($argument);
         }
     }
 
-    public function doCreateEditables(Renderer $renderer, string $name, array $data): \Generator
+    public function doCreateEditables(RenderArgumentEmitter $emitter, string $name, ConfiguratorData $data): void
     {
-        $argument = $renderer->get($name);
-        if (!$data['context']['datasources']) {
+        $argument = $emitter->get($name);
+        if (!$data->getContext()->getDatasources()) {
+            $argument = new RenderArgument('null', $argument->getName());
+            $emitter->emitArgument($argument);
             return;
         }
 
-        yield from $this->generateDatasources($renderer, $data);
+        $this->generateDatasources($emitter, $data);
 
-        $editable = $data['editable'];
-        if (@$editable['datasource']['name']) {
+        $editable = $data->getConfig();
+        if (isset($editable['datasource']['name'])) {
             $datasourceName = $editable['datasource']['name'];
             $datasourceIdExpression = @$editable['datasource']['id'];
-            $dataArgument = $renderer->get($datasourceName);
+            $dataArgument = $emitter->get($datasourceName);
 
             unset($editable['datasource']);
             $items = new ArrayObject();
@@ -91,8 +93,7 @@ class DatasourceConfigurator extends AbstractConfigurator
                 if ($datasourceIdExpression) {
                     $i = $this
                         ->getExpressionWrapper()
-                        ->evaluateExpression($datasourceIdExpression, ['item'=>$item])
-                    ;
+                        ->evaluateExpression($datasourceIdExpression, ['item'=>$item]);
                 }
 
                 $itemArgument = new RenderArgument('editable', $i, $editable);
@@ -106,8 +107,7 @@ class DatasourceConfigurator extends AbstractConfigurator
             );
         }
 
-        $renderer->set($argument);
-        yield $name => $argument;
+        $emitter->emitArgument($argument);
     }
 
     public function supportsEditable(string $editableName, array $config): bool
@@ -141,7 +141,7 @@ class DatasourceConfigurator extends AbstractConfigurator
     protected function resolveConfig(array $config): array
     {
         $or = new OptionsResolver();
-        $or->setDefaults(['context' => [], 'datasources' => [], 'areabricks' => []]);
+        $or->setDefaults(['datasources' => [], 'areabricks' => []]);
         $or->setDefined(array_keys($config));
         return $or->resolve($config);
     }

@@ -2,47 +2,50 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\Areabricks;
 
-use ArrayAccess;
-use ArrayObject;
-use Iterator;
-use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
-use Khusseini\PimcoreRadBrickBundle\RenderArgument;
-use Metadata\NullMetadata;
+use Khusseini\PimcoreRadBrickBundle\AreabrickRenderer;
 use Pimcore\Extension\Document\Areabrick\AbstractTemplateAreabrick;
-use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Document\Tag\Area\Info;
-use Pimcore\Templating\Renderer\TagRenderer;
 use Symfony\Component\HttpFoundation\Response;
 
 abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 {
-    /** @var AreabrickConfigurator */
-    private $areabrickConfigurator;
-    /** @var string */
+    /**
+     * @var string
+     */
     private $name;
-    /** @var string */
+    /**
+     * @var string
+     */
     private $icon;
-    /** @var string */
+    /**
+     * @var string
+     */
     private $label;
-    /** @var string */
+    /**
+     * @var string
+     */
     private $openTag = '';
-    /** @var string */
+    /**
+     * @var string
+     */
     private $closeTag = '';
-    /** @var bool */
+    /**
+     * @var bool
+     */
     private $useEdit = false;
-    /** @var TagRenderer */
-    private $tagRenderer;
+
+    /**
+     * @var AreabrickRenderer
+     */
+    private $areabrickRenderer;
 
     public function __construct(
         string $name,
-        TagRenderer $tagRenderer,
-        AreabrickConfigurator $areabrickConfigurator
+        AreabrickRenderer $areabrickRenderer
     ) {
         $this->name = $name;
-        $this->tagRenderer = $tagRenderer;
-        $this->areabrickConfigurator = $areabrickConfigurator;
-        $this->areabrickConfigurator->resolveAreaBrickConfig($name);
-        $options = $this->areabrickConfigurator->getAreabrickConfig($name);
+        $this->areabrickRenderer = $areabrickRenderer;
+        $options = $areabrickRenderer->getAreabrickConfig($name);
         $this->icon = $options['icon'];
         $this->label = $options['label'];
         $this->openTag = $options['open'];
@@ -51,7 +54,8 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     }
 
     /**
-     * @return string
+     * @return             string
+     * @codeCoverageIgnore
      */
     public function getIcon()
     {
@@ -59,20 +63,17 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     }
 
     /**
-     * @return string
+     * @return             string
+     * @codeCoverageIgnore
      */
     public function getName()
     {
         return $this->label ?: parent::getName();
     }
 
-    protected function getTagRenderer(): TagRenderer
-    {
-        return $this->tagRenderer;
-    }
-
     /**
-     * @return bool
+     * @return             bool
+     * @codeCoverageIgnore
      */
     public function hasEditTemplate()
     {
@@ -81,6 +82,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
     /**
      * @inheritDoc
+     * @codeCoverageIgnore
      */
     public function getTemplateLocation()
     {
@@ -89,6 +91,7 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
     /**
      * @inheritDoc
+     * @codeCoverageIgnore
      */
     public function getTemplateSuffix()
     {
@@ -100,69 +103,8 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
      */
     public function action(Info $info)
     {
-        $view = $info->getView();
-        $context = [
-            'view' => $view,
-            'request' => $info->getRequest(),
-        ];
-
-        $renderArguments = $this
-            ->areabrickConfigurator
-            ->compileAreaBrick($this->name, $context)
-        ;
-
-        $this->processRenderArguments(
-            $renderArguments,
-            $info->getView(),
-            $info->getDocument()
-        );
-
+        $this->areabrickRenderer->render($this->name, $info);
         return $this->doAction($info);
-    }
-
-    /**
-     * @param ArrayAccess<string,mixed> $container
-     * @param Iterator<RenderArgument> $renderArguments
-     */
-    private function processRenderArguments(
-        Iterator $renderArguments,
-        ArrayAccess $container,
-        PageSnippet $document,
-        ArrayAccess $referencesContainer = null,
-        string $parentName = ''
-    ): void {
-        if (!$referencesContainer) {
-            $referencesContainer = new \ArrayObject();
-        }
-
-        $render = function ($name, $config) use ($document) {
-            return $this->tagRenderer->render($document, $config['type'], $name, $config['options']);
-        };
-
-        foreach ($renderArguments as $name => $renderArgument) {
-            $referenceId = $parentName ? $parentName.'_'.$name : $name;
-
-            if ($renderArgument->getType() === 'collection') {
-                $tag = new ArrayObject();
-                $this->processRenderArguments(
-                    new \ArrayIterator($renderArgument->getValue()),
-                    $tag,
-                    $document,
-                    $referencesContainer,
-                    $referenceId
-                );
-                $tag = (array)$tag;
-            } elseif ($renderArgument->getType() === 'editable') {
-                $tag = $render($referenceId, $renderArgument->getValue());
-            } elseif ($renderArgument->getType() === 'reference') {
-                  $reference = $renderArgument->getValue();
-                  $tag = $referencesContainer[$reference];
-            } else {
-                $tag = $renderArgument->getValue();
-            }
-
-            $referencesContainer[$referenceId] = $container[$name] = $tag;
-        }
     }
 
     public function doAction(Info $info): ?Response
@@ -172,15 +114,18 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
     /**
      * {@inheritdoc}
+     *
+     * @codeCoverageIgnore
      */
     public function postRenderAction(Info $info)
     {
-        // noop - implement as needed
         return null;
     }
 
     /**
      * {@inheritdoc}
+     *
+     * @codeCoverageIgnore
      */
     public function getHtmlTagOpen(Info $info)
     {
@@ -189,6 +134,8 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
 
     /**
      * {@inheritdoc}
+     *
+     * @codeCoverageIgnore
      */
     public function getHtmlTagClose(Info $info)
     {

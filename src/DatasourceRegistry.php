@@ -2,15 +2,20 @@
 
 namespace Khusseini\PimcoreRadBrickBundle;
 
+use InvalidArgumentException;
 use stdClass;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 
 class DatasourceRegistry
 {
-    /** @var ExpressionLanguage */
+    /**
+     * @var ExpressionLanguage
+     */
     private $expressionLangauge;
 
-    /** @var object */
+    /**
+     * @var object
+     */
     private $datasources = null;
 
     public function __construct(
@@ -31,11 +36,13 @@ class DatasourceRegistry
      */
     public function execute(string $name, array $args = [])
     {
-        if (! $ds = $this->datasources->{$name}) {
-            return;
+        if (! property_exists($this->datasources, $name)) {
+            throw new InvalidArgumentException(sprintf('Datasource \'%s\' not found.', $name));
         }
 
-        return $ds($args);
+        $ds = $this->datasources->{$name};
+
+        return $ds(...$args);
     }
 
     public function executeAll(): \Generator
@@ -44,16 +51,6 @@ class DatasourceRegistry
         foreach ($ds as $name => $callback) {
             yield $name => $callback();
         }
-    }
-
-    /**
-     * @param array<string> $args
-     *
-     * @return mixed
-     */
-    public function __invoke(string $name, array $args = [])
-    {
-        return $this->execute($name, $args);
     }
 
     public function add(string $name, callable $callable): void
@@ -71,14 +68,26 @@ class DatasourceRegistry
     ): callable {
         return function (array $input) use ($service, $method, $args) {
             foreach ($args as $index => $expression) {
-                if (!is_string($expression)) {
-                    continue;
-                }
-                $args[$index] = $this->getValue($input, $expression);
+                $args[$index] = $this->getValueRecursive($input, $expression);
             }
 
             return call_user_func_array([$service, $method], $args);
         };
+    }
+
+    protected function getValueRecursive(array $input, $expression)
+    {
+        if (is_string($expression)) {
+            return $this->getValue($input, $expression);
+        }
+
+        if (is_array($expression)) {
+            foreach ($expression as $key => $value) {
+                $expression[$key] = $this->getValueRecursive($input, $value);
+            }
+        }
+
+        return $expression;
     }
 
     /**
@@ -93,13 +102,5 @@ class DatasourceRegistry
         } catch (\Exception $ex) {
             return $expression;
         }
-    }
-
-    /**
-     * @return array<callable>
-     */
-    public function getAll()
-    {
-        return (array)$this->datasources;
     }
 }

@@ -2,10 +2,11 @@
 
 namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 
-use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
+use Khusseini\PimcoreRadBrickBundle\Configurator\ConfiguratorData;
 use Khusseini\PimcoreRadBrickBundle\Configurator\InstancesConfigurator;
+use Khusseini\PimcoreRadBrickBundle\ContextInterface;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
-use Khusseini\PimcoreRadBrickBundle\Renderer;
+use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
 
 class InstancesConfiguratorTest extends TestCase
@@ -53,28 +54,30 @@ class InstancesConfiguratorTest extends TestCase
         ];
     }
 
-    /** @dataProvider canCreateEditableProvider */
+    /**
+     * @dataProvider canCreateEditableProvider
+     */
     public function testCanCreateEditable($config, $assert)
     {
         $configurator = new InstancesConfigurator();
         foreach ($config['areabricks'] as $name => $areabrickConfig) {
             foreach ($areabrickConfig['editables'] as $editableName => $editableConfig) {
                 $actualSupports = $configurator->supportsEditable($editableName, $editableConfig);
-                $expectedSupports =
-                    isset($editableConfig['instances'])
-                ;
+                $expectedSupports = isset($editableConfig['instances']);
+
                 $this->assertEquals($expectedSupports, $actualSupports);
+
                 $renderArgs = new RenderArgument('editable', $editableName, $editableConfig);
-                $renderer = new Renderer();
-                $renderer->set($renderArgs);
+                $emitter = new RenderArgumentEmitter();
+                $emitter->set($renderArgs);
 
-                $renderArgs = $configurator->createEditables(
-                    $renderer,
-                    $editableName,
-                    ['context' => [], 'editable'=> $editableConfig]
-                );
+                $context = $this->prophesize(ContextInterface::class);
+                $context->toArray()->willReturn([]);
+                $data = new ConfiguratorData($context->reveal());
+                $data->setConfig($editableConfig);
 
-                $assert($name, $renderArgs);
+                $configurator->createEditables($emitter, $editableName, $data);
+                $assert($name, $emitter->emit());
             }
         }
     }
