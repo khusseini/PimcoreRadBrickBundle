@@ -14,10 +14,13 @@ use Pimcore\Model\Element\Tag;
 use Pimcore\Templating\Model\ViewModel;
 use Pimcore\Templating\Renderer\TagRenderer;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\HttpFoundation\Request;
 
 class AreabrickRendererTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testAddsEditablesToView()
     {
         $configurator = $this->prophesize(AreabrickConfigurator::class);

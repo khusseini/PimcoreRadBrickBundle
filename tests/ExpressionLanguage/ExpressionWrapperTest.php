@@ -4,9 +4,12 @@ namespace Tests\Khusseini\PimcoreRadBrickBundle\ExpressionLanguage;
 
 use Khusseini\PimcoreRadBrickBundle\ExpressionLanguage\ExpressionWrapper;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class ExpressionWrapperTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testCanProcessExpressions()
     {
         $data = [

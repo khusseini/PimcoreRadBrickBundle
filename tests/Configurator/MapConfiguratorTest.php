@@ -8,9 +8,12 @@ use Khusseini\PimcoreRadBrickBundle\ContextInterface;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class MapConfiguratorTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testCanMap()
     {
         $source = (object)[

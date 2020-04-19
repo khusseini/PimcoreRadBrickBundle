@@ -3,6 +3,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/khusseini/PimcoreRadBrickBundle/badge.svg?branch=1.x)](https://coveralls.io/github/khusseini/PimcoreRadBrickBundle?branch=1.x)
 [![License](https://poser.pugx.org/khusseini/pimcore-radbrick/license)](https://packagist.org/packages/khusseini/pimcore-radbrick)
 
+
 # PimcoreRadBrickBundle
 
 A RAD way to create Areabricks in Pimcore

@@ -10,9 +10,12 @@ use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class DatasourceConfiguratorTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testCanPreCreate()
     {
         $service = new class($this) {

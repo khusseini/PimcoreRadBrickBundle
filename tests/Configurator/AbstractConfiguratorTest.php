@@ -9,10 +9,13 @@ use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AbstractConfiguratorTest extends TestCase
 {
+    use ProphecyTrait;
+
     protected function getInstance()
     {
         $configurator = new class() extends AbstractConfigurator {

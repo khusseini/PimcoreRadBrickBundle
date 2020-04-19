@@ -12,11 +12,14 @@ use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
 use Pimcore\Templating\Model\ViewModel;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AreabrickConfiguratorTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testCanCompileAreabrick()
     {
         $config = [

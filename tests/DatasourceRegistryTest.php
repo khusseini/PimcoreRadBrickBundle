@@ -6,9 +6,12 @@ namespace Tests\Khusseini\PimcoreRadBrickBundle;
 use InvalidArgumentException;
 use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class DatasourceRegistryTest extends TestCase
 {
+    use ProphecyTrait;
+
     protected function getInstance()
     {
         $instance = new DatasourceRegistry();

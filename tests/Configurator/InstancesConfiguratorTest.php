@@ -8,9 +8,12 @@ use Khusseini\PimcoreRadBrickBundle\ContextInterface;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class InstancesConfiguratorTest extends TestCase
 {
+    use ProphecyTrait;
+
     private function createNumberOfInstancesTestsData($instances)
     {
         $config = [
