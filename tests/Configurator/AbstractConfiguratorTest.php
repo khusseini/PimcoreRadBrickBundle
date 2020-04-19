@@ -3,8 +3,11 @@
 namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\Configurator\AbstractConfigurator;
+use Khusseini\PimcoreRadBrickBundle\Configurator\ConfiguratorData;
+use Khusseini\PimcoreRadBrickBundle\ContextInterface;
+use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
-use Khusseini\PimcoreRadBrickBundle\Renderer;
+use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -25,9 +28,9 @@ class AbstractConfiguratorTest extends TestCase
                 ];
             }
 
-            public function doCreateEditables(Renderer $renderer, string $name, array $data): void
+            public function doCreateEditables(RenderArgumentEmitter $emitter, string $name, ConfiguratorData $data): void
             {
-                $renderer->emitArgument($renderer->get($name));
+                $emitter->emitArgument($emitter->get($name));
             }
 
             public function configureEditableOptions(OptionsResolver $or): void
@@ -63,18 +66,24 @@ class AbstractConfiguratorTest extends TestCase
             ],
         ];
 
-        $renderer = new Renderer();
-        $renderer->set($argument);
+        $context = $this->prophesize(ContextInterface::class);
 
         foreach ($cases as $case) {
+            $context->toArray()
+                ->will(
+                    function () use ($case) {
+                        return $case['context'];
+                    }
+                );
+            $emitter = new RenderArgumentEmitter();
+            $emitter->set($argument);
+            $data = new ConfiguratorData($context->reveal());
+            $data->setConfig($argument->getValue());
             $c->createEditables(
-                $renderer, 'testedit', [
-                'editable' => $argument->getValue(),
-                'context' => $case['context'],
-                ]
+                $emitter, 'testedit', $data
             );
 
-            $actual = $renderer->emit();
+            $actual = $emitter->emit();
             $actual = iterator_to_array($actual);
 
             $this->assertCount(1, $actual);

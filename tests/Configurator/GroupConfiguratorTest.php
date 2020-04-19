@@ -2,9 +2,12 @@
 
 namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 
+use Khusseini\PimcoreRadBrickBundle\Configurator\ConfiguratorData;
+use Khusseini\PimcoreRadBrickBundle\Configurator\DatasourceConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\GroupConfigurator;
+use Khusseini\PimcoreRadBrickBundle\ContextInterface;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
-use Khusseini\PimcoreRadBrickBundle\Renderer;
+use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
 
 class GroupConfiguratorTest extends TestCase
@@ -12,8 +15,7 @@ class GroupConfiguratorTest extends TestCase
     public function testCanModifyConfiguration()
     {
         $configurator = new GroupConfigurator();
-        $data = new \ArrayObject();
-        $data['config'] = ['areabricks' => [
+        $config = ['areabricks' => [
             'test' => [
                 'groups' => [
                     'boxes' => [
@@ -28,17 +30,22 @@ class GroupConfiguratorTest extends TestCase
             ],
         ]];
 
+        $context = $this->prophesize(ContextInterface::class);
+        $data = new ConfiguratorData($context->reveal());
+        $data->setConfig($config);
         $configurator->preCreateEditables('test', $data);
-        $brick = $data['config']['areabricks']['test'];
+        $config = $data->getConfig();
+        $brick = $config['areabricks']['test'];
         $editable = $brick['editables']['test'];
         $this->assertArrayHasKey('prop', $editable);
         $argument = new RenderArgument('editable', 'test', []);
-        $renderer = new Renderer();
-        $renderer->set($argument);
-        $configurator->doCreateEditables($renderer, 'test', $editable);
-        $renderArguments = iterator_to_array($renderer->emit());
-        $configurator->postCreateEditables('test', $brick, $renderer);
-        $renderArguments = iterator_to_array($renderer->emit());
+        $emitter = new RenderArgumentEmitter();
+        $emitter->set($argument);
+        $data->setConfig($editable);
+        $configurator->doCreateEditables($emitter, 'test', $data);
+        $renderArguments = iterator_to_array($emitter->emit());
+        $configurator->postCreateEditables('test', $brick, $emitter);
+        $renderArguments = iterator_to_array($emitter->emit());
         $this->assertArrayHasKey('boxes', $renderArguments);
         $boxes = $renderArguments['boxes'];
         $this->assertEquals('collection', $boxes->getType());

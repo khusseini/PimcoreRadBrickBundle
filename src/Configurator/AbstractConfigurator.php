@@ -4,13 +4,13 @@ namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\ExpressionLanguage\ExpressionWrapper;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
-use Khusseini\PimcoreRadBrickBundle\Renderer;
+use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 abstract class AbstractConfigurator implements IConfigurator
 {
     /**
-     * @var ExpressionWrapper 
+     * @var ExpressionWrapper
      */
     private $expressionWrapper;
 
@@ -28,76 +28,68 @@ abstract class AbstractConfigurator implements IConfigurator
      * @param array<array> $data
      */
     abstract public function doCreateEditables(
-        Renderer $rednerer,
+        RenderArgumentEmitter $emitter,
         string $name,
-        array $data
+        ConfiguratorData $data
     ): void;
 
     /**
-     * @return array<string>
+     * @return             array<string>
+     * @codeCoverageIgnore
      */
     public function getEditablesExpressionAttributes(): array
     {
         return [];
     }
 
-    /**
-     * @param array<mixed> $options
-     *
-     * @return array<mixed>
-     */
-    protected function resolveDataOptions(array $options): array
-    {
-        $or = new OptionsResolver();
-        $or
-            ->setDefault('editable', [])
-            ->setDefault('context', []);
-        return $or->resolve($options);
-    }
-
     public function createEditables(
-        Renderer $renderer,
+        RenderArgumentEmitter $emitter,
         string $name,
-        array $data
+        ConfiguratorData $data
     ): void {
-        $argument = $renderer->get($name);
-        $data = $this->resolveDataOptions($data);
+        $argument = $emitter->get($name);
         $attributes = $this->getEditablesExpressionAttributes();
         $data = $this->evaluateExpressions($data, $attributes);
 
         $argument = new RenderArgument(
             $argument->getType(),
             $argument->getName(),
-            $data['editable']
+            $data->getConfig()
         );
 
-        $renderer->set($argument);
-
-        $this->doCreateEditables(
-            $renderer,
-            $name,
-            $data
-        );
-    }
-
-    public function preCreateEditables(string $brickName, \ArrayObject $data): array
-    {
-        return [];
-    }
-
-    public function postCreateEditables(string $brickName, array $config, Renderer $renderer): void
-    {
+        $emitter->set($argument);
+        $this->doCreateEditables($emitter, $name, $data);
     }
 
     /**
-     * @param array<mixed>  $data
-     * @param array<string> $attributes
-     *
-     * @return array<mixed>
+     * @codeCoverageIgnore
      */
-    protected function evaluateExpressions(array $data, array $attributes)
+    public function preCreateEditables(string $brickName, ConfiguratorData $data): void
     {
-        return $this->getExpressionWrapper()->evaluateExpressions($data, $attributes, '[context]');
+        return;
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    public function postCreateEditables(string $brickName, array $config, RenderArgumentEmitter $emitter): void
+    {
+        return;
+    }
+
+    /**
+     * @param array<string> $attributes
+     */
+    protected function evaluateExpressions(ConfiguratorData $data, array $attributes): ConfiguratorData
+    {
+        $input = [
+            'editable' => $data->getConfig(),
+            'context' => $data->getContext()->toArray(),
+        ];
+
+        $config = $this->getExpressionWrapper()->evaluateExpressions($input, $attributes, '[context]');
+        $data->setConfig($config['editable']);
+        return $data;
     }
 
     protected function getExpressionWrapper(): ExpressionWrapper

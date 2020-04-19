@@ -2,10 +2,11 @@
 
 namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 
+use Khusseini\PimcoreRadBrickBundle\Configurator\ConfiguratorData;
 use Khusseini\PimcoreRadBrickBundle\Configurator\MapConfigurator;
-use Khusseini\PimcoreRadBrickBundle\RenderArgs;
+use Khusseini\PimcoreRadBrickBundle\ContextInterface;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
-use Khusseini\PimcoreRadBrickBundle\Renderer;
+use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use PHPUnit\Framework\TestCase;
 
 class MapConfiguratorTest extends TestCase
@@ -29,31 +30,29 @@ class MapConfiguratorTest extends TestCase
         ];
 
         $mapConfig = new MapConfigurator();
-
         $arguments = new RenderArgument(
             'editable',
             'test',
             ['overwrite' => 'me']
         );
 
-        $renderer = new Renderer();
-        $renderer->set($arguments);
+        $emitter = new RenderArgumentEmitter();
+        $emitter->set($arguments);
 
-        $mapConfig->createEditables(
-            $renderer,
-            'test',
-            [
-                'context' => ['source' => $source],
-                'editable' => $editables['test']
-            ]
-        );
+        $context = $this->prophesize(ContextInterface::class);
+        $context
+            ->toArray()
+            ->willReturn(['source' => $source]);
 
-        $actual = iterator_to_array($renderer->emit());
+        $data = new ConfiguratorData($context->reveal());
+        $data->setConfig($editables['test']);
+        $mapConfig->createEditables($emitter, 'test', $data);
+
+        $actual = iterator_to_array($emitter->emit());
         $this->assertCount(1, $actual);
         $actual = $actual['test'];
 
         $expected = 'hello world';
-
         $this->assertEquals($expected, $actual->getValue()['overwrite']);
     }
 }

@@ -2,6 +2,9 @@
 
 namespace Khusseini\PimcoreRadBrickBundle\ExpressionLanguage;
 
+use InvalidArgumentException;
+use Khusseini\PimcoreRadBrickBundle\Context;
+use Khusseini\PimcoreRadBrickBundle\ContextInterface;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\PropertyAccess\Exception\AccessException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -10,12 +13,12 @@ use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 class ExpressionWrapper
 {
     /**
-     * @var ExpressionLanguage 
+     * @var ExpressionLanguage
      */
     private $expressionLanguage;
 
     /**
-     * @var PropertyAccessorInterface 
+     * @var PropertyAccessorInterface
      */
     private $propAccess;
 

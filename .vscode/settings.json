@@ -2,5 +2,6 @@
     "files.autoSave": "afterDelay",
     "phpcs.standard": "PSR2",
     "coverage-gutters.coverageReportFileName": ".phpunit/**/coverage.xml",
-    "php-cs-fixer.rules": "@PSR2"
+    "php-cs-fixer.rules": "@PSR2",
+    "editor.codeLens": true
 }

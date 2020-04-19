@@ -3,7 +3,7 @@
 namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
-use Khusseini\PimcoreRadBrickBundle\Renderer;
+use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class GroupConfigurator extends AbstractConfigurator
@@ -39,9 +39,9 @@ class GroupConfigurator extends AbstractConfigurator
         return $or->resolve($config);
     }
 
-    public function preCreateEditables(string $brickName, \ArrayObject $data): array
+    public function preCreateEditables(string $brickName, ConfiguratorData $data): void
     {
-        $config = $data['config'];
+        $config = $data->getConfig();
         $brick = $this->resolveBrickConfig($config['areabricks'][$brickName]);
 
         $groups = $brick['groups'];
@@ -63,17 +63,15 @@ class GroupConfigurator extends AbstractConfigurator
 
         $brick['editables'] = $editables;
         $config['areabricks'][$brickName] = $brick;
-        $data['config'] = $config;
-
-        return [];
+        $data->setConfig($config);
     }
 
-    public function doCreateEditables(Renderer $renderer, string $name, array $data): void
+    public function doCreateEditables(RenderArgumentEmitter $emitter, string $name, ConfiguratorData $data): void
     {
         return;
     }
 
-    public function postCreateEditables(string $brickName, array $config, Renderer $renderer): void
+    public function postCreateEditables(string $brickName, array $config, RenderArgumentEmitter $emitter): void
     {
         if (!$config['groups']) {
             return;
@@ -87,14 +85,14 @@ class GroupConfigurator extends AbstractConfigurator
             if (!in_array($config['group'], $groups)) {
                 continue;
             }
-            if (!$renderer->has($name)) {
+            if (!$emitter->has($name)) {
                 continue;
             }
             $groupName = $config['group'];
             if (!isset($groupArguments[$groupName])) {
                 $groupArguments[$groupName] = [];
             }
-            $renderArg = $renderer->get($name);
+            $renderArg = $emitter->get($name);
 
             if ($renderArg->getType() === 'collection') {
                 $values = $renderArg->getValue();
@@ -123,7 +121,7 @@ class GroupConfigurator extends AbstractConfigurator
             }
 
             $argument = new RenderArgument('collection', $name, $argumentValue);
-            $renderer->emitArgument($argument);
+            $emitter->emitArgument($argument);
         }
     }
 }
