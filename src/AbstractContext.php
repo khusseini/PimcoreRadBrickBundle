@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Request as RequestInterface;
 /**
  * @codeCoverageIgnore
  */
-class Context implements ContextInterface
+class AbstractContext implements ContextInterface
 {
     /**
      * @var ViewModelInterface 
