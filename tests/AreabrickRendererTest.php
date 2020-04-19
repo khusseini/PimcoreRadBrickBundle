@@ -4,8 +4,6 @@ namespace Tests\Khusseini\PimcoreRadBrickBundle;
 
 use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
 use Khusseini\PimcoreRadBrickBundle\AreabrickRenderer;
-use Khusseini\PimcoreRadBrickBundle\Areabricks\AbstractAreabrick;
-use Khusseini\PimcoreRadBrickBundle\Context;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use PHPUnit\Framework\TestCase;
 use Pimcore\Model\Document\PageSnippet;

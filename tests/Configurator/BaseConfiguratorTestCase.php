@@ -14,22 +14,23 @@ use Tests\Khusseini\PimcoreRadBrickBundle\AbstractTestCase;
 
 abstract class BaseConfiguratorTestCase extends AbstractTestCase
 {
-    abstract function getInstance(string $case): AbstractConfigurator;
+    abstract public function getInstance(string $case): AbstractConfigurator;
 
-    abstract function getSupportsEditableCases(): array;
+    abstract public function getSupportsEditableCases(): array;
 
-    abstract function getPreCreateEditablesData(): array;
+    abstract public function getPreCreateEditablesData(): array;
 
-    abstract function getDoCreateEditablesData(): array;
+    abstract public function getDoCreateEditablesData(): array;
 
-    abstract function testConfigureEditableOptions();
+    abstract public function testConfigureEditableOptions();
 
     public function getCreateEditablesData(): array
     {
-        return [['skip','','',function(){},null,true]];
+        return [['skip','','',function () {
+        },null,true]];
     }
 
-    abstract function getPostCreateEditablesData(): array;
+    abstract public function getPostCreateEditablesData(): array;
 
     public function supportsEditableData()
     {
@@ -179,7 +180,6 @@ abstract class BaseConfiguratorTestCase extends AbstractTestCase
 
     protected function setCreateEditablesArguments(string $case, RenderArgumentEmitter $emitter): void
     {
-
     }
 
     public function postCreateEditablesData()
@@ -226,7 +226,6 @@ abstract class BaseConfiguratorTestCase extends AbstractTestCase
 
     protected function setPostCreateEditablesArguments(string $case, RenderArgumentEmitter $emitter): void
     {
-
     }
 
 

@@ -240,7 +240,6 @@ YAML;
 
     public function testCanCreateEditable()
     {
-
         $instance = new DatasourceConfigurator();
         $config = <<<YAML
 editable:

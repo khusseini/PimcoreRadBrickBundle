@@ -23,13 +23,13 @@ class GroupConfiguratorTest extends BaseConfiguratorTestCase
             [
                 'positive',
                 'group: boxes',
-                function(bool $actual) {
+                function (bool $actual) {
                     self::assertTrue($actual);
                 },
             ], [
                 'negative',
                 'type: input',
-                function(bool $acutal) {
+                function (bool $acutal) {
                     self::assertFalse($acutal);
                 }
             ]
@@ -72,7 +72,7 @@ YAML;
                 'successCase',
                 $successCase,
                 'test',
-                function(ConfiguratorData $data) {
+                function (ConfiguratorData $data) {
                     $config = $data->getConfig();
                     $brick = $config['areabricks']['test'];
                     $editable = $brick['editables']['test'];
@@ -82,7 +82,7 @@ YAML;
                 'skipCase',
                 $skipCase,
                 'test',
-                function(ConfiguratorData $data) {
+                function (ConfiguratorData $data) {
                     $config = $data->getConfig();
                     $brick = $config['areabricks']['test'];
                     $editable = $brick['editables']['test'];
@@ -92,7 +92,8 @@ YAML;
                 'exceptionCase',
                 $exceptionCase,
                 'test',
-                function(){},
+                function () {
+                },
                 InvalidArgumentException::class
             ]
         ];
@@ -100,7 +101,8 @@ YAML;
 
     public function getDoCreateEditablesData(): array
     {
-        return [['skip','','',function(){},'',true]];
+        return [['skip','','',function () {
+        },'',true]];
     }
 
     public function getPostCreateEditablesData(): array
@@ -153,7 +155,7 @@ YAML;
                 'single_editable',
                 $singleEditable,
                 'test',
-                function(RenderArgumentEmitter $emitter) {
+                function (RenderArgumentEmitter $emitter) {
                     $renderArguments = iterator_to_array($emitter->emit());
                     self::assertCount(1, $renderArguments);
                     self::assertArrayHasKey('boxes', $renderArguments);
@@ -173,7 +175,7 @@ YAML;
                 'no_editable',
                 $noEditable,
                 'test',
-                function(RenderArgumentEmitter $emitter) {
+                function (RenderArgumentEmitter $emitter) {
                     $renderArguments = iterator_to_array($emitter->emit());
                     self::assertCount(0, $renderArguments);
                 }
@@ -189,7 +191,7 @@ YAML;
                 'multiple_editables',
                 $multipleEditables,
                 'test',
-                function(RenderArgumentEmitter $emitter) {
+                function (RenderArgumentEmitter $emitter) {
                     $renderArguments = iterator_to_array($emitter->emit());
                     self::assertCount(2, $renderArguments);
                     self::assertArrayHasKey('boxes', $renderArguments);
@@ -222,7 +224,7 @@ YAML;
         }
 
         $items = [];
-        for($i = 0; $i < 5; ++$i) {
+        for ($i = 0; $i < 5; ++$i) {
             $config = ['group' => 'boxes', 'prop' => 'value'];
             $items[] = new RenderArgument('editable', (string)$i, $config);
         }
