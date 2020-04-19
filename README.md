@@ -1,6 +1,8 @@
 # PimcoreRadBrickBundle
 A RAD way to create Areabricks in Pimcore
 
+[![Coverage Status](https://coveralls.io/repos/github/khusseini/PimcoreRadBrickBundle/badge.svg)](https://coveralls.io/github/khusseini/PimcoreRadBrickBundle)
+
 
 ## Purpose
 
