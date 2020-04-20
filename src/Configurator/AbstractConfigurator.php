@@ -60,7 +60,7 @@ abstract class AbstractConfigurator implements IConfigurator
     /**
      * @codeCoverageIgnore
      */
-    public function postCreateEditables(string $brickName, array $config, RenderArgumentEmitter $emitter): void
+    public function postCreateEditables(string $brickName, ConfiguratorData $data, RenderArgumentEmitter $emitter): void
     {
         return;
     }

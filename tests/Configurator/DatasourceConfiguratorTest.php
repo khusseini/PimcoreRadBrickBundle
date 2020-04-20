@@ -2,19 +2,50 @@
 
 namespace Tests\Khusseini\PimcoreRadBrickBundle\Configurator;
 
+use Khusseini\PimcoreRadBrickBundle\Configurator\AbstractConfigurator;
 use Khusseini\PimcoreRadBrickBundle\Configurator\ConfiguratorData;
 use Khusseini\PimcoreRadBrickBundle\Configurator\DatasourceConfigurator;
 use Khusseini\PimcoreRadBrickBundle\ContextInterface;
 use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
-use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
-use Prophecy\Argument;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Tests\Khusseini\PimcoreRadBrickBundle\AbstractTestCase;
 
-class DatasourceConfiguratorTest extends AbstractTestCase
+class DatasourceConfiguratorTest extends BaseConfiguratorTestCase
 {
-    public function canPreCreateData()
+    /**
+     * @return DatasourceConfigurator
+     */
+    public function getInstance(string $case): AbstractConfigurator
+    {
+        return new DatasourceConfigurator();
+    }
+
+    public function getSupportsEditableCases(): array
+    {
+        $positive = <<<YAML
+datasource:
+  name: products
+  id: item.getId()
+YAML;
+
+        return [
+            [
+                'positive',
+                $positive,
+                function (bool $actual) {
+                    self::assertTrue($actual);
+                },
+            ], [
+                'negative',
+                'type: input',
+                function (bool $acutal) {
+                    self::assertFalse($acutal);
+                },
+            ],
+        ];
+    }
+
+    public function getPreCreateEditablesData(): array
     {
         $simpleConfig = <<<YAML
 datasources:
@@ -24,6 +55,14 @@ datasources:
     args:
     - first
     - second
+areabricks:
+  testbrick:
+    datasources:
+      testsource:
+        id: main_source
+        args:
+          first: hello
+          second: world
 YAML;
         $recursiveConfig = <<<YAML
 datasources:
@@ -34,61 +73,6 @@ datasources:
     - sub:
         first: first
         second: second
-YAML;
-
-        return [
-            [
-                $simpleConfig,
-                function (string $first, string $second) {
-                    $this->assertEquals('hello', $first);
-                    $this->assertEquals('world', $second);
-                },
-            ], [
-                $recursiveConfig,
-                function (array $first) {
-                    $this->assertArrayHasKey('sub', $first);
-                    $sub = $first['sub'];
-                    $this->assertArrayHasKey('first', $sub);
-                    $this->assertArrayHasKey('second', $sub);
-                    $this->assertEquals('hello', $sub['first']);
-                    $this->assertEquals('world', $sub['second']);
-                },
-            ],
-        ];
-    }
-
-    /**
-     * @dataProvider canPreCreateData
-     */
-    public function testCanPreCreate(string $yaml, callable $assert)
-    {
-        $config = $this->parseYaml($yaml);
-
-        $service = new class($assert) {
-            private $tester;
-
-            public function __construct($tester)
-            {
-                $this->tester = $tester;
-            }
-
-            public function getData(...$args): array
-            {
-                $tester = $this->tester;
-                $tester(...$args);
-
-                return  [0, 1, 2, 3];
-            }
-        };
-
-        foreach ($config['datasources'] as $name => $dsconfig) {
-            if ('service_object' === $dsconfig['service_id']) {
-                $dsconfig['service_id'] = $service;
-                $config['datasources'][$name] = $dsconfig;
-            }
-        }
-
-        $areabricks = <<<YAML
 areabricks:
   testbrick:
     datasources:
@@ -99,27 +83,203 @@ areabricks:
           second: world
 YAML;
 
-        $areabricks = $this->parseYaml($areabricks);
-        $config['areabricks'] = $areabricks['areabricks'];
+        return [
+            [
+                'simple',
+                $simpleConfig,
+                'testbrick',
+                function (ConfiguratorData $data) {
+                    $datasources = $data->getContext()->getDatasources();
+                    self::assertTrue($datasources->has('testsource'));
+                },
+            ], [
+                'recursive',
+                $recursiveConfig,
+                'testbrick',
+                function (ConfiguratorData $data) {
+                    $datasources = $data->getContext()->getDatasources();
+                    self::assertTrue($datasources->has('testsource'));
+                },
+            ],
+        ];
+    }
 
-        $instance = new DatasourceConfigurator();
-        $container = new \ArrayObject();
-        $context = $this->prophesize(ContextInterface::class);
-        $context->toArray()->willReturn([]);
-        $context->setDatasources(Argument::any())
-            ->will(
-                function ($args) use ($container) {
-                    $container['datasources'] = $args[0];
-                }
-            );
+    public function getDoCreateEditablesData(): array
+    {
+        $simpleConfig = <<<YAML
+areabricks:
+  testbrick:
+    editables:
+      testeditable:
+        options:
+          bla: ''
+        datasource:
+          name: testsource
+YAML;
+        $invalidDatasource = <<<YAML
+areabricks:
+  testbrick:
+    editables:
+      testeditable:
+        options:
+          bla: ''
+        datasource:
+          name: doesnotexist
+YAML;
+        $skipEditable = <<<YAML
+areabricks:
+  testbrick:
+    editables:
+      testeditable:
+        options:
+          bla: ''
+YAML;
 
-        $data = new ConfiguratorData($context->reveal());
-        $data->setConfig($config);
-        $instance->preCreateEditables('testbrick', $data);
-        $context = $data->getContext();
+        return [
+            [
+                'simple_config',
+                $simpleConfig,
+                'testbrick',
+                function (RenderArgumentEmitter $emitter) {
+                    $actual = iterator_to_array($emitter->emit());
+                    self::assertCount(2, $actual);
 
-        self::assertTrue(isset($container['datasources']));
-        self::assertInstanceOf(DatasourceRegistry::class, $container['datasources']);
+                    $types = [];
+                    $collectionContent = [];
+                    foreach ($actual as $actualArgument) {
+                        $types[] = $actualArgument->getType();
+                        if ('collection' === $actualArgument->getType()) {
+                            $collectionContent = $actualArgument->getValue();
+                        }
+                    }
+
+                    $expectedTypes = ['data', 'collection'];
+                    $this->assertSame($expectedTypes, $types);
+                    $this->assertCount(4, $collectionContent);
+                },
+            ], [
+                'no_datasource',
+                $simpleConfig,
+                'testbrick',
+                function (RenderArgumentEmitter $emitter) {
+                    $actual = iterator_to_array($emitter->emit());
+                    self::assertCount(0, $actual);
+                },
+            ], [
+                'simple_config',
+                $invalidDatasource,
+                'testbrick',
+                function (RenderArgumentEmitter $emitter) {
+                    $actual = iterator_to_array($emitter->emit());
+                    self::assertCount(1, $actual);
+                },
+            ], [
+                'simple_config',
+                $skipEditable,
+                'testbrick',
+                function (RenderArgumentEmitter $emitter) {
+                    $actual = iterator_to_array($emitter->emit());
+                    self::assertCount(0, $actual);
+                },
+            ],
+        ];
+    }
+
+    public function getPostCreateEditablesData(): array
+    {
+        $simpleConfig = <<<YAML
+datasources:
+  main_source:
+    service_id: service_object
+    method: getData
+    args:
+    - first
+    - second
+areabricks:
+  testbrick:
+    datasources:
+      testsource:
+        id: main_source
+        args:
+          first: hello
+          second: world
+YAML;
+
+        return [
+            [
+                'simple_config',
+                $simpleConfig,
+                'testbrick',
+                function (RenderArgumentEmitter $emitter) {
+                    $renderArguments = $emitter->emit();
+                    $renderArguments = iterator_to_array($renderArguments);
+                    self::assertCount(1, $renderArguments);
+                    self::assertArrayHasKey('testsource', $renderArguments);
+                    self::assertSame([0, 1, 2, 3], $renderArguments['testsource']->getValue());
+                },
+            ],
+        ];
+    }
+
+    public function testConfigureEditableOptions()
+    {
+        $or = new OptionsResolver();
+        $instance = $this->getInstance('');
+        $instance->configureEditableOptions($or);
+        self::assertTrue($or->isDefined('datasource'));
+    }
+
+    protected function getContext(string $case)
+    {
+        $context = parent::getContext($case);
+        if ('no_datasources' === $case) {
+            return $context;
+        }
+        $service = new class() {
+            public function getData(...$args): array
+            {
+                return  [0, 1, 2, 3];
+            }
+        };
+        $wrapper = new class($context, $service) implements ContextInterface {
+            private $context;
+            private $serviceObject;
+
+            public function __construct(ContextInterface $context, $service)
+            {
+                $this->context = $context;
+                $this->serviceObject = $service;
+            }
+
+            public function setDatasources(DatasourceRegistry $datasourceRegistry): void
+            {
+                $this->context->setDatasources($datasourceRegistry);
+            }
+
+            public function getDatasources(): ?DatasourceRegistry
+            {
+                return $this->context->getDatasources();
+            }
+
+            public function toArray(): array
+            {
+                $inner = $this->context->toArray();
+                $inner['service_object'] = $this->serviceObject;
+
+                return $inner;
+            }
+        };
+
+        if ('simple_config' === $case) {
+            $registry = new DatasourceRegistry();
+            $context->setDatasources($registry);
+
+            $registry->add('testsource', function () use ($service) {
+                return $service->getData();
+            });
+        }
+
+        return $wrapper;
     }
 
     public function canGenerateDatasourcesData()
@@ -173,41 +333,16 @@ YAML;
      */
     public function testCanGenerateDatasources(string $config)
     {
-        $service = new class() {
-            public function getData(...$args): array
-            {
-                return  [0, 1, 2, 3];
-            }
-        };
-
         $config = $this->parseYaml($config);
-        foreach ($config['datasources'] as $name => $dsconfig) {
-            if ('service_object' === $dsconfig['service_id']) {
-                $dsconfig['service_id'] = $service;
-                $config['datasources'][$name] = $dsconfig;
-            }
-        }
 
-        $container = new \ArrayObject();
-        $context = $this->prophesize(ContextInterface::class);
-        $context->toArray()->willReturn([
-            'dummy' => 'hello world',
-        ]);
-        $context->setDatasources(Argument::any())
-            ->will(
-                function ($args) use ($container) {
-                    $container['datasources'] = $args[0];
-                }
-            );
-        $context->getDatasources()->will(function () use ($container) {
-            return $container['datasources'];
-        });
+        $context = $this->getContext(__METHOD__);
 
-        $data = new ConfiguratorData($context->reveal());
+        $data = new ConfiguratorData($context);
         $data->setConfig($config);
+
         $emitter = new RenderArgumentEmitter();
 
-        $instance = new DatasourceConfigurator();
+        $instance = $this->getInstance(__METHOD__);
         $instance->preCreateEditables('testbrick', $data);
         $instance->generateDatasources($emitter, $data);
 
@@ -216,133 +351,5 @@ YAML;
         self::assertCount(1, $renderArguments);
         self::assertArrayHasKey('testsource', $renderArguments);
         self::assertSame([0, 1, 2, 3], $renderArguments['testsource']->getValue());
-    }
-
-    private function buildDatasourceRegistryWithItems($itemCount)
-    {
-        $items = [];
-        $createItem = function ($id) {
-            return (object) ['id' => $id];
-        };
-
-        for ($i = 0; $i < $itemCount; ++$i) {
-            $items[] = $createItem($i + 1);
-        }
-
-        $registry = new DatasourceRegistry();
-        $registry->add(
-            'test_source',
-            function () use ($items) {
-                return $items;
-            }
-        );
-
-        return $registry;
-    }
-
-    public function testCanCreateEditable()
-    {
-        $instance = new DatasourceConfigurator();
-        $config = <<<YAML
-editable:
-  options:
-    bla: ''
-  datasource:
-    name: test_source
-    id: item.id
-YAML;
-        $config = $this->parseYaml($config);
-        $itemCount = 5;
-        $contextData = [
-            'datasources' => $this->buildDatasourceRegistryWithItems($itemCount),
-        ];
-
-        $argument = new RenderArgument('editable', 'test', ['options' => ['bla' => '']]);
-        $emitter = new RenderArgumentEmitter();
-        $emitter->set($argument);
-
-        $context = $this->prophesize(ContextInterface::class);
-        $context->toArray()->willReturn($contextData);
-        $context->getDatasources()->willReturn($contextData['datasources']);
-
-        $data = new ConfiguratorData($context->reveal());
-        $data->setConfig($config['editable']);
-
-        $instance->doCreateEditables($emitter, 'test', $data);
-        $actual = iterator_to_array($emitter->emit());
-
-        self::assertCount(2, $actual);
-
-        $types = [];
-        $collectionContent = [];
-        foreach ($actual as $actualArgument) {
-            $types[] = $actualArgument->getType();
-            if ('collection' === $actualArgument->getType()) {
-                $collectionContent = $actualArgument->getValue();
-            }
-        }
-
-        $expectedTypes = ['data', 'collection'];
-        $this->assertSame($expectedTypes, $types);
-        $this->assertCount($itemCount, $collectionContent);
-    }
-
-    public function skipCreateEditablesData()
-    {
-        return [
-            [true], [false],
-        ];
-    }
-
-    /**
-     * @dataProvider skipCreateEditablesData
-     */
-    public function testSkipCreateEditables(bool $withDatasources)
-    {
-        $config = <<<YAML
-areabricks:
-  testbrick:
-    editables:
-      hello:
-        type: world
-YAML;
-        $config = $this->parseYaml($config);
-
-        $context = $this->prophesize(ContextInterface::class);
-        $context->toArray()->willReturn([]);
-        if ($withDatasources) {
-            $context->getDatasources()->willReturn(
-                new DatasourceRegistry()
-            );
-        } else {
-            $context->getDatasources()->willReturn(null);
-        }
-
-        $argument = new RenderArgument('editable', 'hello', ['type' => 'world']);
-        $emitter = new RenderArgumentEmitter();
-
-        $data = new ConfiguratorData($context->reveal());
-        $data->setConfig($config['areabricks']['testbrick']);
-
-        $instance = new DatasourceConfigurator();
-        $instance->doCreateEditables($emitter, 'test', $data);
-
-        $generator = $emitter->emit();
-        $generator = iterator_to_array($generator);
-
-        self::assertFalse($emitter->isArgumentEmitted($argument));
-    }
-
-    public function testEditableOptions()
-    {
-        $instance = new DatasourceConfigurator();
-        $or = new OptionsResolver();
-        $instance->configureEditableOptions($or);
-        self::assertTrue($or->hasDefault('datasource'));
-    }
-
-    public function testAlwaysSupports()
-    {
-        self::assertTrue((new DatasourceConfigurator())->supportsEditable('ignored', ['also ignored']));
     }
 }

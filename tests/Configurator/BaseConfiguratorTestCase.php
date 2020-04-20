@@ -120,17 +120,18 @@ abstract class BaseConfiguratorTestCase extends AbstractTestCase
 
         $config = $this->parseYaml($config);
         $context = $this->getContext($case);
-        $data = new ConfiguratorData($context);
-        $data->setConfig($config);
 
-        $emitter = new RenderArgumentEmitter();
         $brick = $config['areabricks'][$brickName];
-        foreach ($brick['editables'] as $name => $value) {
-            $emitter->set(new RenderArgument('editable', $name, $value));
-        }
+
+        $data = new ConfiguratorData($context);
 
         $instance = $this->getInstance($case);
-        $instance->doCreateEditables($emitter, $brickName, $data);
+        $emitter = new RenderArgumentEmitter();
+        foreach ($brick['editables'] as $name => $value) {
+            $data->setConfig($value);
+            $emitter->set(new RenderArgument('editable', $name, $value));
+            $instance->doCreateEditables($emitter, $name, $data);
+        }
 
         $assert($emitter);
     }
@@ -207,18 +208,21 @@ abstract class BaseConfiguratorTestCase extends AbstractTestCase
 
         $config = $this->parseYaml($config);
         $context = $this->getContext($case);
-        $data = new ConfiguratorData($context);
-        $data->setConfig($config);
 
         $emitter = new RenderArgumentEmitter();
         $brick = $config['areabricks'][$brickName];
-        foreach ($brick['editables'] as $name => $value) {
-            $emitter->set(new RenderArgument('editable', $name, $value));
+        if (isset($brick['editables'])) {
+            foreach (@$brick['editables'] as $name => $value) {
+                $emitter->set(new RenderArgument('editable', $name, $value));
+            }
         }
         $this->setPostCreateEditablesArguments($case, $emitter);
 
+        $data = new ConfiguratorData($context);
+        $data->setConfig($brick);
+
         $instance = $this->getInstance($case);
-        $instance->postCreateEditables($brickName, $brick, $emitter);
+        $instance->postCreateEditables($brickName, $data, $emitter);
 
         $assert($emitter);
     }
