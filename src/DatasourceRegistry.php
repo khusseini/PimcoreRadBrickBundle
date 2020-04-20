@@ -36,13 +36,18 @@ class DatasourceRegistry
      */
     public function execute(string $name, array $args = [])
     {
-        if (!property_exists($this->datasources, $name)) {
+        if (!$this->has($name)) {
             throw new InvalidArgumentException(sprintf('Datasource \'%s\' not found.', $name));
         }
 
         $ds = $this->datasources->{$name};
 
         return $ds(...$args);
+    }
+
+    public function has(string $name)
+    {
+        return property_exists($this->datasources, $name);
     }
 
     public function executeAll(): \Generator

@@ -15,14 +15,20 @@ class DatasourceConfigurator extends AbstractConfigurator
     {
         $config = $this->resolveConfig($data->getConfig());
         $context = $data->getContext();
+        $contextArray = $context->toArray();
 
         $brickConfig = $this->resolveBrickconfig($config['areabricks'][$brickName]);
         $registry = new DatasourceRegistry();
         foreach ($brickConfig['datasources'] as $id => $datasourceConfig) {
             $dsId = $datasourceConfig['id'];
             $dataSource = $config['datasources'][$dsId];
+            $serviceId = $this
+                ->getExpressionWrapper()
+                ->evaluateExpression($dataSource['service_id'], $contextArray)
+            ;
+
             $dataCall = $registry->createMethodCall(
-                $dataSource['service_id'],
+                $serviceId,
                 $dataSource['method'],
                 $dataSource['args']
             );
@@ -80,8 +86,6 @@ class DatasourceConfigurator extends AbstractConfigurator
             return;
         }
 
-        $this->generateDatasources($emitter, $data);
-
         $editable = $data->getConfig();
         if (
             !isset($editable['datasource'])
@@ -90,19 +94,28 @@ class DatasourceConfigurator extends AbstractConfigurator
             return;
         }
 
+        $this->generateDatasources($emitter, $data);
+
         $datasourceName = $editable['datasource']['name'];
         $datasourceIdExpression = @$editable['datasource']['id'];
+
+        if (!$emitter->has($datasourceName)) {
+            return;
+        }
+
         $dataArgument = $emitter->get($datasourceName);
 
         unset($editable['datasource']);
         $items = new ArrayObject();
 
         foreach ($dataArgument->getValue() as $i => $item) {
+            //@codeCoverageIgnoreStart
             if ($datasourceIdExpression) {
                 $i = $this
                         ->getExpressionWrapper()
                         ->evaluateExpression($datasourceIdExpression, ['item' => $item]);
             }
+            //@codeCoverageIgnoreEnd
 
             $itemArgument = new RenderArgument('editable', $i, $editable);
             $items[] = $itemArgument;
@@ -119,7 +132,7 @@ class DatasourceConfigurator extends AbstractConfigurator
 
     public function supportsEditable(string $editableName, array $config): bool
     {
-        return true;
+        return isset($config['datasource']) && isset($config['datasource']['id']);
     }
 
     public function configureEditableOptions(OptionsResolver $optionsResolver): void
