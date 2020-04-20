@@ -7,6 +7,7 @@ use Khusseini\PimcoreRadBrickBundle\ContextInterface;
 use Khusseini\PimcoreRadBrickBundle\DatasourceRegistry;
 use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
+use PHP_CodeSniffer\Config;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class DatasourceConfigurator extends AbstractConfigurator
@@ -22,10 +23,13 @@ class DatasourceConfigurator extends AbstractConfigurator
         foreach ($brickConfig['datasources'] as $id => $datasourceConfig) {
             $dsId = $datasourceConfig['id'];
             $dataSource = $config['datasources'][$dsId];
-            $serviceId = $this
-                ->getExpressionWrapper()
-                ->evaluateExpression($dataSource['service_id'], $contextArray)
-            ;
+            $serviceId = $dataSource['service_id'];
+            if (is_string($serviceId)) {
+                $serviceId = $this
+                    ->getExpressionWrapper()
+                    ->evaluateExpression($serviceId, $contextArray)
+                ;
+            }
 
             $dataCall = $registry->createMethodCall(
                 $serviceId,
@@ -138,6 +142,11 @@ class DatasourceConfigurator extends AbstractConfigurator
     public function configureEditableOptions(OptionsResolver $optionsResolver): void
     {
         $optionsResolver->setDefault('datasource', []);
+    }
+
+    public function postCreateEditables(string $brickName, ConfiguratorData $data, RenderArgumentEmitter $emitter): void
+    {
+        $this->generateDatasources($emitter, $data);
     }
 
     /**

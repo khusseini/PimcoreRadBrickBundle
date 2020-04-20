@@ -55,7 +55,7 @@ class AreabrickConfigurator
         $data = new ConfiguratorData($context);
         $data->setConfig($this->resolveAreaBrickConfig($name));
 
-        /**
+        /*
          * @var IConfigurator
          */
         foreach ($this->configurators as $configurator) {
@@ -124,22 +124,14 @@ class AreabrickConfigurator
     /**
      * @param array<array> $config
      *
-     * @return array<array>
+     * @return array<string, array<string,mixed>>
      */
     protected function compileEditablesConfig(array $config): array
     {
         $editablesConfig = $config['editables'];
         $or = new OptionsResolver();
-        $or->setDefaults(
-            [
-            'options' => [],
-            ]
-        );
-        $or->setRequired(
-            [
-            'type',
-            ]
-        );
+        $or->setDefaults(['options' => []]);
+        $or->setRequired(['type']);
 
         foreach ($this->configurators as $configurator) {
             $configurator->configureEditableOptions($or);
@@ -165,10 +157,8 @@ class AreabrickConfigurator
         $editablesConfig = $this->compileEditablesConfig($this->config['areabricks'][$areabrick]);
         $areaBrickConfig = $this->getAreabrickConfig($areabrick);
         $emitter = new RenderArgumentEmitter();
+        $data = new ConfiguratorData($context);
 
-        /**
-         * @var string
-         */
         foreach ($editablesConfig as $editableName => $editableConfig) {
             $argument = new RenderArgument(
                 'editable',
@@ -178,7 +168,6 @@ class AreabrickConfigurator
 
             $emitter->emitArgument($argument);
 
-            $data = new ConfiguratorData($context);
             $data->setConfig($editableConfig);
 
             foreach ($this->configurators as $configurator) {
@@ -190,11 +179,9 @@ class AreabrickConfigurator
             yield from $emitter->emit();
         }
 
-        /**
-         * @var IConfigurator
-         */
+        $data->setConfig($areaBrickConfig);
         foreach ($this->configurators as $configurator) {
-            $configurator->postCreateEditables($areabrick, $areaBrickConfig, $emitter);
+            $configurator->postCreateEditables($areabrick, $data, $emitter);
         }
 
         yield from $emitter->emit();

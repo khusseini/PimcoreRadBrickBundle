@@ -114,7 +114,7 @@ areabricks:
         options:
           bla: ''
         datasource:
-          name: test_source
+          name: testsource
 YAML;
         $invalidDatasource = <<<YAML
 areabricks:
@@ -187,8 +187,38 @@ YAML;
 
     public function getPostCreateEditablesData(): array
     {
-        return [['skip', '', '', function () {
-        }, null, true]];
+        $simpleConfig = <<<YAML
+datasources:
+  main_source:
+    service_id: service_object
+    method: getData
+    args:
+    - first
+    - second
+areabricks:
+  testbrick:
+    datasources:
+      testsource:
+        id: main_source
+        args:
+          first: hello
+          second: world
+YAML;
+
+        return [
+            [
+                'simple_config',
+                $simpleConfig,
+                'testbrick',
+                function (RenderArgumentEmitter $emitter) {
+                    $renderArguments = $emitter->emit();
+                    $renderArguments = iterator_to_array($renderArguments);
+                    self::assertCount(1, $renderArguments);
+                    self::assertArrayHasKey('testsource', $renderArguments);
+                    self::assertSame([0, 1, 2, 3], $renderArguments['testsource']->getValue());
+                },
+            ],
+        ];
     }
 
     public function testConfigureEditableOptions()
@@ -244,7 +274,7 @@ YAML;
             $registry = new DatasourceRegistry();
             $context->setDatasources($registry);
 
-            $registry->add('test_source', function () use ($service) {
+            $registry->add('testsource', function () use ($service) {
                 return $service->getData();
             });
         }

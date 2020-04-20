@@ -80,8 +80,10 @@ class GroupConfigurator extends AbstractConfigurator
         return;
     }
 
-    public function postCreateEditables(string $brickName, array $config, RenderArgumentEmitter $emitter): void
+    public function postCreateEditables(string $brickName, ConfiguratorData $data, RenderArgumentEmitter $emitter): void
     {
+        $config = $data->getConfig();
+
         if (!isset($config['groups'])) {
             return;
         }
