@@ -32,7 +32,9 @@ class AbstractConfiguratorTest extends TestCase
 
             public function doCreateEditables(RenderArgumentEmitter $emitter, string $name, ConfiguratorData $data): void
             {
-                $emitter->emitArgument($emitter->get($name));
+                $argument = $emitter->get($name);
+                $argument = new RenderArgument($argument->getType(), $argument->getName(), $data->getConfig());
+                $emitter->emitArgument($argument);
             }
 
             public function configureEditableOptions(OptionsResolver $or): void

@@ -3,7 +3,6 @@
 namespace Khusseini\PimcoreRadBrickBundle\Configurator;
 
 use Khusseini\PimcoreRadBrickBundle\ExpressionLanguage\ExpressionWrapper;
-use Khusseini\PimcoreRadBrickBundle\RenderArgument;
 use Khusseini\PimcoreRadBrickBundle\RenderArgumentEmitter;
 
 abstract class AbstractConfigurator implements IConfigurator
@@ -45,17 +44,8 @@ abstract class AbstractConfigurator implements IConfigurator
         string $name,
         ConfiguratorData $data
     ): void {
-        $argument = $emitter->get($name);
         $attributes = $this->getEditablesExpressionAttributes();
         $data = $this->evaluateExpressions($data, $attributes);
-
-        $argument = new RenderArgument(
-            $argument->getType(),
-            $argument->getName(),
-            $data->getConfig()
-        );
-
-        $emitter->set($argument);
         $this->doCreateEditables($emitter, $name, $data);
     }
 

@@ -3,6 +3,7 @@
 namespace Khusseini\PimcoreRadBrickBundle\DependencyInjection;
 
 use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
+use Khusseini\PimcoreRadBrickBundle\AreabrickRenderer;
 use Khusseini\PimcoreRadBrickBundle\Areabricks\SimpleBrick;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -50,6 +51,13 @@ class PimcoreRadBrickExtension extends Extension
         );
         $container->setDefinition(AreabrickConfigurator::class, $configurator);
 
+        $rendererDefinition = new Definition(AreabrickRenderer::class, [
+            new Reference(AreabrickConfigurator::class),
+            new Reference('pimcore.templating.tag_renderer'),
+        ]);
+
+        $container->setDefinition(AreabrickRenderer::class, $rendererDefinition);
+
         $areabricks = $config['areabricks'];
         foreach ($areabricks as $id => $aconfig) {
             $target = null;
@@ -62,11 +70,7 @@ class PimcoreRadBrickExtension extends Extension
             if (!$target) {
                 $target = new Definition(
                     SimpleBrick::class,
-                    [
-                    $id,
-                    new Reference('pimcore.templating.tag_renderer'),
-                    new Reference(AreabrickConfigurator::class),
-                    ]
+                    [$id, new Reference(AreabrickRenderer::class)]
                 );
             }
 

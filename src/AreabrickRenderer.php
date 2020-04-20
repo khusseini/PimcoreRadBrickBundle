@@ -2,8 +2,8 @@
 
 namespace Khusseini\PimcoreRadBrickBundle;
 
+use Pimcore\Model\Document\Tag;
 use Pimcore\Model\Document\Tag\Area\Info;
-use Pimcore\Model\Element\Tag;
 use Pimcore\Templating\Renderer\TagRenderer;
 
 class AreabrickRenderer
@@ -94,7 +94,8 @@ class AreabrickRenderer
                 $tag = $renderArgument->getValue();
             }
 
-            $referencesContainer[$referenceId] = $container[$name] = $tag;
+            $referencesContainer[$referenceId] = $tag;
+            $container[$name] = $tag;
         }
     }
 
