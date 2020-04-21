@@ -166,7 +166,8 @@ YAML;
                 'invalid_service',
                 $simpleConfig,
                 'testbrick',
-                function () {},
+                function () {
+                },
                 \InvalidArgumentException::class,
             ],
         ];

@@ -15,7 +15,7 @@ class GroupConfigurator extends AbstractConfigurator
         $or->setAllowedValues(
             'group',
             function ($value) {
-                if (is_null($value)) {
+                if (null === $value) {
                     return true;
                 }
 
@@ -95,7 +95,7 @@ class GroupConfigurator extends AbstractConfigurator
         foreach ($config['editables'] as $name => $config) {
             if (
                 !isset($config['group'])
-                || !in_array($config['group'], $groups)
+                || !\in_array($config['group'], $groups)
             ) {
                 continue;
             }

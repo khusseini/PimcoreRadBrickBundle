@@ -26,15 +26,15 @@ class DatasourceConfigurator extends AbstractConfigurator
             $serviceId = $dataSource['service_id'];
             $serviceObject = null;
 
-            if (is_string($serviceId)) {
+            if (\is_string($serviceId)) {
                 $serviceObject = $this
                     ->getExpressionWrapper()
                     ->evaluateExpression($serviceId, $contextArray)
                 ;
             }
 
-            if (!is_object($serviceObject)) {
-                throw new \InvalidArgumentException(sprintf('Service with id "%s" is not an object. %s given.', $serviceId, gettype($serviceObject)));
+            if (!\is_object($serviceObject)) {
+                throw new \InvalidArgumentException(sprintf('Service with id "%s" is not an object. %s given.', $serviceId, \gettype($serviceObject)));
             }
 
             $dataCall = $registry->createMethodCall(
@@ -63,7 +63,7 @@ class DatasourceConfigurator extends AbstractConfigurator
         $input = [];
         if (
                 isset($config['conditions'])
-                && is_array($config['conditions'])
+                && \is_array($config['conditions'])
                 && !$this->evaluateConditions($config['conditions'], $context)
         ) {
             return [];
@@ -102,13 +102,13 @@ class DatasourceConfigurator extends AbstractConfigurator
      */
     protected function recurseExpression($value, array $context)
     {
-        if (is_string($value)) {
+        if (\is_string($value)) {
             return $this
                 ->getExpressionWrapper()
                 ->evaluateExpression($value, $context);
         }
 
-        if (is_array($value)) {
+        if (\is_array($value)) {
             foreach ($value as $key => $item) {
                 $value[$key] = $this->recurseExpression($item, $context);
             }
