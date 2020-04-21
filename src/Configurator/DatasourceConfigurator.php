@@ -24,15 +24,23 @@ class DatasourceConfigurator extends AbstractConfigurator
             $dsId = $datasourceConfig['id'];
             $dataSource = $config['datasources'][$dsId];
             $serviceId = $dataSource['service_id'];
+            $serviceObject = null;
+
             if (is_string($serviceId)) {
-                $serviceId = $this
+                $serviceObject = $this
                     ->getExpressionWrapper()
                     ->evaluateExpression($serviceId, $contextArray)
                 ;
             }
 
+            if (!is_object($serviceObject)) {
+                throw new \InvalidArgumentException(
+                    sprintf('Service with id "%s" is not an object. %s given.', $serviceId, gettype($serviceObject))
+                );
+            }
+
             $dataCall = $registry->createMethodCall(
-                $serviceId,
+                $serviceObject,
                 $dataSource['method'],
                 $dataSource['args']
             );
@@ -47,6 +55,10 @@ class DatasourceConfigurator extends AbstractConfigurator
         $data->getContext()->setDatasources($registry);
     }
 
+    /**
+     * @param array<string, array<string, mixed>> $config
+     * @return mixed
+     */
     protected function callDatasource(ContextInterface $context, callable $dataCall, array $config)
     {
         $input = [];
@@ -57,6 +69,12 @@ class DatasourceConfigurator extends AbstractConfigurator
         return $dataCall($input);
     }
 
+    /**
+     * @param mixed $value
+     * @param array<string, mixed> $context
+     *
+     * @return mixed
+     */
     protected function recurseExpression($value, array $context)
     {
         if (is_string($value)) {
@@ -77,6 +95,10 @@ class DatasourceConfigurator extends AbstractConfigurator
     public function generateDatasources(RenderArgumentEmitter $emitter, ConfiguratorData $data): void
     {
         $datasources = $data->getContext()->getDatasources();
+        if (!$datasources) {
+            return ;
+        }
+
         $data = $datasources->executeAll();
         foreach ($data as $name => $value) {
             $argument = new RenderArgument('data', $name, $value);
