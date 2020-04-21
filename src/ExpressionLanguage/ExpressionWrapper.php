@@ -22,7 +22,7 @@ class ExpressionWrapper
 
     private function getExpressionLanguage(): ExpressionLanguage
     {
-        if (is_null($this->expressionLanguage)) {
+        if (null === $this->expressionLanguage) {
             $this->expressionLanguage = new ExpressionLanguage();
         }
 
@@ -31,7 +31,7 @@ class ExpressionWrapper
 
     private function getPropertyAccess(): PropertyAccessorInterface
     {
-        if (is_null($this->propAccess)) {
+        if (null === $this->propAccess) {
             $this->propAccess = PropertyAccess::createPropertyAccessorBuilder()
                 ->enableExceptionOnInvalidIndex()
                 ->getPropertyAccessor();

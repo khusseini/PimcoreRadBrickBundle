@@ -103,7 +103,7 @@ class AreabrickRenderer
     {
         $config = $renderArgument->getValue();
 
-        if (!is_array($config)
+        if (!\is_array($config)
             || !isset($config['type'])
         ) {
             return null;

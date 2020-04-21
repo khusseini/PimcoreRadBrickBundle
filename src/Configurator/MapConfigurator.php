@@ -18,7 +18,7 @@ class MapConfigurator extends AbstractConfigurator
 
     public function supportsEditable(string $editableName, array $config): bool
     {
-        return (bool) count($config['map']);
+        return (bool) \count($config['map']);
     }
 
     /**

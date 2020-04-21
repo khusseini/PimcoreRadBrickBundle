@@ -82,6 +82,44 @@ areabricks:
           first: hello
           second: world
 YAML;
+        $conditionsPositive = <<<YAML
+datasources:
+  main_source:
+    service_id: service_object
+    method: getData
+    args:
+    - first
+    - second
+areabricks:
+  testbrick:
+    datasources:
+      testsource:
+        id: main_source
+        conditions:
+        - true
+        args:
+          first: hello
+          second: world
+YAML;
+        $conditionsNegative = <<<YAML
+datasources:
+  main_source:
+    service_id: service_object
+    method: getData
+    args:
+    - first
+    - second
+areabricks:
+  testbrick:
+    datasources:
+      testsource:
+        id: main_source
+        conditions:
+        - false
+        args:
+          first: hello
+          second: world
+YAML;
 
         return [
             [
@@ -91,6 +129,8 @@ YAML;
                 function (ConfiguratorData $data) {
                     $datasources = $data->getContext()->getDatasources();
                     self::assertTrue($datasources->has('testsource'));
+                    $data = $datasources->execute('testsource');
+                    self::assertCount(4, $data);
                 },
             ], [
                 'recursive',
@@ -99,7 +139,36 @@ YAML;
                 function (ConfiguratorData $data) {
                     $datasources = $data->getContext()->getDatasources();
                     self::assertTrue($datasources->has('testsource'));
+                    $data = $datasources->execute('testsource');
+                    self::assertCount(4, $data);
                 },
+            ], [
+                'conditions_positive',
+                $conditionsPositive,
+                'testbrick',
+                function (ConfiguratorData $data) {
+                    $datasources = $data->getContext()->getDatasources();
+                    self::assertTrue($datasources->has('testsource'));
+                    $data = $datasources->execute('testsource');
+                    self::assertCount(4, $data);
+                },
+            ], [
+                'conditions_negative',
+                $conditionsNegative,
+                'testbrick',
+                function (ConfiguratorData $data) {
+                    $datasources = $data->getContext()->getDatasources();
+                    self::assertTrue($datasources->has('testsource'));
+                    $data = $datasources->execute('testsource');
+                    self::assertCount(0, $data);
+                },
+            ], [
+                'invalid_service',
+                $simpleConfig,
+                'testbrick',
+                function () {
+                },
+                \InvalidArgumentException::class,
             ],
         ];
     }
@@ -232,15 +301,24 @@ YAML;
     protected function getContext(string $case)
     {
         $context = parent::getContext($case);
-        if ('no_datasources' === $case) {
+        if ('no_datasource' === $case) {
             return $context;
         }
-        $service = new class() {
-            public function getData(...$args): array
-            {
-                return  [0, 1, 2, 3];
-            }
-        };
+
+        $service = null;
+        if ('invalid_service' === $case) {
+            $service = ['i am invalid'];
+        }
+
+        if (!$service) {
+            $service = new class() {
+                public function getData(...$args): array
+                {
+                    return  [0, 1, 2, 3];
+                }
+            };
+        }
+
         $wrapper = new class($context, $service) implements ContextInterface {
             private $context;
             private $serviceObject;
@@ -325,17 +403,19 @@ YAML;
         return [
             [$simpleconfig],
             [$recursiveconfig],
+            [$simpleconfig, true],
         ];
     }
 
     /**
      * @dataProvider canGenerateDatasourcesData
      */
-    public function testCanGenerateDatasources(string $config)
+    public function testCanGenerateDatasources(string $config, bool $noDatasources = false)
     {
         $config = $this->parseYaml($config);
 
-        $context = $this->getContext(__METHOD__);
+        $case = $noDatasources ? 'no_datasource' : __METHOD__;
+        $context = $this->getContext($case);
 
         $data = new ConfiguratorData($context);
         $data->setConfig($config);
@@ -343,13 +423,19 @@ YAML;
         $emitter = new RenderArgumentEmitter();
 
         $instance = $this->getInstance(__METHOD__);
-        $instance->preCreateEditables('testbrick', $data);
+        if (!$noDatasources) {
+            $instance->preCreateEditables('testbrick', $data);
+        }
         $instance->generateDatasources($emitter, $data);
 
         $renderArguments = $emitter->emit();
         $renderArguments = iterator_to_array($renderArguments);
-        self::assertCount(1, $renderArguments);
-        self::assertArrayHasKey('testsource', $renderArguments);
-        self::assertSame([0, 1, 2, 3], $renderArguments['testsource']->getValue());
+        if (!$noDatasources) {
+            self::assertCount(1, $renderArguments);
+            self::assertArrayHasKey('testsource', $renderArguments);
+            self::assertSame([0, 1, 2, 3], $renderArguments['testsource']->getValue());
+        } else {
+            self::assertCount(0, $renderArguments);
+        }
     }
 }

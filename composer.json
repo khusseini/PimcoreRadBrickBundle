@@ -29,5 +29,11 @@
         "sebastian/phpcpd": "^5.0",
         "infection/infection": "^0.16.2",
         "php-coveralls/php-coveralls": "^2.2"
+    },
+    "scripts": {
+        "test": "phpunit",
+        "cs": [
+            "php-cs-fixer fix"
+        ]
     }
 }

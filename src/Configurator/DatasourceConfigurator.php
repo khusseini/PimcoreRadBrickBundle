@@ -24,15 +24,21 @@ class DatasourceConfigurator extends AbstractConfigurator
             $dsId = $datasourceConfig['id'];
             $dataSource = $config['datasources'][$dsId];
             $serviceId = $dataSource['service_id'];
-            if (is_string($serviceId)) {
-                $serviceId = $this
+            $serviceObject = null;
+
+            if (\is_string($serviceId)) {
+                $serviceObject = $this
                     ->getExpressionWrapper()
                     ->evaluateExpression($serviceId, $contextArray)
                 ;
             }
 
+            if (!\is_object($serviceObject)) {
+                throw new \InvalidArgumentException(sprintf('Service with id "%s" is not an object. %s given.', $serviceId, \gettype($serviceObject)));
+            }
+
             $dataCall = $registry->createMethodCall(
-                $serviceId,
+                $serviceObject,
                 $dataSource['method'],
                 $dataSource['args']
             );
@@ -47,9 +53,22 @@ class DatasourceConfigurator extends AbstractConfigurator
         $data->getContext()->setDatasources($registry);
     }
 
+    /**
+     * @param array<string, array<string, mixed>> $config
+     *
+     * @return mixed
+     */
     protected function callDatasource(ContextInterface $context, callable $dataCall, array $config)
     {
         $input = [];
+        if (
+                isset($config['conditions'])
+                && \is_array($config['conditions'])
+                && !$this->evaluateConditions($config['conditions'], $context)
+        ) {
+            return [];
+        }
+
         foreach ($config['args'] as $name => $value) {
             $input[$name] = $this->recurseExpression($value, $context->toArray());
         }
@@ -57,15 +76,39 @@ class DatasourceConfigurator extends AbstractConfigurator
         return $dataCall($input);
     }
 
+    /**
+     * @param string[] $conditions
+     */
+    protected function evaluateConditions(array $conditions, ContextInterface $context): bool
+    {
+        $result = false;
+        $contextArray = $context->toArray();
+        foreach ($conditions as $condition) {
+            $value = $this->getExpressionWrapper()->evaluateExpression($condition, $contextArray);
+            $result = ($value !== $condition) && (bool) $value;
+            if (!$result) {
+                return $result;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param mixed                $value
+     * @param array<string, mixed> $context
+     *
+     * @return mixed
+     */
     protected function recurseExpression($value, array $context)
     {
-        if (is_string($value)) {
+        if (\is_string($value)) {
             return $this
                 ->getExpressionWrapper()
                 ->evaluateExpression($value, $context);
         }
 
-        if (is_array($value)) {
+        if (\is_array($value)) {
             foreach ($value as $key => $item) {
                 $value[$key] = $this->recurseExpression($item, $context);
             }
@@ -77,6 +120,10 @@ class DatasourceConfigurator extends AbstractConfigurator
     public function generateDatasources(RenderArgumentEmitter $emitter, ConfiguratorData $data): void
     {
         $datasources = $data->getContext()->getDatasources();
+        if (!$datasources) {
+            return;
+        }
+
         $data = $datasources->executeAll();
         foreach ($data as $name => $value) {
             $argument = new RenderArgument('data', $name, $value);

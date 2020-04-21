@@ -76,17 +76,17 @@ class DatasourceRegistry
                 $args[$index] = $this->getValueRecursive($input, $expression);
             }
 
-            return call_user_func_array([$service, $method], $args);
+            return \call_user_func_array([$service, $method], $args);
         };
     }
 
     protected function getValueRecursive(array $input, $expression)
     {
-        if (is_string($expression)) {
+        if (\is_string($expression)) {
             return $this->getValue($input, $expression);
         }
 
-        if (is_array($expression)) {
+        if (\is_array($expression)) {
             foreach ($expression as $key => $value) {
                 $expression[$key] = $this->getValueRecursive($input, $value);
             }

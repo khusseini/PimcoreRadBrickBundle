@@ -21,7 +21,7 @@ class DatasourceRegistryTest extends TestCase
     public function testExecuteByName()
     {
         $datasource = function (...$args) {
-            return join(' ', $args);
+            return implode(' ', $args);
         };
 
         $instance = $this->getInstance();
@@ -40,7 +40,7 @@ class DatasourceRegistryTest extends TestCase
     public function testExecuteAll()
     {
         $datasource = function (...$args) {
-            return join(' ', $args);
+            return implode(' ', $args);
         };
 
         $dsWrapper = function () use ($datasource) {
