@@ -29,5 +29,5 @@ interface IConfigurator
     /**
      * @param array<string,mixed> $config
      */
-    public function postCreateEditables(string $brickName, array $config, RenderArgumentEmitter $emitter): void;
+    public function postCreateEditables(string $brickName, ConfiguratorData $data, RenderArgumentEmitter $emitter): void;
 }

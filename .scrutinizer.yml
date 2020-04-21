@@ -1,8 +1,4 @@
 build:
-  environment:
-    php:
-      pecl_extensions:
-        - zip
   nodes:
     coverage:
       tests:
