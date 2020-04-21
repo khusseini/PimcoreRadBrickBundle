@@ -34,9 +34,7 @@ class DatasourceConfigurator extends AbstractConfigurator
             }
 
             if (!is_object($serviceObject)) {
-                throw new \InvalidArgumentException(
-                    sprintf('Service with id "%s" is not an object. %s given.', $serviceId, gettype($serviceObject))
-                );
+                throw new \InvalidArgumentException(sprintf('Service with id "%s" is not an object. %s given.', $serviceId, gettype($serviceObject)));
             }
 
             $dataCall = $registry->createMethodCall(
@@ -57,11 +55,20 @@ class DatasourceConfigurator extends AbstractConfigurator
 
     /**
      * @param array<string, array<string, mixed>> $config
+     *
      * @return mixed
      */
     protected function callDatasource(ContextInterface $context, callable $dataCall, array $config)
     {
         $input = [];
+        if (
+                isset($config['conditions'])
+                && is_array($config['conditions'])
+                && !$this->evaluateConditions($config['conditions'], $context)
+        ) {
+            return [];
+        }
+
         foreach ($config['args'] as $name => $value) {
             $input[$name] = $this->recurseExpression($value, $context->toArray());
         }
@@ -70,7 +77,25 @@ class DatasourceConfigurator extends AbstractConfigurator
     }
 
     /**
-     * @param mixed $value
+     * @param string[] $conditions
+     */
+    protected function evaluateConditions(array $conditions, ContextInterface $context): bool
+    {
+        $result = false;
+        $contextArray = $context->toArray();
+        foreach ($conditions as $condition) {
+            $value = $this->getExpressionWrapper()->evaluateExpression($condition, $contextArray);
+            $result = ($value !== $condition) && (bool) $value;
+            if (!$result) {
+                return $result;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param mixed                $value
      * @param array<string, mixed> $context
      *
      * @return mixed
@@ -96,7 +121,7 @@ class DatasourceConfigurator extends AbstractConfigurator
     {
         $datasources = $data->getContext()->getDatasources();
         if (!$datasources) {
-            return ;
+            return;
         }
 
         $data = $datasources->executeAll();
