@@ -1,0 +1,39 @@
+build:
+  environment:
+    php:
+      pecl_extensions:
+        - zip
+  nodes:
+    coverage:
+      tests:
+        override:
+          - command: ./vendor/bin/phpunit
+            coverage:
+              file: build/logs/clover.xml
+              format: clover
+
+    analysis:
+      project_setup:
+        override:
+          - "true"
+      tests:
+        override:
+          - php-scrutinizer-run
+          - command: phpcs-run
+            use_website_config: true
+    tests: true
+filter:
+  excluded_paths:
+    - "tests/*"
+checks:
+  php:
+    simplify_boolean_return: true
+    return_doc_comments: true
+    return_doc_comment_if_not_inferrable: true
+    check_method_contracts:
+      verify_interface_like_constraints: true
+      verify_documented_constraints: true
+      verify_parent_constraints: true
+
+coding_style:
+  php: {}
