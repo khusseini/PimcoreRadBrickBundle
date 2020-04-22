@@ -1,9 +1,10 @@
 
 [![Build Status](https://scrutinizer-ci.com/g/khusseini/PimcoreRadBrickBundle/badges/build.png?b=1.x)](https://scrutinizer-ci.com/g/khusseini/PimcoreRadBrickBundle/build-status/1.x)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/khusseini/PimcoreRadBrickBundle/badges/quality-score.png?b=1.x)](https://scrutinizer-ci.com/g/khusseini/PimcoreRadBrickBundle/?branch=1.x)
-[![Code Coverage](https://scrutinizer-ci.com/g/khusseini/PimcoreRadBrickBundle/badges/coverage.png?b=1.x)](https://scrutinizer-ci.com/g/khusseini/PimcoreRadBrickBundle/?branch=1.x)
+[![Coverage Status](https://coveralls.io/repos/github/khusseini/PimcoreRadBrickBundle/badge.svg?branch=1.x)](https://coveralls.io/github/khusseini/PimcoreRadBrickBundle?branch=1.x)
 [![License](https://poser.pugx.org/khusseini/pimcore-radbrick/license)](https://packagist.org/packages/khusseini/pimcore-radbrick)
 [![Code Intelligence Status](https://scrutinizer-ci.com/g/khusseini/PimcoreRadBrickBundle/badges/code-intelligence.svg?b=1.x)](https://scrutinizer-ci.com/code-intelligence)
+[![Infection MSI](https://badge.stryker-mutator.io/github.com/khusseini/PimcoreRadBrickBundle/1.x)](https://infection.github.io)
 
 
 # PimcoreRadBrickBundle
