@@ -11,8 +11,6 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
  * This is the class that validates and merges configuration from your app/config files.
  *
  * To learn more see {@link http://symfony.com/doc/current/cookbook/bundles/configuration.html}
- *
- * @codeCoverageIgnore
  */
 class Configuration implements ConfigurationInterface
 {
@@ -87,11 +85,14 @@ class Configuration implements ConfigurationInterface
                         ->arrayNode('conditions')
                             ->info('Configure conditions for datasource.')
                             ->scalarPrototype()
+                            ->end()
                         ->end()
                         ->arrayNode('args')
                             ->info('Configure arguments to pass to method call')
                             ->useAttributeAsKey('name')
-                        ->variablePrototype()
+                            ->variablePrototype()
+                            ->end()
+                        ->end()
                     ->end()
                 ->end()
             ->end();

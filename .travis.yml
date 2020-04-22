@@ -1,11 +1,15 @@
 language: php
 php:
 - 7.3
-
 install:
-- COMPOSER_MEMORY_LIMIT=-1 travis_retry composer install --prefer-dist --no-interaction --dev
+- COMPOSER_MEMORY_LIMIT=-1 travis_retry composer install --prefer-dist --no-interaction
+  --dev
 script:
 - vendor/bin/phpunit
-
 after_success:
-  - travis_retry php vendor/bin/php-coveralls
+- travis_retry php vendor/bin/php-coveralls
+- travis_retry php vendor/bin/infection
+- "travis_retry curl -X PUT \"${BASE_URL}/api/reports/${PROJECT}/${TRAVIS_BRANCH}\" -H 'Content-Type: application/json' -H 'Host: dashboard.stryker-mutator.io' -H 'X-Api-Key: \"${STRYKER_DASHBOARD_API_KEY}\" -d @mutation-testing-report.json"
+env:
+  global:
+    secure: docqr9fJwTwwOdaZHXylBwCTTnWps6P3M6nERecOt5COFwgSodYRSNcAhiiEFjnW1bmgZPsyL+lsYgXCC1qvoI4J27q971bKnvjT4ToE8MXSbUzMKK3/SFzfJDts0+z5lfq9C4UWoFPFuIRcf1DLRCf7By1y1KV1MFWDsil8xtDiJ5j6VKQBDQAruWjLo8VRg5gb0cKuCYtVJ6ML2a4kMSEoCtItKae85Bf2SWglveQtxBFBMWW1YtnXwj+nKgA8hi98M0eQh8SLNRw13csgH7M2lS4/g5w9ZaYZ5eGkig1qm/49QAo+j7y0izlcaTO9ZBANcQUR6fyz5WiSHobqvN7oNk10P5aHMgKtEkY2P8eP+om2Lyy7GbBKoRJ9FZ2/bKFUyYoDMunCybuW0V5t7Pa0IPjFMuK6JY7Mmd9oi/x98UIwA2u0FVeII5vZHO6kdTPq5JYfnLb+FkYwDdq7PFtVk9WskwNxj4Ra76yzcTGFTilIqZSavrwHlvIhviWa04eYUu/d8Bhi9K7FP/imDvhq+cLHVM4gK+QB2GAc2eci56qpvUQ2Qcfo3OewLIHNt2qUA/JLRkFW+6p28RuLgJtSClHlAqGEbRYqzkVKoBZWduIXQd6WOvwSxCUpfiiT4Bk9PFXP5w5Q/YlpNwaVIfq4T+tosMKrS57ldD1emOs=
