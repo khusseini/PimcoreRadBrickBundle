@@ -28,6 +28,29 @@ class DatasourceRegistryTest extends TestCase
         $instance->add('dummy', $datasource);
         $data = $instance->execute('dummy', ['hello', 'world']);
         self::assertEquals('hello world', $data);
+        self::assertTrue($instance->hasData('dummy'));
+        self::assertEquals('hello world', $instance->getData('dummy'));
+    }
+
+    public function testDatacontainer()
+    {
+        $datasource = function (...$args) {
+            return implode(' ', $args);
+        };
+
+        $instance = $this->getInstance();
+        $instance->add('dummy', $datasource);
+
+        $data = $instance->getData('dummy');
+        self::assertSame([], $data);
+
+        $data = $instance->getData('dummy', true, ['hello', 'world']);
+        self::assertEquals('hello world', $data);
+        self::assertTrue($instance->hasData('dummy'));
+
+        $container = $instance->getDataContainer();
+        self::assertArrayHasKey('dummy', $container);
+        self::assertSame('hello world', $container['dummy']);
     }
 
     public function testExecuteByNameFail()

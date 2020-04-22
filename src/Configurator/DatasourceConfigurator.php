@@ -24,7 +24,7 @@ class DatasourceConfigurator extends AbstractConfigurator
             $dsId = $datasourceConfig['id'];
             $dataSource = $config['datasources'][$dsId];
             $serviceId = $dataSource['service_id'];
-            $serviceObject = null;
+            $serviceObject = $serviceId;
 
             if (\is_string($serviceId)) {
                 $serviceObject = $this
@@ -81,7 +81,7 @@ class DatasourceConfigurator extends AbstractConfigurator
      */
     protected function evaluateConditions(array $conditions, ContextInterface $context): bool
     {
-        $result = false;
+        $result = true;
         $contextArray = $context->toArray();
         foreach ($conditions as $condition) {
             $value = $this->getExpressionWrapper()->evaluateExpression($condition, $contextArray);
@@ -168,7 +168,12 @@ class DatasourceConfigurator extends AbstractConfigurator
             }
             //@codeCoverageIgnoreEnd
 
-            $itemArgument = new RenderArgument('editable', $i, $editable);
+            $itemArgument = new RenderArgument(
+                'editable',
+                /* @scrutinizer ignore-type */ $i,
+                $editable
+            );
+
             $items[] = $itemArgument;
         }
 

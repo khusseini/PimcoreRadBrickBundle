@@ -18,6 +18,8 @@ class DatasourceRegistry
      */
     private $datasources = null;
 
+    private $executedData = [];
+
     public function __construct(
         ExpressionLanguage $expressionLangauge = null
     ) {
@@ -41,20 +43,46 @@ class DatasourceRegistry
         }
 
         $ds = $this->datasources->{$name};
+        $this->executedData[$name] = $ds(...$args);
 
-        return $ds(...$args);
+        return $this->executedData[$name];
     }
 
-    public function has(string $name)
+    public function hasData(string $name): bool
+    {
+        return isset($this->executedData[$name]) && (bool) $this->executedData[$name];
+    }
+
+    public function getDataContainer(): array
+    {
+        return $this->executedData;
+    }
+
+    public function has(string $name): bool
     {
         return property_exists($this->datasources, $name);
+    }
+
+    public function getData(string $name, bool $execute = false, array $execArgs = [])
+    {
+        if ($execute) {
+            $this->execute($name, $execArgs);
+        }
+
+        if (!$this->hasData($name)) {
+            return [];
+        }
+
+        return $this->executedData[$name];
     }
 
     public function executeAll(): \Generator
     {
         $ds = (array) $this->datasources;
         foreach ($ds as $name => $callback) {
-            yield $name => $callback();
+            $this->executedData[$name] = $callback();
+            $data = $this->executedData[$name];
+            yield $name => $data;
         }
     }
 
