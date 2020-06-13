@@ -1,6 +1,6 @@
 pimcore_rad_brick:
   areabricks:
     example_with_base_service:
-      class: 'app.areabricks.base.example_custom_brick'
+      class: 'Tests\Khusseini\PimcoreRadBrickBundle\DependencyInjection\ExampleBaseAreabrick'
       options:
         hello: 'world'
