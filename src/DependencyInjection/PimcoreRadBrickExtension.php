@@ -12,9 +12,6 @@ use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
-/**
- * @codeCoverageIgnore
- */
 class PimcoreRadBrickExtension extends Extension
 {
     /**
@@ -65,7 +62,7 @@ class PimcoreRadBrickExtension extends Extension
             $options = $areabrickConfig['options'] ?: [];
 
             $target = null;
-            if ($class = $areabrickConfig['class']) {
+            if ($class = @$areabrickConfig['class']) {
                 $target = clone $container->getDefinition($class);
                 $target->setAbstract(false);
             }
@@ -74,9 +71,8 @@ class PimcoreRadBrickExtension extends Extension
                 $target = new Definition(SimpleBrick::class);
             }
 
-            $target->setArgument('name', $id);
-            $target->setArgument('areabrickRenderer', new Reference(AreabrickRenderer::class));
-
+            $target->setArgument('$name', $id);
+            $target->setArgument('$areabrickRenderer', new Reference(AreabrickRenderer::class));
             $target->addMethodCall('configure', [$options]);
 
             if (!$target->hasTag('pimcore.area.brick')) {

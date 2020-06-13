@@ -1,0 +1,14 @@
+pimcore_rad_brick:
+  areabricks:
+    my_wysiwyg:
+      label: WYSIWYG  # Label to use in admin UI
+      icon:  ~        # Path to icon in admin UI
+      open: ~         # Set the open html
+      close: ~        # Set the close html
+      use_edit: false # Use edit.html.twig
+      class: ~        # Use an existing symfony service
+      options: []     # Any options to pass to custom areabrick class
+      editables:      # Provide Pimcore editables in a list
+        wysiwyg_content: # variable name in `Areas/my_wysiwyg/view.html`
+          type: wysiwyg  # type of the Pimcore editable
+          options: []    # you can pass here any options accepted by the editable

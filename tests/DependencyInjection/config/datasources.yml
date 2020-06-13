@@ -1,0 +1,11 @@
+pimcore_rad_brick:
+  datasources:
+    test_datasource:
+      service_id: test_datasource
+      method: testMethod
+      args: []
+  areabricks:
+    test_brick:
+      datasources:
+        hello:
+          id: test_datasources
