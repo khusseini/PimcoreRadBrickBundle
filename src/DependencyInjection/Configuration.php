@@ -40,6 +40,13 @@ class Configuration implements ConfigurationInterface
             ->info('Use a predefined service instead of a newly created one.')
             ->end();
         $builder
+            ->arrayNode('options')
+                ->info('Set options for areabrick. (Makes only sense in combination with `class`)')
+                ->useAttributeAsKey('name')
+                ->scalarPrototype()
+                ->end()
+            ->end();
+        $builder
             ->scalarNode('label')
             ->info('Specify a label for the admin UI.')
             ->end();
