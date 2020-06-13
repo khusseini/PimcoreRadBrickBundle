@@ -6,6 +6,7 @@ use Khusseini\PimcoreRadBrickBundle\AreabrickConfigurator;
 use Khusseini\PimcoreRadBrickBundle\AreabrickRenderer;
 use Khusseini\PimcoreRadBrickBundle\Areabricks\SimpleBrick;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
@@ -63,8 +64,8 @@ class PimcoreRadBrickExtension extends Extension
 
             $target = null;
             if ($class = @$areabrickConfig['class']) {
-                $target = clone $container->getDefinition($class);
-                $target->setAbstract(false);
+                $target = new ChildDefinition($class);
+                $target->setClass($class);
             }
 
             if (!$target) {

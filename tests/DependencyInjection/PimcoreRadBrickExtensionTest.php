@@ -7,6 +7,7 @@ use Khusseini\PimcoreRadBrickBundle\DependencyInjection\PimcoreRadBrickExtension
 use PHPStan\Testing\TestCase;
 use Pimcore\Templating\Renderer\TagRenderer;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -84,8 +85,6 @@ class PimcoreRadBrickExtensionTest extends TestCase
             $this->assertTrue($container->has('radbrick.'.$name));
         }
 
-        $container->compile();
-
         if ($customAssert) {
             $customAssert($configs['pimcore_rad_brick'], $container);
         }
@@ -99,16 +98,19 @@ class PimcoreRadBrickExtensionTest extends TestCase
         $baseDefinition->setClass(ExampleBaseAreabrick::class);
 
         $containerBuilder->setDefinition(
-            'app.areabricks.base.example_custom_brick',
+            ExampleBaseAreabrick::class,
             $baseDefinition
         );
 
         return [
             'base_class.yml',
             $containerBuilder,
-            function (array $configs, ContainerBuilder $containerBuilder) {
+            function (array $configs, ContainerBuilder $container) {
+                $definition = $container->getDefinition('radbrick.example_with_base_service');
+                $this->assertInstanceOf(ChildDefinition::class, $definition);
+                $container->compile();
                 /** @var ExampleBaseAreabrick $areabrick */
-                $areabrick = $containerBuilder->get('radbrick.example_with_base_service');
+                $areabrick = $container->get('radbrick.example_with_base_service');
                 $this->assertInstanceOf(ExampleBaseAreabrick::class, $areabrick);
                 $options = $areabrick->getOptions();
                 $expectedOptions = $configs['areabricks']['example_with_base_service']['options'];
@@ -152,6 +154,7 @@ class PimcoreRadBrickExtensionTest extends TestCase
             'datasources.yml',
             $container,
             function (array $configs, ContainerInterface $container) {
+                $container->compile();
                 $this->assertTrue($container->has('test_datasource'));
             },
         ];
