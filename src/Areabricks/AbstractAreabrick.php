@@ -116,6 +116,14 @@ abstract class AbstractAreabrick extends AbstractTemplateAreabrick
     }
 
     /**
+     * @codeCoverageIgnore
+     * @param array<string, mixed> $options
+     */
+    public function configure(array $options): void
+    {
+    }
+
+    /**
      * {@inheritdoc}
      *
      * @codeCoverageIgnore

@@ -59,20 +59,25 @@ class PimcoreRadBrickExtension extends Extension
         $container->setDefinition(AreabrickRenderer::class, $rendererDefinition);
 
         $areabricks = $config['areabricks'];
-        foreach ($areabricks as $id => $aconfig) {
-            $target = null;
+        foreach ($areabricks as $id => $areabrickConfig) {
             $definitionId = 'radbrick.'.$id;
-            if ($class = $aconfig['class']) {
-                $definitionId = $class;
-                $target = $container->getDefinition($class);
+            $parent = null;
+            $options = $areabrickConfig['options'] ?: [];
+
+            $target = null;
+            if ($class = $areabrickConfig['class']) {
+                $target = clone $container->getDefinition($class);
+                $target->setAbstract(false);
             }
 
             if (!$target) {
-                $target = new Definition(
-                    SimpleBrick::class,
-                    [$id, new Reference(AreabrickRenderer::class)]
-                );
+                $target = new Definition(SimpleBrick::class);
             }
+
+            $target->setArgument('name', $id);
+            $target->setArgument('areabrickRenderer', new Reference(AreabrickRenderer::class));
+
+            $target->addMethodCall('configure', [$options]);
 
             if (!$target->hasTag('pimcore.area.brick')) {
                 $target->addTag('pimcore.area.brick', ['id' => $id]);
