@@ -30,7 +30,7 @@
         "phpstan/phpstan": "^0.12.17",
         "pimcore/pimcore": "^6",
         "sebastian/phpcpd": "^5.0",
-        "infection/infection": "^0.16.2",
+        "infection/infection": "^0.17.5",
         "php-coveralls/php-coveralls": "^2.2"
     },
     "scripts": {
